@@ -73,21 +73,20 @@ def push(node):
 
 
 def lower_bound(node, val):
-    if RBST.debug:
-        dp("lowerbound: node, val", node, val)
+    # dp("lowerbound: node, val", node, val)
 
     push(node)
     if not node:
-        dp("lowerbound result: 0")
+        # dp("lowerbound result: 0")
         return 0
     if val <= node.val:
-        dp("val <= node.val")
+        # dp("val <= node.val")
         ret = lower_bound(node.left, val)
-        dp("lowerbound result: ret", ret)
+        # dp("lowerbound result: ret", ret)
         return ret
-    dp("val > node.val")
+    # dp("val > node.val")
     ret = size(node.left) + lower_bound(node.right, val) + 1
-    dp("lowerbound result: ret", ret)
+    # dp("lowerbound result: ret", ret)
     return ret
 
 
@@ -113,7 +112,7 @@ def get(node, k):
 
 
 def merge(left, right):
-    dp("merge: left,right", left, right)
+    # dp("merge: left,right", left, right)
     push(left)
     push(right)
     if not left or not right:
@@ -130,25 +129,25 @@ def merge(left, right):
 
 def split(node, k):
     "split tree into [0, k) and [k, n)"
-    dp("split: node, k", node, k)
+    # dp("split: node, k", node, k)
     push(node)
     if not node:
         ret = (node, node)
-        dp("split: ret", ret)
+        # dp("split: ret", ret)
         return ret
     if k <= size(node.left):
-        dp("split left")
+        # dp("split left")
         x1, x2 = split(node.left, k)
         node.left = x2
         ret = (x1, update(node))
-        dp("split: ret", ret)
+        # dp("split: ret", ret)
         return ret
     else:
-        dp("split right")
+        # dp("split right")
         x1, x2 = split(node.right, k - size(node.left) - 1)
         node.right = x1
         ret = (update(node), x2)
-        dp("split: ret", ret)
+        # dp("split: ret", ret)
         return ret
 
 
@@ -189,9 +188,9 @@ class RBST:
         if RBST.debug:
             print(x1, x2)
         r = merge(x1, Node(val))
-        dp("merge(x1, Node(val)): ", r)
+        # dp("merge(x1, Node(val)): ", r)
         r = merge(r, x2)
-        dp("merge(r, x2): ", r)
+        # dp("merge(r, x2): ", r)
         self.root = r
 
     def erase(self, val):
@@ -311,5 +310,4 @@ if __name__ == "__main__":
         for i in range(100000):
             r.insert(0)
         t = time.perf_counter() - t
-        print(t)  # 100000 => 5.35sec
-        # 10000 => 0.52sec
+        print(t)  # 100000 => 4.61sec
