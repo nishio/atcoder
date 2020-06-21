@@ -40,12 +40,6 @@ class Node:
             self.sum = v
             self.left = self.right = None
 
-    def push(self):
-        pass
-
-    def update(self):
-        pass
-
     def __repr__(self):
         left = repr(self.left) if self.left else "x"
         right = repr(self.right) if self.right else "x"
@@ -68,14 +62,14 @@ def rbst_sum(node):
 def update(node):
     node.size = size(node.left) + size(node.right) + 1
     node.sum = rbst_sum(node.left) + rbst_sum(node.right) + node.val
-    node.update()
+    # add extra code here
     return node
 
 
 def push(node):
     if not node:
         return
-    node.push()
+    # add extra code here
 
 
 def lower_bound(node, val):
@@ -317,5 +311,5 @@ if __name__ == "__main__":
         for i in range(100000):
             r.insert(0)
         t = time.perf_counter() - t
-        print(t)  # 100000 => 6.16sec
+        print(t)  # 100000 => 5.35sec
         # 10000 => 0.52sec
