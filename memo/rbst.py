@@ -140,23 +140,21 @@ def split(node, k):
     # dp("split: node, k", node, k)
     push(node)
     if not node:
-        ret = (node, node)
-        # dp("split: ret", ret)
-        return ret
+        RBST.ret_left = None
+        RBST.ret_right = None
+        return
     if k <= size(node.left):
         # dp("split left")
-        x1, x2 = split(node.left, k)
-        node.left = x2
-        ret = (x1, update(node))
-        # dp("split: ret", ret)
-        return ret
+        split(node.left, k)
+        node.left = RBST.ret_right
+        RBST.ret_right = update(node)
+        return
     else:
         # dp("split right")
-        x1, x2 = split(node.right, k - size(node.left) - 1)
-        node.right = x1
-        ret = (update(node), x2)
-        # dp("split: ret", ret)
-        return ret
+        split(node.right, k - size(node.left) - 1)
+        node.right = RBST.ret_left
+        RBST.ret_left = update(node)
+        return
 
 
 class RBST:
@@ -189,25 +187,26 @@ class RBST:
         self.root = merge(self.root, add.root)
 
     def split(self, k):
-        x1, x2 = split(self.root, k)
-        self.root = x1
-        return x2
+        split(self.root, k)
+        self.root = RBST.ret_left
+        return RBST.ret_right
 
     def insert(self, val):
-        x1, x2 = split(self.root, self.lower_bound(val))
-        if RBST.debug:
-            print(x1, x2)
-        r = merge(x1, Node(val))
+        split(self.root, self.lower_bound(val))
+        r = merge(RBST.ret_left, Node(val))
         # dp("merge(x1, Node(val)): ", r)
-        r = merge(r, x2)
+        r = merge(r, RBST.ret_right)
         # dp("merge(r, x2): ", r)
         self.root = r
 
     def erase(self, val):
         if self.count(val) == 0:
             return
-        x1, x2 = split(self.root, self.lower_bound(val))
-        self.root = merge(x1, split(x2, 1)[1])
+        split(self.root, self.lower_bound(val))
+        lhs = RBST.ret_left
+        split(RBST.ret_right, 1)
+        rhs = RBST.ret_right
+        self.root = merge(lhs, rhs)
 
     def print(self):
         print("{ ", end="")
@@ -320,5 +319,5 @@ if __name__ == "__main__":
         for i in range(100000):
             r.insert(0)
         t = time.perf_counter() - t
-        print(t)  # 100000 => 4.61sec
+        print(t)  # 100000 => 4.55sec
         # with lprof 25.07sec
