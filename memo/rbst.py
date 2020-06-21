@@ -13,6 +13,11 @@ def dp(*x):  # debugprint
         print(*x)
 
 
+try:
+    profile
+except:
+    def profile(f): return f
+
 SUM_UNITY = 0
 
 
@@ -72,6 +77,7 @@ def push(node):
     # add extra code here
 
 
+@profile
 def lower_bound(node, val):
     # dp("lowerbound: node, val", node, val)
 
@@ -111,6 +117,7 @@ def get(node, k):
     return get(node.right, k - size(node.left) - 1)
 
 
+@profile
 def merge(left, right):
     # dp("merge: left,right", left, right)
     push(left)
@@ -127,6 +134,7 @@ def merge(left, right):
         return update(right)
 
 
+@profile
 def split(node, k):
     "split tree into [0, k) and [k, n)"
     # dp("split: node, k", node, k)
@@ -153,6 +161,8 @@ def split(node, k):
 
 class RBST:
     debug = False
+    ret_left = None
+    ret_right = None
 
     def __init__(self, node=None):
         self.root = node
@@ -311,3 +321,4 @@ if __name__ == "__main__":
             r.insert(0)
         t = time.perf_counter() - t
         print(t)  # 100000 => 4.61sec
+        # with lprof 25.07sec
