@@ -3,9 +3,8 @@
 # derived from https://qiita.com/drken/items/1b7e6e459c24a83bb7fd
 
 
+import numpy as np
 import time
-from random import randint, seed
-seed(42)
 
 
 def dp(*x):  # debugprint
@@ -118,7 +117,7 @@ def get(node, k):
 
 
 @profile
-def merge(left, right):
+def merge(left, right, t=np.array([123456789, 362436069, 521288629, 88675123])):
     # dp("merge: left,right", left, right)
     push(left)
     push(right)
@@ -126,7 +125,8 @@ def merge(left, right):
         if left:
             return left
         return right
-    if randint(0, left.size + right.size) < left.size:
+    # if randint(0, left.size + right.size) < left.size:
+    if randInt(t) % (left.size + right.size) < left.size:
         left.right = merge(left.right, right)
         return update(left)
     else:
@@ -300,6 +300,16 @@ def _test():
     doctest.testmod()
 
 
+def randInt(t):
+    tx, ty, tz, tw = t
+    tt = tx ^ (tx << 11)
+    t[0] = ty
+    t[1] = tz
+    t[2] = tw
+    t[3] = tw = (tw ^ (tw >> 19)) ^ (tt ^ (tt >> 8))
+    return tw
+
+
 if __name__ == "__main__":
     import sys
     if sys.argv[-1] == "-c":
@@ -307,11 +317,12 @@ if __name__ == "__main__":
         print("compiling")
         from numba.pycc import CC
         cc = CC('numba_rbst')
-        # cc.export('randInt', 'i8()')(main)
+        cc.export('randInt', 'i8(i8[:])')(randInt)
         # b1: bool, i4: int32, i8: int64, double: f8, [:], [:, :]
         cc.compile()
         exit()
-    #from numba_rbst import randInt
+    from numba_rbst import randInt
+
     _test()
     r = RBST()
     if 1:
@@ -319,5 +330,4 @@ if __name__ == "__main__":
         for i in range(100000):
             r.insert(0)
         t = time.perf_counter() - t
-        print(t)  # 100000 => 4.55sec
-        # with lprof 25.07sec
+        print(t)  # 100000 => 3.55sec
