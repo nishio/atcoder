@@ -20,55 +20,10 @@ except:
 SUM_UNITY = 0
 
 
-class Node:
-    """
-        NODE * left, *right
-        VAL val
-        // the value of the node
-        int size
-        // the size of the subtree
-        VAL sum
-        // the value-sum of the subtree
-    """
-
-    def __init__(self, v=None):
-        # no args
-        if v == None:
-            self.val = SUM_UNITY
-            self.size = 1
-            self.sum = SUM_UNITY
-            self.left = self.right = None
-        else:
-            self.val = v
-            self.size = 1
-            self.sum = v
-            self.left = self.right = None
-
-    def __repr__(self):
-        left = repr(self.left) if self.left else "x"
-        right = repr(self.right) if self.right else "x"
-        v = repr(self.val)
-        return f"[{left} _{v}_ {right}]"
-
-
 @profile
-def size(node):
-    if not node:
-        return 0
-    return node.size
-
-
-@profile
-def rbst_sum(node):
-    if not node:
-        return SUM_UNITY
-    return node.sum
-
-
-@profile
-def update(node):
-    node.size = size(node.left) + size(node.right) + 1
-    node.sum = rbst_sum(node.left) + rbst_sum(node.right) + node.val
+def update(lefts, rights, vals, sizes, sums, node):
+    sizes[node] = sizes[lefts[node]] + sizes[rights[node]] + 1
+    sums[node] = sums[lefts[node]] + sums[rights[node]] + vals[node]
     # add extra code here
     return node
 
@@ -80,47 +35,55 @@ def push(node):
 
 
 @profile
-def lower_bound(node, val):
+def lower_bound(lefts, rights, vals, sizes, node, val):
     # dp("lowerbound: node, val", node, val)
 
     push(node)
     if not node:
         # dp("lowerbound result: 0")
         return 0
-    if val <= node.val:
-        # dp("val <= node.val")
-        ret = lower_bound(node.left, val)
+    if val <= vals[node]:
+        # dp("val <= vals[node]")
+        ret = lower_bound(lefts, rights, vals, sizes,  lefts[node], val)
         # dp("lowerbound result: ret", ret)
         return ret
-    # dp("val > node.val")
-    ret = size(node.left) + lower_bound(node.right, val) + 1
+    # dp("val > vals[node]")
+    ret = sizes[lefts[node]] + 1
+    ret += lower_bound(lefts, rights, vals, sizes,  rights[node], val)
     # dp("lowerbound result: ret", ret)
     return ret
 
 
-def upper_bound(node, val):
+def upper_bound(lefts, rights, vals, sizes, sums, node, val):
     push(node)
     if not node:
         return 0
-    if val >= node.val:
-        return size(node.left) + upper_bound(node.right, val) + 1
-    return upper_bound(node.left, val)
+    if val >= vals[node]:
+        ret = sizes[lefts[node]]
+        ret += upper_bound(
+            lefts, rights, vals, sizes, sums,
+            rights[node], val) + 1
+        return ret
+    return upper_bound(lefts, rights, vals, sizes, sums, lefts[node], val)
 
 
-def get(node, k):
+def get(lefts, rights, vals, sizes, node, k):
     "k: 0-origin"
     push(node)
     if not node:
         return -1
-    if k == size(node.left):
-        return node.val
-    if k < size(node.left):
-        return get(node.left, k)
-    return get(node.right, k - size(node.left) - 1)
+    if k == sizes[lefts[node]]:
+        return vals[node]
+    if k < sizes[lefts[node]]:
+        return get(lefts, rights, vals, sizes, lefts[node], k)
+    return get(lefts, rights, vals, sizes,
+               rights[node], k - sizes[lefts[node]] - 1)
 
 
 @profile
-def merge(left, right, t=np.array([123456789, 362436069, 521288629, 88675123])):
+def merge(
+        lefts, rights, vals, sizes, sums,
+        left, right, t=np.array([123456789, 362436069, 521288629, 88675123])):
     # dp("merge: left,right", left, right)
     push(left)
     push(right)
@@ -129,34 +92,40 @@ def merge(left, right, t=np.array([123456789, 362436069, 521288629, 88675123])):
             return left
         return right
     # if randint(0, left.size + right.size) < left.size:
-    if randInt(t) % (left.size + right.size) < left.size:
-        left.right = merge(left.right, right)
-        return update(left)
+    if randInt(t) % (sizes[left] + sizes[right]) < sizes[left]:
+        rights[left] = merge(
+            lefts, rights, vals, sizes, sums,
+            rights[left], right)
+        return update(lefts, rights, vals, sizes, sums, left)
     else:
-        right.left = merge(left, right.left)
-        return update(right)
+        lefts[right] = merge(
+            lefts, rights, vals, sizes, sums,
+            left, lefts[right])
+        return update(lefts, rights, vals, sizes, sums, right)
 
 
 @profile
-def split(node, k):
+def split(lefts, rights, vals, sizes, sums, node, k):
     "split tree into [0, k) and [k, n)"
     # dp("split: node, k", node, k)
     push(node)
     if not node:
-        RBST.ret_left = None
-        RBST.ret_right = None
+        RBST.ret_left = 0
+        RBST.ret_right = 0
         return
-    if k <= size(node.left):
+    if k <= sizes[lefts[node]]:
         # dp("split left")
-        split(node.left, k)
-        node.left = RBST.ret_right
-        RBST.ret_right = update(node)
+        split(lefts, rights, vals, sizes, sums,
+              lefts[node], k)
+        lefts[node] = RBST.ret_right
+        RBST.ret_right = update(lefts, rights, vals, sizes, sums, node)
         return
     else:
         # dp("split right")
-        split(node.right, k - size(node.left) - 1)
-        node.right = RBST.ret_left
-        RBST.ret_left = update(node)
+        split(lefts, rights, vals, sizes, sums,
+              rights[node], k - sizes[lefts[node]] - 1)
+        rights[node] = RBST.ret_left
+        RBST.ret_left = update(lefts, rights, vals, sizes, sums, node)
         return
 
 
@@ -167,86 +136,131 @@ class RBST:
 
     def __init__(self, node=None):
         self.root = node
+        MAX_NODE_ID = 400_000
+        self.vals = [SUM_UNITY] * MAX_NODE_ID
+        self.sizes = [1] * MAX_NODE_ID
+        self.sums = [SUM_UNITY] * MAX_NODE_ID
+        self.lefts = [0] * MAX_NODE_ID
+        self.rights = [0] * MAX_NODE_ID
+        self.sizes[0] = 0
+        self.sums[0] = SUM_UNITY
+        self.last_id = 0
 
-    def size(self):
-        return size(self.root)
-
-    def sum(self):
-        return rbst_sum(self.root)
+    def new_node(self, val):
+        self.last_id += 1
+        self.vals[self.last_id] = val
+        self.sums[self.last_id] = val
+        return self.last_id
 
     def lower_bound(self, val):
-        return lower_bound(self.root, val)
+        return lower_bound(
+            self.lefts, self.rights, self.vals, self.sizes,
+            self.root, val)
 
     def upper_bound(self, val):
-        return upper_bound(self.root, val)
+        return upper_bound(
+            self.lefts, self.rights, self.vals, self.sizes, self.sums,
+            self.root, val)
 
     def count(self, val):
         return self.upper_bound(val) - self.lower_bound(val)
 
     def get(self, k):
-        get(self.root, k)
+        get(
+            self.lefts, self.rights, self.vals, self.sizes, self.sums,
+            self.root, k)
 
     def merge(self, add):
-        self.root = merge(self.root, add.root)
+        self.root = merge(
+            self.lefts, self.rights, self.vals, self.sizes, self.sums,
+
+            self.root, add.root)
 
     def split(self, k):
-        split(self.root, k)
+        split(
+            self.lefts, self.rights, self.vals, self.sizes, self.sums,
+
+            self.root, k)
         self.root = RBST.ret_left
         return RBST.ret_right
 
     def insert(self, val):
-        split(self.root, self.lower_bound(val))
-        r = merge(RBST.ret_left, Node(val))
+        split(
+            self.lefts, self.rights, self.vals, self.sizes, self.sums,
+
+            self.root, self.lower_bound(val))
+        r = merge(
+            self.lefts, self.rights, self.vals, self.sizes, self.sums,
+
+            RBST.ret_left, self.new_node(val))
         # dp("merge(x1, Node(val)): ", r)
-        r = merge(r, RBST.ret_right)
+        r = merge(
+            self.lefts, self.rights, self.vals, self.sizes, self.sums,
+
+            r, RBST.ret_right)
         # dp("merge(r, x2): ", r)
         self.root = r
 
     def erase(self, val):
         if self.count(val) == 0:
             return
-        split(self.root, self.lower_bound(val))
+        split(
+            self.lefts, self.rights, self.vals, self.sizes, self.sums,
+            self.root, self.lower_bound(val))
         lhs = RBST.ret_left
-        split(RBST.ret_right, 1)
+        split(
+            self.lefts, self.rights, self.vals, self.sizes, self.sums,
+
+            RBST.ret_right, 1)
         rhs = RBST.ret_right
-        self.root = merge(lhs, rhs)
+        self.root = merge(
+            self.lefts, self.rights, self.vals, self.sizes, self.sums,
+
+            lhs, rhs)
 
     def print(self):
         print("{ ", end="")
-        print_node(self.root)
+        self.print_node(self.root)
         print("}")
 
     def __repr__(self):
-        return repr(node_as_list(self.root))
+        return repr(self.node_as_list(self.root))
 
+    def repr_node(self, node_id):
+        left = (self.repr_node(
+            self.lefts[node_id])
+            if self.lefts[node_id] else "x")
+        right = (self.repr_node(
+            self.rights[node_id])
+            if self.rights[node_id] else "x")
+        v = repr(self.vals[node_id])
+        return f"[{left} _{v}_ {right}]"
 
-def node_as_list(node):
-    if not node:
-        return []
-    s = [node.val]
-    if node.left:
-        s = node_as_list(node.left) + s
-    if node.right:
-        s = s + node_as_list(node.right)
-    return s
+    def node_as_list(self, node):
+        if not node:
+            return []
+        s = [self.vals[node]]
+        if self.lefts[node]:
+            s = self.node_as_list(self.lefts[node]) + s
+        if self.rights[node]:
+            s = s + self.node_as_list(self.rights[node])
+        return s
 
+    def print_node(self, node):
+        if not node:
+            return
+        self.print_node(self.lefts[node])
+        print(self.vals[node], end=" ")
+        self.print_node(self.rights[node])
 
-def print_node(node):
-    if not node:
-        return
-    print_node(node.left)
-    print(node.val, end=" ")
-    print_node(node.right)
-
-
-def print_node_as_tree(node, indent=0):
-    if not node:
-        print(" " * indent + "x")
-        return
-        # return
-    print_node_as_tree(node.right, indent + 1)
-    print(" " * indent + str(node.val))
-    print_node_as_tree(node.left, indent + 1)
+    def print_node_as_tree(self, node, indent=0):
+        if not node:
+            print(" " * indent + "x")
+            return
+            # return
+        self.print_node_as_tree(self.rights[node], indent + 1)
+        print(" " * indent + str(self.vals[node]))
+        self.print_node_as_tree(self.lefts[node], indent + 1)
 
 
 def main():
@@ -257,7 +271,7 @@ def main():
     >>> r.insert(2)
     >>> r
     [2]
-    >>> print_node_as_tree(r.root)
+    >>> r.print_node_as_tree(r.root)
      x
     2
      x
@@ -333,5 +347,5 @@ if __name__ == "__main__":
         for i in range(100000):
             r.insert(0)
         t = time.perf_counter() - t
-        print(t)  # 100000 => 3.55sec
+        print(t)  # 100000 => 2.84sec
         # with lprof 22.91sec
