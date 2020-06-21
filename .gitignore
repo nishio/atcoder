@@ -1,0 +1,15 @@
+*.py.lprof
+*.py.prof
+.vscode
+in*.txt
+out*.txt
+in
+out
+metadata.json
+error
+output
+expect
+input
+prof*
+tmp
+tmp.py
