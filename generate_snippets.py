@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+
+import os
 import json
 snippets = {}
 
@@ -50,7 +53,7 @@ push("stest", """
 """)
 
 push("dp", """
-dp("$1", $1)
+dp("$1: $2", $2)
 """)
 
 
@@ -111,5 +114,5 @@ else:
     print(main(A, B))
 """)
 
-
-json.dump(snippets, open(".vscode/snippet.code-snippets", "w"), indent=2)
+path = os.path.join(os.path.dirname(__file__), ".vscode/snippet.code-snippets")
+json.dump(snippets, open(path, "w"), indent=2)
