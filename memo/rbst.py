@@ -144,12 +144,6 @@ class RBST:
         self.lefts = np.zeros(MAX_NODE_ID, dtype=np.int)
         self.rights = np.zeros(MAX_NODE_ID, dtype=np.int)
 
-        # self.vals = [SUM_UNITY] * MAX_NODE_ID
-        # self.sizes = [1] * MAX_NODE_ID
-        # self.sums = [SUM_UNITY] * MAX_NODE_ID
-        # self.lefts = [0] * MAX_NODE_ID
-        # self.rights = [0] * MAX_NODE_ID
-
         self.sizes[0] = 0
         self.sums[0] = SUM_UNITY
         self.last_id = 0
@@ -347,7 +341,7 @@ if __name__ == "__main__":
         # b1: bool, i4: int32, i8: int64, double: f8, [:], [:, :]
         cc.compile()
         exit()
-    from numba_rbst import randInt
+    from numba_rbst import randInt, lower_bound
 
     _test()
     r = RBST()
@@ -356,5 +350,5 @@ if __name__ == "__main__":
         for i in range(100000):
             r.insert(0)
         t = time.perf_counter() - t
-        print(t)  # 100000 => 6.080607408sec
+        print(t)  # 100000 => 5.67sec
         # with lprof 22.91sec
