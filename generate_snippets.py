@@ -95,7 +95,8 @@ if __name__ == "__main__":
     elif sys.argv[1] == "-t":
         _test()
     else:
-        input = open(sys.argv[1]).buffer.readline
+        input_as_file = open(sys.argv[1])
+        input = input_as_file.buffer.readline
 """)
 
 push("numba", """
