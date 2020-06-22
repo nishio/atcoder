@@ -21,7 +21,7 @@ except:
 SUM_UNITY = 0
 
 
-@profile
+@numba.jit("i8(i8[:],i8[:],i8[:],i8[:],i8[:],i8)")
 def update(lefts, rights, vals, sizes, sums, node):
     sizes[node] = sizes[lefts[node]] + sizes[rights[node]] + 1
     sums[node] = sums[lefts[node]] + sums[rights[node]] + vals[node]
@@ -98,35 +98,41 @@ def merge(
         return update(lefts, rights, vals, sizes, sums, right)
 
 
-@profile
-def split(lefts, rights, vals, sizes, sums, node, k):
+def split(lefts, rights, vals, sizes, sums, ret, node, k):
     "split tree into [0, k) and [k, n)"
-    # dp("split: node, k", node, k)
-    push(node)
-    if not node:
-        RBST.ret_left = 0
-        RBST.ret_right = 0
-        return
-    if k <= sizes[lefts[node]]:
-        # dp("split left")
-        split(lefts, rights, vals, sizes, sums,
-              lefts[node], k)
-        lefts[node] = RBST.ret_right
-        RBST.ret_right = update(lefts, rights, vals, sizes, sums, node)
-        return
-    else:
-        # dp("split right")
-        split(lefts, rights, vals, sizes, sums,
-              rights[node], k - sizes[lefts[node]] - 1)
-        rights[node] = RBST.ret_left
-        RBST.ret_left = update(lefts, rights, vals, sizes, sums, node)
-        return
+    is_left = []
+    node_snapshot = []
+    while True:
+        # FIXME push(node)
+        if not node:
+            ret[0] = 0
+            ret[1] = 0
+            break
+        if k <= sizes[lefts[node]]:
+            is_left.append(True)
+            node_snapshot.append(node)
+            node = lefts[node]
+            continue
+        else:
+            is_left.append(False)
+            node_snapshot.append(node)
+            node = rights[node]
+            k -= sizes[lefts[node]] + 1
+            continue
+
+    for i in range(len(is_left) - 1, -1, -1):
+        x = is_left[i]
+        node = node_snapshot[i]
+        if x:
+            lefts[node] = ret[1]
+            ret[1] = update(lefts, rights, vals, sizes, sums, node)
+        else:
+            rights[node] = ret[0]
+            ret[0] = update(lefts, rights, vals, sizes, sums, node)
 
 
 class RBST:
     debug = False
-    ret_left = None
-    ret_right = None
 
     def __init__(self, node=0):
         self.root = 0
@@ -136,7 +142,7 @@ class RBST:
         self.sums = np.repeat(SUM_UNITY, MAX_NODE_ID)
         self.lefts = np.zeros(MAX_NODE_ID, dtype=np.int)
         self.rights = np.zeros(MAX_NODE_ID, dtype=np.int)
-
+        self.ret = np.zeros(2, dtype=np.int)
         self.sizes[0] = 0
         self.sums[0] = SUM_UNITY
         self.last_id = 0
@@ -173,25 +179,25 @@ class RBST:
 
     def split(self, k):
         split(
-            self.lefts, self.rights, self.vals, self.sizes, self.sums,
+            self.lefts, self.rights, self.vals, self.sizes, self.sums, self.ret,
 
             self.root, k)
-        self.root = RBST.ret_left
-        return RBST.ret_right
+        self.root = self.ret[0]
+        return self.ret[1]
 
     def insert(self, val):
         split(
-            self.lefts, self.rights, self.vals, self.sizes, self.sums,
+            self.lefts, self.rights, self.vals, self.sizes, self.sums, self.ret,
             self.root, self.lower_bound(val))
         r = merge(
             self.lefts, self.rights, self.vals, self.sizes, self.sums,
 
-            RBST.ret_left, self.new_node(val))
+            self.ret[0], self.new_node(val))
         # dp("merge(x1, Node(val)): ", r)
         r = merge(
             self.lefts, self.rights, self.vals, self.sizes, self.sums,
 
-            r, RBST.ret_right)
+            r, self.ret[1])
         # dp("merge(r, x2): ", r)
         self.root = r
 
@@ -199,14 +205,14 @@ class RBST:
         if self.count(val) == 0:
             return
         split(
-            self.lefts, self.rights, self.vals, self.sizes, self.sums,
+            self.lefts, self.rights, self.vals, self.sizes, self.sums, self.ret,
             self.root, self.lower_bound(val))
-        lhs = RBST.ret_left
+        lhs = self.ret[0]
         split(
-            self.lefts, self.rights, self.vals, self.sizes, self.sums,
+            self.lefts, self.rights, self.vals, self.sizes, self.sums, self.ret,
 
-            RBST.ret_right, 1)
-        rhs = RBST.ret_right
+            self.ret[1], 1)
+        rhs = self.ret[1]
         self.root = merge(
             self.lefts, self.rights, self.vals, self.sizes, self.sums,
 
@@ -337,12 +343,16 @@ if __name__ == "__main__":
             "update",
             "i8(i8[:],i8[:],i8[:],i8[:],i8[:],i8)")(
             update)
+        cc.export(
+            "split",
+            "void(i8[:],i8[:],i8[:],i8[:],i8[:],i8[:],i8,i8)")(
+            split)
         # b1: bool, i4: int32, i8: int64, double: f8, [:], [:, :]
         cc.compile()
         exit()
 
     if sys.argv[-1] != "-p":  # mean: pure python mode
-        from numba_rbst import randInt, lower_bound, update
+        from numba_rbst import randInt, lower_bound, update, split
 
     _test()
     r = RBST()
@@ -351,5 +361,5 @@ if __name__ == "__main__":
         for i in range(100000):
             r.insert(0)
         t = time.perf_counter() - t
-        print(f"{t:.2f}")  # 100000 => 4.15sec
+        print(f"{t:.2f}")  # 100000 => 2.73sec
         # with lprof 22.91sec
