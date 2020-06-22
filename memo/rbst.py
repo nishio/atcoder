@@ -35,24 +35,17 @@ def push(node):
     # add extra code here
 
 
-# @numba.jit("i8(i8[:],i8[:],i8[:],i8[:],i8,i8)")
 def lower_bound(lefts, rights, vals, sizes, node, val):
-    # dp("lowerbound: node, val", node, val)
-
-    # FIXME push(node)
-    if not node:
-        # dp("lowerbound result: 0")
-        return 0
-    if val <= vals[node]:
-        # dp("val <= vals[node]")
-        ret = lower_bound(lefts, rights, vals, sizes, lefts[node], val)
-        # dp("lowerbound result: ret", ret)
-        return ret
-    # dp("val > vals[node]")
-    ret = sizes[lefts[node]] + 1
-    ret += lower_bound(lefts, rights, vals, sizes,  rights[node], val)
-    # dp("lowerbound result: ret", ret)
-    return ret
+    ret = 0
+    while True:
+        # FIXME push(node)
+        if not node:
+            return ret
+        if val <= vals[node]:
+            node = lefts[node]
+        else:
+            ret += sizes[lefts[node]] + 1
+            node = rights[node]
 
 
 def upper_bound(lefts, rights, vals, sizes, sums, node, val):
@@ -341,7 +334,9 @@ if __name__ == "__main__":
         # b1: bool, i4: int32, i8: int64, double: f8, [:], [:, :]
         cc.compile()
         exit()
-    from numba_rbst import randInt, lower_bound
+
+    if sys.argv[-1] != "-p":  # mean: pure python mode
+        from numba_rbst import randInt, lower_bound
 
     _test()
     r = RBST()
@@ -350,5 +345,5 @@ if __name__ == "__main__":
         for i in range(100000):
             r.insert(0)
         t = time.perf_counter() - t
-        print(t)  # 100000 => 5.67sec
+        print(f"{t:.2f}")  # 100000 => 5.41sec
         # with lprof 22.91sec
