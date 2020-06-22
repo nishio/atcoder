@@ -169,6 +169,9 @@ class RBST:
         self.sums[0] = SUM_UNITY
         self.last_id = 0
 
+    def size(self):
+        return self.sizes[self.root]
+
     def new_node(self, val):
         self.last_id += 1
         self.vals[self.last_id] = val
@@ -189,8 +192,8 @@ class RBST:
         return self.upper_bound(val) - self.lower_bound(val)
 
     def get(self, k):
-        get(
-            self.lefts, self.rights, self.vals, self.sizes, self.sums,
+        return get(
+            self.lefts, self.rights, self.vals, self.sizes,
             self.root, k)
 
     def merge(self, add):
@@ -229,7 +232,6 @@ class RBST:
         lhs = self.ret[0]
         split(
             self.lefts, self.rights, self.vals, self.sizes, self.sums, self.ret,
-
             self.ret[1], 1)
         rhs = self.ret[1]
         self.root = merge(
@@ -327,6 +329,16 @@ def _test_count():
     ...     r.insert(1)
     >>> r.count(1)
     100
+    >>> r = RBST()
+    >>> for i in range(10):
+    ...     r.insert(i)
+    >>> r.print()
+    { 0 1 2 3 4 5 6 7 8 9 }
+    >>> r = RBST()
+    >>> for i in reversed(range(10)):
+    ...     r.insert(i)
+    >>> r.print()
+    { 0 1 2 3 4 5 6 7 8 9 }
     """
 
 
@@ -383,10 +395,32 @@ if __name__ == "__main__":
 
     _test()
     r = RBST()
-    if 1:
+    if "PERFORMANCE TEST":
+        from random import shuffle
+        xs = list(range(100000))
+        shuffle(xs)
         t = time.perf_counter()
-        for i in range(100000):
-            r.insert(0)
+        for x in xs:
+            r.insert(x)
         t = time.perf_counter() - t
-        print(f"{t:.2f}")  # 100000 => 0.91sec
+        print(f"insert {t:.2f}")  # 100000 => 0.91sec
+
+        # min
+        print(r.get(0))
+        print(r.get(100))
+
+        t = time.perf_counter()
+        for x in xs[::2]:
+            r.erase(x)
+        t = time.perf_counter() - t
+        print(f"erase {t:.2f}")  # 100000 => 2.32sec
+
+        def depth(node):
+            ret = 1
+            if r.lefts[node]:
+                ret = 1 + depth(r.lefts[node])
+            if r.rights[node]:
+                ret = max(ret, 1 + depth(r.rights[node]))
+            return ret
+        print(depth(r.root))
         # with lprof 22.91sec
