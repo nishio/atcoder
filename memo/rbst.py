@@ -29,6 +29,7 @@ def update(lefts, rights, vals, sizes, sums, node):
     return node
 
 
+@numba.jit("void(i8)")
 def push(node):
     if not node:
         return
@@ -74,28 +75,49 @@ def get(lefts, rights, vals, sizes, node, k):
                rights[node], k - sizes[lefts[node]] - 1)
 
 
-@profile
+random_state = np.array([123456789, 362436069, 521288629, 88675123])
+
+
 def merge(
         lefts, rights, vals, sizes, sums,
-        left, right, t=np.array([123456789, 362436069, 521288629, 88675123])):
-    # dp("merge: left,right", left, right)
-    push(left)
-    push(right)
-    if not left or not right:
-        if left:
-            return left
-        return right
-    # if randint(0, left.size + right.size) < left.size:
-    if randInt(t) % (sizes[left] + sizes[right]) < sizes[left]:
-        rights[left] = merge(
-            lefts, rights, vals, sizes, sums,
-            rights[left], right)
-        return update(lefts, rights, vals, sizes, sums, left)
-    else:
-        lefts[right] = merge(
-            lefts, rights, vals, sizes, sums,
-            left, lefts[right])
-        return update(lefts, rights, vals, sizes, sums, right)
+        left, right, t):
+    is_left = []
+    left_snapshot = []
+    right_snapshot = []
+    ret = 0
+    while True:
+        # FIXME
+        # push(left)
+        # push(right)
+
+        if not left or not right:
+            if left:
+                ret = left
+            else:
+                ret = right
+            break
+        if randInt(t) % (sizes[left] + sizes[right]) < sizes[left]:
+            is_left.append(True)
+            left_snapshot.append(left)
+            right_snapshot.append(right)
+            left = rights[left]
+        else:
+            is_left.append(False)
+            left_snapshot.append(left)
+            right_snapshot.append(right)
+            right = lefts[right]
+
+    for i in range(len(is_left) - 1, -1, -1):
+        x = is_left[i]
+        left = left_snapshot[i]
+        right = right_snapshot[i]
+        if x:
+            rights[left] = ret
+            ret = update(lefts, rights, vals, sizes, sums, left)
+        else:
+            lefts[right] = ret
+            ret = update(lefts, rights, vals, sizes, sums, right)
+    return ret
 
 
 def split(lefts, rights, vals, sizes, sums, ret, node, k):
@@ -174,8 +196,7 @@ class RBST:
     def merge(self, add):
         self.root = merge(
             self.lefts, self.rights, self.vals, self.sizes, self.sums,
-
-            self.root, add.root)
+            self.root, add.root, random_state)
 
     def split(self, k):
         split(
@@ -191,13 +212,11 @@ class RBST:
             self.root, self.lower_bound(val))
         r = merge(
             self.lefts, self.rights, self.vals, self.sizes, self.sums,
-
-            self.ret[0], self.new_node(val))
+            self.ret[0], self.new_node(val), random_state)
         # dp("merge(x1, Node(val)): ", r)
         r = merge(
             self.lefts, self.rights, self.vals, self.sizes, self.sums,
-
-            r, self.ret[1])
+            r, self.ret[1], random_state)
         # dp("merge(r, x2): ", r)
         self.root = r
 
@@ -215,8 +234,7 @@ class RBST:
         rhs = self.ret[1]
         self.root = merge(
             self.lefts, self.rights, self.vals, self.sizes, self.sums,
-
-            lhs, rhs)
+            lhs, rhs, random_state)
 
     def print(self):
         print("{ ", end="")
@@ -317,6 +335,7 @@ def _test():
     doctest.testmod()
 
 
+@numba.jit("i8(i8[:])")
 def randInt(t):
     tx, ty, tz, tw = t
     tt = tx ^ (tx << 11)
@@ -347,12 +366,20 @@ if __name__ == "__main__":
             "split",
             "void(i8[:],i8[:],i8[:],i8[:],i8[:],i8[:],i8,i8)")(
             split)
+        cc.export(
+            "merge",
+            "i8(i8[:],i8[:],i8[:],i8[:],i8[:],i8,i8,i8[:])")(
+            merge)
+        cc.export(
+            "push",
+            "void(i8)")(
+            push)
         # b1: bool, i4: int32, i8: int64, double: f8, [:], [:, :]
         cc.compile()
         exit()
 
     if sys.argv[-1] != "-p":  # mean: pure python mode
-        from numba_rbst import randInt, lower_bound, update, split
+        from numba_rbst import randInt, lower_bound, update, split, merge, push
 
     _test()
     r = RBST()
@@ -361,5 +388,5 @@ if __name__ == "__main__":
         for i in range(100000):
             r.insert(0)
         t = time.perf_counter() - t
-        print(f"{t:.2f}")  # 100000 => 2.73sec
+        print(f"{t:.2f}")  # 100000 => 0.91sec
         # with lprof 22.91sec
