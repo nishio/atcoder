@@ -5,6 +5,8 @@ from heapq import heappush, heappop
 import sys
 import bisect
 import numpy as np
+from bisect import bisect_left
+import numba
 
 sys.setrecursionlimit(10**6)
 input = sys.stdin.buffer.readline
@@ -23,16 +25,15 @@ except:
     def profile(f): return f
 
 
-@profile
-def main(vticks, hticks, vlens, vstarts, v_a, v_b, hlens, hstarts, h_a, h_b):
+def main(vticks, hticks, vlines, hlines):
     total_area = 0
     visited = set()
 
     maxH = len(hticks) - 2
     maxV = len(vticks) - 2
     # dp(": maxH, maxV", maxH, maxV)
-    i = bisect.bisect_left(hticks, 0)
-    j = bisect.bisect_left(vticks, 0)
+    i = bisect_left(hticks, 0)
+    j = bisect_left(vticks, 0)
     to_visit = [(i, j)]
 
     while to_visit:
@@ -43,7 +44,7 @@ def main(vticks, hticks, vlens, vstarts, v_a, v_b, hlens, hstarts, h_a, h_b):
             break
 
         if (i, j) in visited:
-            return
+            continue
 
         # dp("visit: (i,j)", (i, j))
         x = hticks[i]
@@ -55,8 +56,8 @@ def main(vticks, hticks, vlens, vstarts, v_a, v_b, hlens, hstarts, h_a, h_b):
         # visit neighbors
         l = i - 1
         if (l, j) not in visited:
-            for k in range(vstarts[i], vstarts[i] + vlens[i]):
-                if v_a[k] <= y < v_b[k]:
+            for a, b in vlines[x]:
+                if a <= y < b:
                     # blocked
                     break
             else:
@@ -65,8 +66,8 @@ def main(vticks, hticks, vlens, vstarts, v_a, v_b, hlens, hstarts, h_a, h_b):
 
         u = j - 1
         if (i, u) not in visited:
-            for k in range(hstarts[j], hstarts[j] + hlens[j]):
-                if h_a[k] <= x < h_b[k]:
+            for a, b in hlines[y]:
+                if a <= x < b:
                     # blocked
                     break
             else:
@@ -75,8 +76,8 @@ def main(vticks, hticks, vlens, vstarts, v_a, v_b, hlens, hstarts, h_a, h_b):
 
         r = i + 1
         if (r, j) not in visited:
-            for k in range(vstarts[r], vstarts[r] + vlens[r]):
-                if v_a[k] <= y < v_b[k]:
+            for a, b in vlines[hticks[r]]:
+                if a <= y < b:
                     # blocked
                     break
             else:
@@ -85,8 +86,8 @@ def main(vticks, hticks, vlens, vstarts, v_a, v_b, hlens, hstarts, h_a, h_b):
 
         d = j + 1
         if (i, d) not in visited:
-            for k in range(hstarts[d], hstarts[d] + hlens[d]):
-                if h_a[k] <= x < h_b[k]:
+            for a, b in hlines[vticks[d]]:
+                if a <= x < b:
                     # blocked
                     break
             else:
@@ -98,23 +99,33 @@ def main(vticks, hticks, vlens, vstarts, v_a, v_b, hlens, hstarts, h_a, h_b):
         print(total_area)
 
 
-if sys.argv[-1] == 'ONLINE_JUDGE':
+if sys.argv[-1] == 'ONLINE_JUDGE' or sys.argv[-1] == '-c':
     print("compiling")
     from numba.pycc import CC
     cc = CC('my_module')
     cc.export(
-        'main', 'void(i8[:],i8[:],i8[:],i8[:],i8[:],i8[:],i8[:],i8[:],i8[:],i8[:])')(main)
+        'bisect_left',
+        "i8(i8[:])")(bisect_left)
+    cc.export(
+        'main',
+        "void(i8[:], i8[:], "
+        "DictType(int64,ListType(UniTuple(int64,2))),"
+        "DictType(int64,ListType(UniTuple(int64,2))))")(main)
     # b1: bool, i4: int32, i8: int64, double: f8, [:], [:, :]
     cc.compile()
     exit()
 else:
+    if sys.argv[-1] != '-p':
+        # -p: pure python mode
+        # if not -p, import compiled module
+        from my_module import main
+
     # read parameter
-    # A, B = map(int, input().split())
-    # from my_module import main
+    import numba
     N, M = map(int, input().split())
 
-    vlines = defaultdict(list)
-    hlines = defaultdict(list)
+    vlines = defaultdict(lambda: [(0, 0)])
+    hlines = defaultdict(lambda: [(0, 0)])
     vticks = {0}
     hticks = {0}
 
@@ -133,22 +144,17 @@ else:
     vticks = [-INF] + list(sorted(vticks)) + [INF]
     hticks = [-INF] + list(sorted(hticks)) + [INF]
 
-    def to_array(lines, ticks):
-        lens = [len(lines[i]) for i in sorted(ticks)]
-        import itertools
-        starts = itertools.accumulate([0] + lens)
-        value_a = []
-        value_b = []
-        for k in sorted(lines):
-            for A, B in lines[k]:
-                value_a.append(A)
-                value_b.append(B)
-        return map(np.array, (
-            [0] + lens,
-            [0] + list(starts),
-            value_a,
-            value_b
-        ))
+    d = numba.typed.Dict()
+    for k in hticks:
+        d[k] = numba.typed.List(vlines[k])
+    vlines = d
 
-    main(np.array(vticks), np.array(hticks),
-         *to_array(vlines, vticks), *to_array(hlines, hticks))
+    d = numba.typed.Dict()
+    for k in vticks:
+        d[k] = numba.typed.List(hlines[k])
+    hlines = d
+
+    main(
+        np.array(vticks), np.array(hticks),
+        vlines, hlines
+    )
