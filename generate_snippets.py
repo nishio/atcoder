@@ -99,6 +99,7 @@ if __name__ == "__main__":
 """)
 
 push("numba", """
+import syss
 if sys.argv[-1] == 'ONLINE_JUDGE' or sys.argv[-1] == '-c':
     print("compiling")
     from numba.pycc import CC
