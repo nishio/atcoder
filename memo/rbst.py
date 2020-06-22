@@ -5,6 +5,7 @@
 
 import numpy as np
 import time
+import numba
 
 
 def dp(*x):  # debugprint
@@ -34,17 +35,17 @@ def push(node):
     # add extra code here
 
 
-@profile
+# @numba.jit("i8(i8[:],i8[:],i8[:],i8[:],i8,i8)")
 def lower_bound(lefts, rights, vals, sizes, node, val):
     # dp("lowerbound: node, val", node, val)
 
-    push(node)
+    # FIXME push(node)
     if not node:
         # dp("lowerbound result: 0")
         return 0
     if val <= vals[node]:
         # dp("val <= vals[node]")
-        ret = lower_bound(lefts, rights, vals, sizes,  lefts[node], val)
+        ret = lower_bound(lefts, rights, vals, sizes, lefts[node], val)
         # dp("lowerbound result: ret", ret)
         return ret
     # dp("val > vals[node]")
@@ -134,14 +135,21 @@ class RBST:
     ret_left = None
     ret_right = None
 
-    def __init__(self, node=None):
-        self.root = node
+    def __init__(self, node=0):
+        self.root = 0
         MAX_NODE_ID = 400_000
-        self.vals = [SUM_UNITY] * MAX_NODE_ID
-        self.sizes = [1] * MAX_NODE_ID
-        self.sums = [SUM_UNITY] * MAX_NODE_ID
-        self.lefts = [0] * MAX_NODE_ID
-        self.rights = [0] * MAX_NODE_ID
+        self.vals = np.repeat(SUM_UNITY, MAX_NODE_ID)
+        self.sizes = np.ones(MAX_NODE_ID, dtype=np.int)
+        self.sums = np.repeat(SUM_UNITY, MAX_NODE_ID)
+        self.lefts = np.zeros(MAX_NODE_ID, dtype=np.int)
+        self.rights = np.zeros(MAX_NODE_ID, dtype=np.int)
+
+        # self.vals = [SUM_UNITY] * MAX_NODE_ID
+        # self.sizes = [1] * MAX_NODE_ID
+        # self.sums = [SUM_UNITY] * MAX_NODE_ID
+        # self.lefts = [0] * MAX_NODE_ID
+        # self.rights = [0] * MAX_NODE_ID
+
         self.sizes[0] = 0
         self.sums[0] = SUM_UNITY
         self.last_id = 0
@@ -187,7 +195,6 @@ class RBST:
     def insert(self, val):
         split(
             self.lefts, self.rights, self.vals, self.sizes, self.sums,
-
             self.root, self.lower_bound(val))
         r = merge(
             self.lefts, self.rights, self.vals, self.sizes, self.sums,
@@ -335,6 +342,8 @@ if __name__ == "__main__":
         from numba.pycc import CC
         cc = CC('numba_rbst')
         cc.export('randInt', 'i8(i8[:])')(randInt)
+        cc.export("lower_bound", "i8(i8[:],i8[:],i8[:],i8[:],i8,i8)")(
+            lower_bound)
         # b1: bool, i4: int32, i8: int64, double: f8, [:], [:, :]
         cc.compile()
         exit()
@@ -347,5 +356,5 @@ if __name__ == "__main__":
         for i in range(100000):
             r.insert(0)
         t = time.perf_counter() - t
-        print(t)  # 100000 => 2.84sec
+        print(t)  # 100000 => 6.080607408sec
         # with lprof 22.91sec
