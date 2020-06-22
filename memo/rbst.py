@@ -329,14 +329,20 @@ if __name__ == "__main__":
         from numba.pycc import CC
         cc = CC('numba_rbst')
         cc.export('randInt', 'i8(i8[:])')(randInt)
-        cc.export("lower_bound", "i8(i8[:],i8[:],i8[:],i8[:],i8,i8)")(
+        cc.export(
+            "lower_bound",
+            "i8(i8[:],i8[:],i8[:],i8[:],i8,i8)")(
             lower_bound)
+        cc.export(
+            "update",
+            "i8(i8[:],i8[:],i8[:],i8[:],i8[:],i8)")(
+            update)
         # b1: bool, i4: int32, i8: int64, double: f8, [:], [:, :]
         cc.compile()
         exit()
 
     if sys.argv[-1] != "-p":  # mean: pure python mode
-        from numba_rbst import randInt, lower_bound
+        from numba_rbst import randInt, lower_bound, update
 
     _test()
     r = RBST()
@@ -345,5 +351,5 @@ if __name__ == "__main__":
         for i in range(100000):
             r.insert(0)
         t = time.perf_counter() - t
-        print(f"{t:.2f}")  # 100000 => 5.41sec
+        print(f"{t:.2f}")  # 100000 => 4.15sec
         # with lprof 22.91sec
