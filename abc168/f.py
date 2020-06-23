@@ -3,9 +3,7 @@
 from collections import defaultdict
 from heapq import heappush, heappop
 import sys
-import bisect
 import numpy as np
-from bisect import bisect_left
 import numba
 
 sys.setrecursionlimit(10**6)
@@ -23,6 +21,27 @@ try:
     profile
 except:
     def profile(f): return f
+
+
+@numba.jit
+def bisect_left(a, x):
+    """Return the index where to insert item x in list a, assuming a is sorted.
+    The return value i is such that all e in a[:i] have e <= x, and all e in
+    a[i:] have e > x.  So if x already appears in the list, a.insert(x) will
+    insert just after the rightmost x already there.
+    Optional args lo (default 0) and hi (default len(a)) bound the
+    slice of a to be searched.
+    """
+    lo = 0
+    hi = len(a)
+    while lo < hi:
+        mid = (lo+hi)//2
+        # Use __lt__ to match the logic in list.sort() and in heapq
+        if x < a[mid]:
+            hi = mid
+        else:
+            lo = mid+1
+    return lo
 
 
 def main(vticks, hticks, vlines, hlines):
@@ -104,9 +123,6 @@ if sys.argv[-1] == 'ONLINE_JUDGE' or sys.argv[-1] == '-c':
     from numba.pycc import CC
     cc = CC('my_module')
     cc.export(
-        'bisect_left',
-        "i8(i8[:])")(bisect_left)
-    cc.export(
         'main',
         "void(i8[:], i8[:], "
         "DictType(int64,ListType(UniTuple(int64,2))),"
@@ -141,17 +157,19 @@ else:
         vticks.add(D)
         hticks.update((E, F))
 
-    vticks = [-INF] + list(sorted(vticks)) + [INF]
-    hticks = [-INF] + list(sorted(hticks)) + [INF]
+    vticks = [-INF] + list(sorted(vticks)) + [INF, INF]
+    hticks = [-INF] + list(sorted(hticks)) + [INF, INF]
 
     d = numba.typed.Dict()
     for k in hticks:
-        d[k] = numba.typed.List(vlines[k])
+        d[k] = numba.typed.List()
+        d[k].extends(vlines[k])
     vlines = d
 
     d = numba.typed.Dict()
     for k in vticks:
-        d[k] = numba.typed.List(hlines[k])
+        d[k] = numba.typed.List()
+        d[k].extends(hlines[k])
     hlines = d
 
     main(
