@@ -115,3 +115,23 @@ test: handmade07 AC 1.787
 test: handmade09 AC 60.144
 test: random10 AC 60.644
 AC: 11, max_time: 60.64
+
+# remove recursion of lower_bound()
+
+test: handmade05 AC 1.603
+test: handmade02 AC 0.117
+test: handmade03 AC 0.121
+test: handmade04 AC 0.127
+test: sample01 AC 0.116
+test: sample00 AC 0.113
+test: handmade08 AC 54.097
+test: handmade06 AC 1.781
+test: handmade07 AC 1.844
+test: handmade09 AC 54.874
+test: random10 AC 57.978
+AC: 11, max_time: 57.98
+
+# remove recursion of upper_bound()
+
+test: random10 AC 59.782
+AC: 1, max_time: 59.78

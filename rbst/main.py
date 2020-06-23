@@ -13,13 +13,13 @@ import numpy as np
 def main():
     SUM_UNITY = 0
 
-    def randInt(t):
-        tx, ty, tz, tw = t
+    def randInt():
+        tx, ty, tz, tw = random_state
         tt = tx ^ (tx << 11)
-        t[0] = ty
-        t[1] = tz
-        t[2] = tw
-        t[3] = tw = (tw ^ (tw >> 19)) ^ (tt ^ (tt >> 8))
+        random_state[0] = ty
+        random_state[1] = tz
+        random_state[2] = tw
+        random_state[3] = tw = (tw ^ (tw >> 19)) ^ (tt ^ (tt >> 8))
         return tw
 
     "Node: val, size, sum, left, right"
@@ -57,29 +57,28 @@ def main():
         # add extra code here
 
     def lower_bound(node, val):
-        # dp("lowerbound: node, val", node, val)
-
-        push(node)
-        if not node:
-            # dp("lowerbound result: 0")
-            return 0
-        if val <= values[node]:
-            # dp("val <= values[node]")
-            ret = lower_bound(lefts[node], val)
-            # dp("lowerbound result: ret", ret)
-            return ret
-        # dp("val > values[node]")
-        ret = sizes[lefts[node]] + lower_bound(rights[node], val) + 1
-        # dp("lowerbound result: ret", ret)
-        return ret
+        ret = 0
+        while True:
+            push(node)
+            if not node:
+                return ret
+            if val <= values[node]:
+                node = lefts[node]
+            else:
+                ret += sizes[lefts[node]] + 1
+                node = rights[node]
 
     def upper_bound(node, val):
-        push(node)
-        if not node:
-            return 0
-        if val >= values[node]:
-            return sizes[lefts[node]] + upper_bound(rights[node], val) + 1
-        return upper_bound(lefts[node], val)
+        ret = 0
+        while True:
+            push(node)
+            if not node:
+                return ret
+            if val >= values[node]:
+                ret += sizes[lefts[node]] + 1
+                node = rights[node]
+            else:
+                node = lefts[node]
 
     # not used
     # def get(node, k):
@@ -93,7 +92,7 @@ def main():
     #         return get(lefts[node], k)
     #     return get(rights[node], k - sizes[lefts[node]] - 1)
 
-    def merge(left, right, t=np.array([123456789, 362436069, 521288629, 88675123])):
+    def merge(left, right):
         # dp("merge: left,right", left, right)
         push(left)
         push(right)
@@ -101,12 +100,14 @@ def main():
             if left:
                 return left
             return right
-        if randInt(t) % (sizes[left] + sizes[right]) < sizes[left]:
+        if randInt() % (sizes[left] + sizes[right]) < sizes[left]:
             rights[left] = merge(rights[left], right)
             return update(left)
         else:
             lefts[right] = merge(left, lefts[right])
             return update(right)
+
+    random_state = np.array([123456789, 362436069, 521288629, 88675123])
 
     def split(node, k):
         nonlocal ret_left, ret_right
@@ -130,7 +131,7 @@ def main():
             ret_left = update(node)
             return
 
-    def count(root, val):
+    def count(val):
         return upper_bound(root, val) - lower_bound(root, val)
 
     def insert(val):
@@ -144,7 +145,7 @@ def main():
 
     def erase(val):
         nonlocal root, ret_left, ret_right
-        if count(root, val) == 0:
+        if count(val) == 0:
             return  # erasing absent item
         split(root, lower_bound(root, val))
         lhs = ret_left
