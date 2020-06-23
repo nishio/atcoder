@@ -70,3 +70,18 @@ test: handmade07 AC 1.870
 test: handmade09 AC 83.146
 test: random10 AC 100.851
 AC: 11, max_time: 100.85
+
+# remove useless codes
+
+test: handmade05 AC 1.902
+test: handmade02 AC 0.148
+test: handmade03 AC 0.140
+test: handmade04 AC 0.142
+test: sample01 AC 0.124
+test: sample00 AC 0.128
+test: handmade08 AC 67.551
+test: handmade06 AC 1.768
+test: handmade07 AC 1.757
+test: handmade09 AC 68.957
+test: random10 AC 72.870
+AC: 11, max_time: 72.87

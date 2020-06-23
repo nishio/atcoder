@@ -38,11 +38,12 @@ def main():
         rights.append(0)
         return id
 
-    def repr(node):
-        left = repr(lefts[node]) if lefts[node] else "x"
-        right = repr(rights[node]) if rights[node] else "x"
-        v = repr(values[self])
-        return f"[{left} _{v}_ {right}]"
+    # not called
+    # def repr(node):
+    #     left = repr(lefts[node]) if lefts[node] else "x"
+    #     right = repr(rights[node]) if rights[node] else "x"
+    #     v = repr(values[self])
+    #     return f"[{left} _{v}_ {right}]"
 
     def size(node):
         if not node:
@@ -91,16 +92,17 @@ def main():
             return size(lefts[node]) + upper_bound(rights[node], val) + 1
         return upper_bound(lefts[node], val)
 
-    def get(node, k):
-        "k: 0-origin"
-        push(node)
-        if not node:
-            return -1
-        if k == size(lefts[node]):
-            return values[node]
-        if k < size(lefts[node]):
-            return get(lefts[node], k)
-        return get(rights[node], k - size(lefts[node]) - 1)
+    # not used
+    # def get(node, k):
+    #     "k: 0-origin"
+    #     push(node)
+    #     if not node:
+    #         return -1
+    #     if k == size(lefts[node]):
+    #         return values[node]
+    #     if k < size(lefts[node]):
+    #         return get(lefts[node], k)
+    #     return get(rights[node], k - size(lefts[node]) - 1)
 
     def merge(left, right, t=np.array([123456789, 362436069, 521288629, 88675123])):
         # dp("merge: left,right", left, right)
@@ -138,64 +140,59 @@ def main():
             RBST.ret_left = update(node)
             return
 
+    root = 0
+
     class RBST:
         debug = False
         ret_left = None
         ret_right = None
 
-        def __init__(self, node=None):
-            self.root = node
+        # def size(self):
+        #     return size(self.root)
 
-        def size(self):
-            return size(self.root)
-
-        def sum(self):
-            return rbst_sum(self.root)
-
-        def lower_bound(self, val):
-            return lower_bound(self.root, val)
-
-        def upper_bound(self, val):
-            return upper_bound(self.root, val)
+        # def sum(self):
+        #     return rbst_sum(self.root)
 
         def count(self, val):
-            return self.upper_bound(val) - self.lower_bound(val)
+            return upper_bound(root, val) - lower_bound(root, val)
 
-        def get(self, k):
-            get(self.root, k)
+        # def get(self, k):
+        #     get(self.root, k)
 
-        def merge(self, add):
-            self.root = merge(self.root, add.root)
+        # def merge(self, add):
+        #     self.root = merge(self.root, add.root)
 
-        def split(self, k):
-            split(self.root, k)
-            self.root = RBST.ret_left
-            return RBST.ret_right
+        # def split(self, k):
+        #     split(self.root, k)
+        #     self.root = RBST.ret_left
+        #     return RBST.ret_right
 
         def insert(self, val):
-            split(self.root, self.lower_bound(val))
+            nonlocal root
+            split(root, lower_bound(root, val))
             r = merge(RBST.ret_left, create_node(val))
             # dp("merge(x1, Node(val)): ", r)
             r = merge(r, RBST.ret_right)
             # dp("merge(r, x2): ", r)
-            self.root = r
+            root = r
 
         def erase(self, val):
+            nonlocal root
             if self.count(val) == 0:
-                return
-            split(self.root, self.lower_bound(val))
+                return  # erasing absent item
+            split(root, lower_bound(root, val))
             lhs = RBST.ret_left
             split(RBST.ret_right, 1)
             rhs = RBST.ret_right
-            self.root = merge(lhs, rhs)
+            root = merge(lhs, rhs)
 
-        def print(self):
-            print("{ ", end="")
-            print_node(self.root)
-            print("}")
+        # def print(self):
+        #     print("{ ", end="")
+        #     print_node(self.root)
+        #     print("}")
 
-        def __repr__(self):
-            return repr(node_as_list(self.root))
+        # def __repr__(self):
+        #     return repr(node_as_list(self.root))
     # -- end RBST
 
     N, Q = [int(x) for x in input().split()]
@@ -271,15 +268,13 @@ def main():
                 pass
             heappush(k_to_ps[dst], (-rateC, C))
 
-        cur = rbst.root
+        cur = root
         while cur:
             minvalue = values[cur]
             cur = lefts[cur]
         answers[t] = minvalue
     print(*answers, sep="\n")
 
-
-def _test():
     import doctest
     doctest.testmod()
 
