@@ -135,3 +135,20 @@ AC: 11, max_time: 57.98
 
 test: random10 AC 59.782
 AC: 1, max_time: 59.78
+
+# remove recursion of merge
+
+test: handmade05 AC 1.691
+test: handmade02 AC 0.122
+test: handmade03 AC 0.131
+test: handmade04 AC 0.132
+test: sample01 AC 0.117
+test: sample00 AC 0.115
+test: handmade08 AC 56.759
+test: handmade06 AC 1.760
+test: handmade07 AC 1.790
+test: handmade09 AC 57.574
+test: random10 AC 64.418
+AC: 11, max_time: 64.42
+
+new version of split has a bug

@@ -13,6 +13,8 @@ import numpy as np
 def main():
     SUM_UNITY = 0
 
+    random_state = np.array([123456789, 362436069, 521288629, 88675123])
+
     def randInt():
         tx, ty, tz, tw = random_state
         tt = tx ^ (tx << 11)
@@ -92,8 +94,6 @@ def main():
     #         return get(lefts[node], k)
     #     return get(rights[node], k - sizes[lefts[node]] - 1)
 
-    random_state = np.array([123456789, 362436069, 521288629, 88675123])
-
     def merge(left, right):
         is_left = []
         left_snapshot = []
@@ -133,6 +133,39 @@ def main():
         return ret
 
     def split(node, k):
+        "split tree into [0, k) and [k, n)"
+        nonlocal ret_left, ret_right
+        is_left = []
+        node_snapshot = []
+        while True:
+            push(node)
+            if not node:
+                ret_left = 0
+                ret_right = 0
+                break
+            if k <= sizes[lefts[node]]:
+                is_left.append(True)
+                node_snapshot.append(node)
+                node = lefts[node]
+                continue
+            else:
+                is_left.append(False)
+                node_snapshot.append(node)
+                node = rights[node]
+                k -= sizes[lefts[node]] + 1
+                continue
+
+        for i in range(len(is_left) - 1, -1, -1):
+            x = is_left[i]
+            node = node_snapshot[i]
+            if x:
+                lefts[node] = ret_right
+                ret_right = update(node)
+            else:
+                rights[node] = ret_left
+                ret_left = update(node)
+
+    def _split(node, k):
         nonlocal ret_left, ret_right
         "split tree into [0, k) and [k, n)"
         # dp("split: node, k", node, k)
