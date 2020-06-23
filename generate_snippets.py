@@ -98,7 +98,7 @@ else:
     if USE_NUMBA and sys.argv[-1] != '-p':
         # -p: pure python mode
         # if not -p, import compiled module
-        from my_module import main
+        from my_module import main  # pylint: disable=all
     elif sys.argv[-1] == "-t":
         _test()
         exit()
@@ -109,7 +109,6 @@ else:
 
     # read parameter
     A, B = map(int, input().split())
-    from my_module import main
     main(A, B)
 """)
 
