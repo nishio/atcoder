@@ -275,6 +275,16 @@ def main():
       x
      1
       x
+    >>> r = RBST()
+    >>> for i in range(10):
+    ...     r.insert(i)
+    >>> r.print()
+    { 0 1 2 3 4 5 6 7 8 9 }
+    >>> r = RBST()
+    >>> for i in reversed(range(10)):
+    ...     r.insert(i)
+    >>> r.print()
+    { 0 1 2 3 4 5 6 7 8 9 }
     """
 
 
