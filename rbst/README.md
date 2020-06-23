@@ -85,3 +85,18 @@ test: handmade07 AC 1.757
 test: handmade09 AC 68.957
 test: random10 AC 72.870
 AC: 11, max_time: 72.87
+
+# remove RBST class
+
+test: handmade05 AC 1.652
+test: handmade02 AC 0.131
+test: handmade03 AC 0.133
+test: handmade04 AC 0.136
+test: sample01 AC 0.122
+test: sample00 AC 0.121
+test: handmade08 AC 65.204
+test: handmade06 AC 1.848
+test: handmade07 AC 1.823
+test: handmade09 AC 63.355
+test: random10 AC 67.006
+AC: 11, max_time: 67.01

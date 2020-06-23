@@ -120,79 +120,81 @@ def main():
             return update(right)
 
     def split(node, k):
+        nonlocal ret_left, ret_right
         "split tree into [0, k) and [k, n)"
         # dp("split: node, k", node, k)
         push(node)
         if not node:
-            RBST.ret_left = None
-            RBST.ret_right = None
+            ret_left = None
+            ret_right = None
             return
         if k <= size(lefts[node]):
             # dp("split left")
             split(lefts[node], k)
-            lefts[node] = RBST.ret_right
-            RBST.ret_right = update(node)
+            lefts[node] = ret_right
+            ret_right = update(node)
             return
         else:
             # dp("split right")
             split(rights[node], k - size(lefts[node]) - 1)
-            rights[node] = RBST.ret_left
-            RBST.ret_left = update(node)
+            rights[node] = ret_left
+            ret_left = update(node)
             return
 
     root = 0
 
-    class RBST:
-        debug = False
-        ret_left = None
-        ret_right = None
+    def count(root, val):
+        return upper_bound(root, val) - lower_bound(root, val)
 
-        # def size(self):
-        #     return size(self.root)
+    def insert(val):
+        nonlocal root, ret_left, ret_right
+        split(root, lower_bound(root, val))
+        r = merge(ret_left, create_node(val))
+        # dp("merge(x1, Node(val)): ", r)
+        r = merge(r, ret_right)
+        # dp("merge(r, x2): ", r)
+        root = r
 
-        # def sum(self):
-        #     return rbst_sum(self.root)
+    def erase(val):
+        nonlocal root, ret_left, ret_right
+        if count(root, val) == 0:
+            return  # erasing absent item
+        split(root, lower_bound(root, val))
+        lhs = ret_left
+        split(ret_right, 1)
+        rhs = ret_right
+        root = merge(lhs, rhs)
 
-        def count(self, val):
-            return upper_bound(root, val) - lower_bound(root, val)
+    ret_left = None
+    ret_right = None
 
-        # def get(self, k):
-        #     get(self.root, k)
+    # class RBST:
+    #     debug = False
 
-        # def merge(self, add):
-        #     self.root = merge(self.root, add.root)
+    # def size(self):
+    #     return size(self.root)
 
-        # def split(self, k):
-        #     split(self.root, k)
-        #     self.root = RBST.ret_left
-        #     return RBST.ret_right
+    # def sum(self):
+    #     return rbst_sum(self.root)
 
-        def insert(self, val):
-            nonlocal root
-            split(root, lower_bound(root, val))
-            r = merge(RBST.ret_left, create_node(val))
-            # dp("merge(x1, Node(val)): ", r)
-            r = merge(r, RBST.ret_right)
-            # dp("merge(r, x2): ", r)
-            root = r
+    # def get(self, k):
+    #     get(self.root, k)
 
-        def erase(self, val):
-            nonlocal root
-            if self.count(val) == 0:
-                return  # erasing absent item
-            split(root, lower_bound(root, val))
-            lhs = RBST.ret_left
-            split(RBST.ret_right, 1)
-            rhs = RBST.ret_right
-            root = merge(lhs, rhs)
+    # def merge(self, add):
+    #     self.root = merge(self.root, add.root)
 
-        # def print(self):
-        #     print("{ ", end="")
-        #     print_node(self.root)
-        #     print("}")
+    # def split(self, k):
+    #     split(self.root, k)
+    #     self.root = RBST.ret_left
+    #     return RBST.ret_right
 
-        # def __repr__(self):
-        #     return repr(node_as_list(self.root))
+    # def print(self):
+    #     print("{ ", end="")
+    #     print_node(self.root)
+    #     print("}")
+
+    # def __repr__(self):
+    #     return repr(node_as_list(self.root))
     # -- end RBST
 
     N, Q = [int(x) for x in input().split()]
@@ -211,10 +213,9 @@ def main():
         heappush(k_to_ps[B], (-A, I))
 
     # RBST
-    rbst = RBST()
     for k in k_to_ps:
         neg_rate, max_p = k_to_ps[k][0]
-        rbst.insert(-neg_rate)
+        insert(-neg_rate)
 
     answers = [0] * Q
     for t in range(Q):
@@ -229,7 +230,7 @@ def main():
         neg_rate, max_p = k_to_ps[src][0]
         if max_p == C:
             # print("max person leaving")
-            rbst.erase(-neg_rate)
+            erase(-neg_rate)
 
             heappop(k_to_ps[src])
             if not k_to_ps[src]:
@@ -245,7 +246,7 @@ def main():
                     if p_to_k[max_p] != src:
                         heappop(k_to_ps[src])
                         continue
-                    rbst.insert(-neg_rate)
+                    insert(-neg_rate)
                     break
         else:
             # not max person leaving, no update on max_ps
@@ -255,14 +256,14 @@ def main():
         if not k_to_ps[dst]:
             # destination is empty
             heappush(k_to_ps[dst], (-rateC, C))
-            rbst.insert(rateC)
+            insert(rateC)
         else:
             # compare to existing max person
             neg_rate, max_p = k_to_ps[dst][0]
             if -neg_rate < rateC:
                 # max person changed
-                rbst.erase(-neg_rate)
-                rbst.insert(rateC)
+                erase(-neg_rate)
+                insert(rateC)
             else:
                 # no update on max_ps
                 pass
