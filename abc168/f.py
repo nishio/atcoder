@@ -134,7 +134,7 @@ else:
     if sys.argv[-1] != '-p':
         # -p: pure python mode
         # if not -p, import compiled module
-        from my_module import main
+        from my_module import main  # pylint: disable=all
 
     # read parameter
     import numba
