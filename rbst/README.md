@@ -100,3 +100,18 @@ test: handmade07 AC 1.823
 test: handmade09 AC 63.355
 test: random10 AC 67.006
 AC: 11, max_time: 67.01
+
+# remove size() / rbst_sum()
+
+test: handmade05 AC 1.604
+test: handmade02 AC 0.123
+test: handmade03 AC 0.123
+test: handmade04 AC 0.149
+test: sample01 AC 0.115
+test: sample00 AC 0.117
+test: handmade08 AC 59.654
+test: handmade06 AC 1.827
+test: handmade07 AC 1.787
+test: handmade09 AC 60.144
+test: random10 AC 60.644
+AC: 11, max_time: 60.64

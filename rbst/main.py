@@ -23,9 +23,9 @@ def main():
         return tw
 
     "Node: val, size, sum, left, right"
-    values = [0]
-    sizes = [0]
-    sums = [0]
+    values = [SUM_UNITY]
+    sizes = [0]  # sizes[0] should 0
+    sums = [SUM_UNITY]
     lefts = [0]
     rights = [0]
 
@@ -45,20 +45,9 @@ def main():
     #     v = repr(values[self])
     #     return f"[{left} _{v}_ {right}]"
 
-    def size(node):
-        if not node:
-            return 0
-        return sizes[node]
-
-    def rbst_sum(node):
-        if not node:
-            return SUM_UNITY
-        return sums[node]
-
     def update(node):
-        sizes[node] = size(lefts[node]) + size(rights[node]) + 1
-        sums[node] = rbst_sum(lefts[node]) + \
-            rbst_sum(rights[node]) + values[node]
+        sizes[node] = sizes[lefts[node]] + sizes[rights[node]] + 1
+        sums[node] = sums[lefts[node]] + sums[rights[node]] + values[node]
         # add extra code here
         return node
 
@@ -80,7 +69,7 @@ def main():
             # dp("lowerbound result: ret", ret)
             return ret
         # dp("val > values[node]")
-        ret = size(lefts[node]) + lower_bound(rights[node], val) + 1
+        ret = sizes[lefts[node]] + lower_bound(rights[node], val) + 1
         # dp("lowerbound result: ret", ret)
         return ret
 
@@ -89,7 +78,7 @@ def main():
         if not node:
             return 0
         if val >= values[node]:
-            return size(lefts[node]) + upper_bound(rights[node], val) + 1
+            return sizes[lefts[node]] + upper_bound(rights[node], val) + 1
         return upper_bound(lefts[node], val)
 
     # not used
@@ -98,11 +87,11 @@ def main():
     #     push(node)
     #     if not node:
     #         return -1
-    #     if k == size(lefts[node]):
+    #     if k == sizes[lefts[node]]:
     #         return values[node]
-    #     if k < size(lefts[node]):
+    #     if k < sizes[lefts[node]]:
     #         return get(lefts[node], k)
-    #     return get(rights[node], k - size(lefts[node]) - 1)
+    #     return get(rights[node], k - sizes[lefts[node]] - 1)
 
     def merge(left, right, t=np.array([123456789, 362436069, 521288629, 88675123])):
         # dp("merge: left,right", left, right)
@@ -125,10 +114,10 @@ def main():
         # dp("split: node, k", node, k)
         push(node)
         if not node:
-            ret_left = None
-            ret_right = None
+            ret_left = 0
+            ret_right = 0
             return
-        if k <= size(lefts[node]):
+        if k <= sizes[lefts[node]]:
             # dp("split left")
             split(lefts[node], k)
             lefts[node] = ret_right
@@ -136,12 +125,10 @@ def main():
             return
         else:
             # dp("split right")
-            split(rights[node], k - size(lefts[node]) - 1)
+            split(rights[node], k - sizes[lefts[node]] - 1)
             rights[node] = ret_left
             ret_left = update(node)
             return
-
-    root = 0
 
     def count(root, val):
         return upper_bound(root, val) - lower_bound(root, val)
@@ -165,17 +152,13 @@ def main():
         rhs = ret_right
         root = merge(lhs, rhs)
 
-    ret_left = None
-    ret_right = None
+    # classs RBST:
+    ret_left = 0
+    ret_right = 0
+    root = 0
 
     # class RBST:
     #     debug = False
-
-    # def size(self):
-    #     return size(self.root)
-
-    # def sum(self):
-    #     return rbst_sum(self.root)
 
     # def get(self, k):
     #     get(self.root, k)
@@ -274,10 +257,7 @@ def main():
             minvalue = values[cur]
             cur = lefts[cur]
         answers[t] = minvalue
-    print(*answers, sep="\n")
-
-    import doctest
-    doctest.testmod()
+    return answers
 
 
 USE_NUMBA = False
@@ -303,4 +283,4 @@ else:
         input = input_as_file.buffer.readline
 
     # read parameter
-    main()
+    print(*main(), sep="\n")
