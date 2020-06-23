@@ -86,7 +86,7 @@ def _test():
 
 import sys
 USE_NUMBA = False
-if USE_NUMBA and sys.argv[-1] == 'ONLINE_JUDGE' or sys.argv[-1] == '-c':
+if (USE_NUMBA and sys.argv[-1] == 'ONLINE_JUDGE') or sys.argv[-1] == '-c':
     print("compiling")
     from numba.pycc import CC
     cc = CC('my_module')
@@ -95,7 +95,7 @@ if USE_NUMBA and sys.argv[-1] == 'ONLINE_JUDGE' or sys.argv[-1] == '-c':
     cc.compile()
     exit()
 else:
-    if USE_NUMBA and sys.argv[-1] != '-p':
+    if (USE_NUMBA and sys.argv[-1] != '-p') or sys.argv[-1] == '--numba':
         # -p: pure python mode
         # if not -p, import compiled module
         from my_module import main  # pylint: disable=all
