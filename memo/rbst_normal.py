@@ -295,6 +295,16 @@ def _test_count():
     ...     r.insert(1)
     >>> r.count(1)
     100
+    >>> r = RBST()
+    >>> for i in range(10):
+    ...     r.insert(i)
+    >>> r.print()
+    { 0 1 2 3 4 5 6 7 8 9 }
+    >>> r = RBST()
+    >>> for i in reversed(range(10)):
+    ...     r.insert(i)
+    >>> r.print()
+    { 0 1 2 3 4 5 6 7 8 9 }
     """
 
 
@@ -324,7 +334,7 @@ if __name__ == "__main__":
         # b1: bool, i4: int32, i8: int64, double: f8, [:], [:, :]
         cc.compile()
         exit()
-    from numba_rbst import randInt
+    from numba_rbst import randInt  # pylint: disable=all
 
     _test()
     r = RBST()
