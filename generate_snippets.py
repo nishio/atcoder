@@ -75,7 +75,6 @@ def dp(*x):  # debugprint
 
 """)
 
-
 push("main", """
 def main():
     pass
@@ -85,35 +84,33 @@ def _test():
     import doctest
     doctest.testmod()
 
-
-if __name__ == "__main__":
-    import sys
-    argv = sys.argv
-    if len(sys.argv) == 1:
-        # no option
-        main()
-    elif sys.argv[1] == "-t":
-        _test()
-    else:
-        input_as_file = open(sys.argv[1])
-        input = input_as_file.buffer.readline
-""")
-
-push("numba", """
-import syss
-if sys.argv[-1] == 'ONLINE_JUDGE' or sys.argv[-1] == '-c':
+import sys
+USE_NUMBA = False
+if USE_NUMBA and sys.argv[-1] == 'ONLINE_JUDGE' or sys.argv[-1] == '-c':
     print("compiling")
     from numba.pycc import CC
     cc = CC('my_module')
-    cc.export('main', 'i8(i8,i8)')(main)
+    cc.export('main', 'void(i8,i8)')(main)
     # b1: bool, i4: int32, i8: int64, double: f8, [:], [:, :]
     cc.compile()
     exit()
 else:
+    if USE_NUMBA and sys.argv[-1] != '-p':
+        # -p: pure python mode
+        # if not -p, import compiled module
+        from my_module import main
+    elif sys.argv[-1] == "-t":
+        _test()
+        exit()
+    elif len(sys.argv) == 2:
+        # input given as file
+        input_as_file = open(sys.argv[1])
+        input = input_as_file.buffer.readline
+
     # read parameter
     A, B = map(int, input().split())
     from my_module import main
-    print(main(A, B))
+    main(A, B)
 """)
 
 path = os.path.join(os.path.dirname(__file__), ".vscode/snippet.code-snippets")
