@@ -92,22 +92,45 @@ def main():
     #         return get(lefts[node], k)
     #     return get(rights[node], k - sizes[lefts[node]] - 1)
 
-    def merge(left, right):
-        # dp("merge: left,right", left, right)
-        push(left)
-        push(right)
-        if not left or not right:
-            if left:
-                return left
-            return right
-        if randInt() % (sizes[left] + sizes[right]) < sizes[left]:
-            rights[left] = merge(rights[left], right)
-            return update(left)
-        else:
-            lefts[right] = merge(left, lefts[right])
-            return update(right)
-
     random_state = np.array([123456789, 362436069, 521288629, 88675123])
+
+    def merge(left, right):
+        is_left = []
+        left_snapshot = []
+        right_snapshot = []
+        ret = 0
+        while True:
+            push(left)
+            push(right)
+
+            if not left or not right:
+                if left:
+                    ret = left
+                else:
+                    ret = right
+                break
+            if randInt() % (sizes[left] + sizes[right]) < sizes[left]:
+                is_left.append(True)
+                left_snapshot.append(left)
+                right_snapshot.append(right)
+                left = rights[left]
+            else:
+                is_left.append(False)
+                left_snapshot.append(left)
+                right_snapshot.append(right)
+                right = lefts[right]
+
+        for i in range(len(is_left) - 1, -1, -1):
+            x = is_left[i]
+            left = left_snapshot[i]
+            right = right_snapshot[i]
+            if x:
+                rights[left] = ret
+                ret = update(left)
+            else:
+                lefts[right] = ret
+                ret = update(right)
+        return ret
 
     def split(node, k):
         nonlocal ret_left, ret_right
