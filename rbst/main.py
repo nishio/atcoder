@@ -22,49 +22,42 @@ def main():
         t[3] = tw = (tw ^ (tw >> 19)) ^ (tt ^ (tt >> 8))
         return tw
 
-    class Node:
-        """
-            NODE * left, *right
-            VAL val
-            // the value of the node
-            int size
-            // the size of the subtree
-            VAL sum
-            // the value-sum of the subtree
-        """
+    "Node: val, size, sum, left, right"
+    values = [0]
+    sizes = [0]
+    sums = [0]
+    lefts = [0]
+    rights = [0]
 
-        def __init__(self, v=None):
-            # no args
-            if v == None:
-                self.val = SUM_UNITY
-                self.size = 1
-                self.sum = SUM_UNITY
-                self.left = self.right = None
-            else:
-                self.val = v
-                self.size = 1
-                self.sum = v
-                self.left = self.right = None
+    def create_node(v):
+        id = len(values)
+        values.append(v)
+        sizes.append(1)
+        sums.append(v)
+        lefts.append(0)
+        rights.append(0)
+        return id
 
-        def __repr__(self):
-            left = repr(self.left) if self.left else "x"
-            right = repr(self.right) if self.right else "x"
-            v = repr(self.val)
-            return f"[{left} _{v}_ {right}]"
+    def repr(node):
+        left = repr(lefts[node]) if lefts[node] else "x"
+        right = repr(rights[node]) if rights[node] else "x"
+        v = repr(values[self])
+        return f"[{left} _{v}_ {right}]"
 
     def size(node):
         if not node:
             return 0
-        return node.size
+        return sizes[node]
 
     def rbst_sum(node):
         if not node:
             return SUM_UNITY
-        return node.sum
+        return sums[node]
 
     def update(node):
-        node.size = size(node.left) + size(node.right) + 1
-        node.sum = rbst_sum(node.left) + rbst_sum(node.right) + node.val
+        sizes[node] = size(lefts[node]) + size(rights[node]) + 1
+        sums[node] = rbst_sum(lefts[node]) + \
+            rbst_sum(rights[node]) + values[node]
         # add extra code here
         return node
 
@@ -80,13 +73,13 @@ def main():
         if not node:
             # dp("lowerbound result: 0")
             return 0
-        if val <= node.val:
-            # dp("val <= node.val")
-            ret = lower_bound(node.left, val)
+        if val <= values[node]:
+            # dp("val <= values[node]")
+            ret = lower_bound(lefts[node], val)
             # dp("lowerbound result: ret", ret)
             return ret
-        # dp("val > node.val")
-        ret = size(node.left) + lower_bound(node.right, val) + 1
+        # dp("val > values[node]")
+        ret = size(lefts[node]) + lower_bound(rights[node], val) + 1
         # dp("lowerbound result: ret", ret)
         return ret
 
@@ -94,20 +87,20 @@ def main():
         push(node)
         if not node:
             return 0
-        if val >= node.val:
-            return size(node.left) + upper_bound(node.right, val) + 1
-        return upper_bound(node.left, val)
+        if val >= values[node]:
+            return size(lefts[node]) + upper_bound(rights[node], val) + 1
+        return upper_bound(lefts[node], val)
 
     def get(node, k):
         "k: 0-origin"
         push(node)
         if not node:
             return -1
-        if k == size(node.left):
-            return node.val
-        if k < size(node.left):
-            return get(node.left, k)
-        return get(node.right, k - size(node.left) - 1)
+        if k == size(lefts[node]):
+            return values[node]
+        if k < size(lefts[node]):
+            return get(lefts[node], k)
+        return get(rights[node], k - size(lefts[node]) - 1)
 
     def merge(left, right, t=np.array([123456789, 362436069, 521288629, 88675123])):
         # dp("merge: left,right", left, right)
@@ -117,12 +110,11 @@ def main():
             if left:
                 return left
             return right
-        # if randint(0, left.size + right.size) < left.size:
-        if randInt(t) % (left.size + right.size) < left.size:
-            left.right = merge(left.right, right)
+        if randInt(t) % (sizes[left] + sizes[right]) < sizes[left]:
+            rights[left] = merge(rights[left], right)
             return update(left)
         else:
-            right.left = merge(left, right.left)
+            lefts[right] = merge(left, lefts[right])
             return update(right)
 
     def split(node, k):
@@ -133,16 +125,16 @@ def main():
             RBST.ret_left = None
             RBST.ret_right = None
             return
-        if k <= size(node.left):
+        if k <= size(lefts[node]):
             # dp("split left")
-            split(node.left, k)
-            node.left = RBST.ret_right
+            split(lefts[node], k)
+            lefts[node] = RBST.ret_right
             RBST.ret_right = update(node)
             return
         else:
             # dp("split right")
-            split(node.right, k - size(node.left) - 1)
-            node.right = RBST.ret_left
+            split(rights[node], k - size(lefts[node]) - 1)
+            rights[node] = RBST.ret_left
             RBST.ret_left = update(node)
             return
 
@@ -182,7 +174,7 @@ def main():
 
         def insert(self, val):
             split(self.root, self.lower_bound(val))
-            r = merge(RBST.ret_left, Node(val))
+            r = merge(RBST.ret_left, create_node(val))
             # dp("merge(x1, Node(val)): ", r)
             r = merge(r, RBST.ret_right)
             # dp("merge(r, x2): ", r)
@@ -281,8 +273,8 @@ def main():
 
         cur = rbst.root
         while cur:
-            minvalue = cur.val
-            cur = cur.left
+            minvalue = values[cur]
+            cur = lefts[cur]
         answers[t] = minvalue
     print(*answers, sep="\n")
 
