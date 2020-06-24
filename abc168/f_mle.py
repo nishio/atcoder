@@ -7,7 +7,7 @@ import numpy as np
 sys.setrecursionlimit(10**6)
 input = sys.stdin.buffer.readline
 # INF = sys.maxsize
-INF = 10 ** 9 + 1
+INF = 10 ** 10
 # INF = float("inf")
 
 
@@ -23,6 +23,15 @@ except:
 
 @profile
 def main(N, M, data):
+    # vlines = defaultdict(lambda: [(0, 0)])
+    vlines = {}
+    # hlines = defaultdict(lambda: [(0, 0)])
+    hlines = {}
+    # vticks = {0}
+    vticks = {0}
+    # hticks = {0}
+    hticks = {0}
+
     ABC = data[:3 * N]
     DEF = data[3 * N:]
     A, B, C = [ABC[i::3] for i in range(3)]
@@ -34,18 +43,19 @@ def main(N, M, data):
     height = yticks[1:] - yticks[:-1]
 
     # compress
-    A = np.searchsorted(yticks, A).astype(np.int16)
-    B = np.searchsorted(yticks, B).astype(np.int16)
-    C = np.searchsorted(xticks, C).astype(np.int16)
-    D = np.searchsorted(yticks, D).astype(np.int16)
-    E = np.searchsorted(xticks, E).astype(np.int16)
-    F = np.searchsorted(xticks, F).astype(np.int16)
+    A = np.searchsorted(yticks, A)
+    B = np.searchsorted(yticks, B)
+    C = np.searchsorted(xticks, C)
+    D = np.searchsorted(yticks, D)
+    E = np.searchsorted(xticks, E)
+    F = np.searchsorted(xticks, F)
 
     GRAPH_WIDTH = len(xticks)
     GRAPH_HEIGHT = len(yticks)
     NUM_VERTEXES = GRAPH_HEIGHT * GRAPH_WIDTH
 
-    ng_edges = np.zeros((NUM_VERTEXES, 4), dtype=np.uint8)
+    ng_egdes = np.zeros((NUM_VERTEXES, 4), dtype=np.bool_)
+    #ng_egdes = csr_matrix((NUM_VERTEXES, 4), dtype=np.bool_)
     direction = (-1, +1, -GRAPH_WIDTH, +GRAPH_WIDTH)
 
     # vertical lines A,C-B,C
@@ -53,22 +63,22 @@ def main(N, M, data):
         x = C[i]
         for y in range(A[i], B[i]):
             pos = y * GRAPH_WIDTH + x
-            ng_edges[pos, 0] = 1  # left
-            ng_edges[pos - 1, 1] = 1  # right
-    A = B = C = 0
+            ng_egdes[pos, 0] = 1  # left
+            ng_egdes[pos - 1, 1] = 1  # right
 
     # horizontal lines D,E-D,F
     for i in range(M):
         y = D[i]
         for x in range(E[i], F[i]):
             pos = y * GRAPH_WIDTH + x
-            ng_edges[pos, 2] = 1
-            ng_edges[pos - GRAPH_WIDTH, 3] = 1
-    D = E = F = 0
+            ng_egdes[pos, 2] = 1
+            ng_egdes[pos - GRAPH_WIDTH, 3] = 1
+
+    A = B = C = D = E = F = 0
 
     total_area = 0
-    visited = np.zeros(NUM_VERTEXES)
-
+    #visited = np.zeros(N)
+    visited = set()
     x = np.searchsorted(xticks, 0)
     y = np.searchsorted(yticks, 0)
     start = y * GRAPH_WIDTH + x
@@ -77,21 +87,18 @@ def main(N, M, data):
     while to_visit:
         pos = to_visit.pop()
         y, x = divmod(pos, GRAPH_WIDTH)
-        if visited[pos]:
+        if pos in visited:
             continue
         if y == 0 or y == GRAPH_HEIGHT - 1 or x == 0 or x == GRAPH_WIDTH - 1:
             print("INF")
             break
 
         total_area += width[x] * height[y]
-        visited[pos] = 1
+        visited.add(pos)
         # plan to visit neighbors
         for i in range(4):
-            if not ng_edges[pos][i]:
-                next = pos + direction[i]
-                if visited[next]:
-                    continue
-                to_visit.append(next)
+            if not ng_egdes[pos, i]:
+                to_visit.append(pos + direction[i])
     else:
         print(total_area)
 
