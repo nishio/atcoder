@@ -20,6 +20,10 @@ parser.add_argument(
     "-t", "--test", action="store",
     help="specify testcase filename")
 
+parser.add_argument(
+    "-p", "--pure-python", action="store_true",
+    help="pass target an option `-p`")
+
 args = parser.parse_args()
 
 target = args.target_script
@@ -32,11 +36,14 @@ if args.test:
 else:
     test = os.listdir("in")
 
+PURE_PYTHON = "-p" if args.pure_python else ""
+
+
 for f in test:
     print(f"test: {f}", end="\t")
     t = time.perf_counter()
     ret = subprocess.call(
-        f"python3 {target} <in/{f} > output", shell=True)
+        f"python3 {target} {PURE_PYTHON} <in/{f} > output", shell=True)
     t = time.perf_counter() - t
     if ret:
         print("RE")
