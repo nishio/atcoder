@@ -67,12 +67,25 @@ import sys
 sys.setrecursionlimit(10**6)
 input = sys.stdin.buffer.readline
 # INF = sys.maxsize
-INF = 10 ** 10
+INF = 10 ** 9 + 1
 # INF = float("inf")
 
 def dp(*x):  # debugprint
     print(*x)
 
+""")
+
+push("npreadints", """
+${4:AB} = ${1:data}[:${2:2} * ${3:N}]
+${1:data} = ${1:data}[${2:2} * ${3:N}:]
+${4:AB} = ${4:AB}.reshape(-1, ${2:2})
+for i in range(${3:N}):
+    A, B = ${4:AB}[i]
+""")
+
+push("typedlist", """
+${1:xs} = [${2:(0, 0)}]
+${1:xs}.pop()
 """)
 
 push("main", """
@@ -90,26 +103,31 @@ if (USE_NUMBA and sys.argv[-1] == 'ONLINE_JUDGE') or sys.argv[-1] == '-c':
     print("compiling")
     from numba.pycc import CC
     cc = CC('my_module')
-    cc.export('main', 'void(i8,i8)')(main)
-    # b1: bool, i4: int32, i8: int64, double: f8, [:], [:, :]
+    cc.export('main', 'i8[:](i8,i8,i8[::1])')(main)
+    # b1: bool, i4: int32, i8: int64, double: f8, [:], [:, :], contiguous array[::1]
     cc.compile()
     exit()
 else:
-    if (USE_NUMBA and sys.argv[-1] != '-p') or sys.argv[-1] == '--numba':
+    input = sys.stdin.buffer.readline
+    read = sys.stdin.buffer.read
+
+    if USE_NUMBA and sys.argv[-1] != '-p':
         # -p: pure python mode
         # if not -p, import compiled module
         from my_module import main  # pylint: disable=all
     elif sys.argv[-1] == "-t":
         _test()
         exit()
-    elif len(sys.argv) == 2:
+    elif sys.argv[-1] != '-p' and len(sys.argv) == 2:
         # input given as file
         input_as_file = open(sys.argv[1])
         input = input_as_file.buffer.readline
+        read = input_as_file.buffer.read
 
     # read parameter
-    A, B = map(int, input().split())
-    main(A, B)
+    N, Q = [int(x) for x in input().split()]
+    data = np.int64(read().split())
+    print(*main(N, Q, data), sep="\n")
 """)
 
 path = os.path.join(os.path.dirname(__file__), ".vscode/snippet.code-snippets")
