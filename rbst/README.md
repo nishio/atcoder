@@ -179,6 +179,8 @@ AC: 11, max_time: 64.42
 
 handmade08 > WA
 
+https://gist.github.com/nishio/b03475b2c325c06b752f28df2f7b326c
+
 # compare.py
 
 handmade04
@@ -241,4 +243,23 @@ newsplit: k -2
 newsplit: k -2
 newsplit: k -2
 ***new split: [True, False, True, True, True] [8, 3, 10, 11, 12]
+```
+
+bug found: https://gyazo.com/62e3a74967b4571283750eea9a724c83
+
+# fix bug
+
+```
+test: handmade05        AC 1.705
+test: handmade02        AC 0.119
+test: handmade03        AC 0.125
+test: handmade04        AC 0.129
+test: sample01  AC 0.124
+test: sample00  AC 0.116
+test: handmade08        AC 60.475
+test: handmade06        AC 1.936
+test: handmade07        AC 1.875
+test: handmade09        AC 59.571
+test: random10  AC 64.489
+AC: 11, max_time: 64.49
 ```
