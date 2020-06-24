@@ -153,8 +153,8 @@ def main():
             else:
                 is_left.append(False)
                 node_snapshot.append(node)
-                node = rights[node]
                 k -= sizes[lefts[node]] + 1
+                node = rights[node]
                 continue
 
         for i in range(len(is_left) - 1, -1, -1):
