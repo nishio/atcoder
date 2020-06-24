@@ -263,3 +263,20 @@ test: handmade09        AC 59.571
 test: random10  AC 64.489
 AC: 11, max_time: 64.49
 ```
+
+# compiled with numba
+
+```
+test: handmade05	AC 0.650
+test: handmade02	AC 0.199
+test: handmade03	AC 0.190
+test: handmade04	AC 0.189
+test: sample01	AC 0.195
+test: sample00	AC 0.185
+test: handmade08	AC 8.638
+test: handmade06	AC 0.556
+test: handmade07	AC 0.595
+test: handmade09	AC 8.748
+test: random10	AC 10.127
+AC: 11, max_time: 10.13
+```
