@@ -11,6 +11,10 @@ import sys
 import numpy as np
 
 
+def dp(*x):  # debugprint
+    print(*x)
+
+
 def new_impl():
     SUM_UNITY = 0
     random_state = np.array([123456789, 362436069, 521288629, 88675123])
@@ -120,6 +124,7 @@ def new_impl():
         is_left = []
         node_snapshot = []
         while True:
+            dp("newsplit: k", k)
             push(node)
             if not node:
                 ret_left = 0
@@ -137,6 +142,8 @@ def new_impl():
                 k -= sizes[lefts[node]] + 1
                 continue
 
+        print("***new split:",  is_left, node_snapshot)
+
         for i in range(len(is_left) - 1, -1, -1):
             x = is_left[i]
             node = node_snapshot[i]
@@ -153,6 +160,7 @@ def new_impl():
     def insert(val):
         nonlocal root, ret_left, ret_right
         split(root, lower_bound(root, val))
+        print("new left", lefts, ret_left, ret_right)
         r = merge(ret_left, create_node(val))
         # dp("merge(x1, Node(val)): ", r)
         r = merge(r, ret_right)
@@ -176,7 +184,10 @@ def new_impl():
             cur = lefts[cur]
         return minvalue
 
-    return insert, erase, min, lefts, rights
+    def get_root():
+        return root
+
+    return insert, erase, min, lefts, rights, sizes, get_root
 
 
 def old_impl():
@@ -285,20 +296,20 @@ def old_impl():
     def split(node, k):
         nonlocal ret_left, ret_right
         "split tree into [0, k) and [k, n)"
-        # dp("split: node, k", node, k)
+        dp("split: node, k", node, k)
         push(node)
         if not node:
             ret_left = 0
             ret_right = 0
             return
         if k <= sizes[lefts[node]]:
-            # dp("split left")
+            dp("split left")
             split(lefts[node], k)
             lefts[node] = ret_right
             ret_right = update(node)
             return
         else:
-            # dp("split right")
+            dp("split right")
             split(rights[node], k - sizes[lefts[node]] - 1)
             rights[node] = ret_left
             ret_left = update(node)
@@ -310,6 +321,7 @@ def old_impl():
     def insert(val):
         nonlocal root, ret_left, ret_right
         split(root, lower_bound(root, val))
+        print("old left", lefts, ret_left, ret_right)
         r = merge(ret_left, create_node(val))
         # dp("merge(x1, Node(val)): ", r)
         r = merge(r, ret_right)
@@ -333,7 +345,7 @@ def old_impl():
             cur = lefts[cur]
         return minvalue
 
-    return insert, erase, min, lefts, rights
+    return insert, erase, min, lefts, rights, sizes, values
 
 
 def main():
@@ -345,18 +357,21 @@ def main():
     MAX_K = 200000
     k_to_ps = defaultdict(list)
 
-    old_insert, old_erase, old_min, old_lefts, old_rights = old_impl()
-    new_insert, new_erase, new_min, new_lefts, new_rights = new_impl()
+    old_insert, old_erase, old_min, old_lefts, old_rights, old_sizes, values = old_impl()
+    new_insert, new_erase, new_min, new_lefts, new_rights, new_sizes, get_root = new_impl()
 
     def insert(v):
+        print(get_root())
+        print(values)
+        print(old_sizes)
+
         print(old_lefts)
-        print(new_lefts)
+        print(old_rights)
 
         old_insert(v)
         new_insert(v)
         if old_lefts != new_lefts or old_rights != new_rights:
             print("mismatch after insert", v)
-            print(old_lefts != new_lefts, old_rights != new_rights)
             print(old_lefts)
             print(new_lefts)
             print(old_rights)
