@@ -280,3 +280,20 @@ test: handmade09	AC 8.748
 test: random10	AC 10.127
 AC: 11, max_time: 10.13
 ```
+
+# allocate in advance
+
+```
+test: handmade05	AC 0.652
+test: handmade02	AC 0.198
+test: handmade03	AC 0.217
+test: handmade04	AC 0.206
+test: sample01	AC 0.199
+test: sample00	AC 0.200
+test: handmade08	AC 4.394
+test: handmade06	AC 0.513
+test: handmade07	AC 0.549
+test: handmade09	AC 4.340
+test: random10	AC 4.596
+AC: 11, max_time: 4.60
+```

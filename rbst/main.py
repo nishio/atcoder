@@ -14,11 +14,15 @@ def main(N, Q, data):
     INF = 10 ** 9 + 1
     SUM_UNITY = 0
     random_state = np.array([123456789, 362436069, 521288629, 88675123])
-    values = [SUM_UNITY]
-    sizes = [0]  # sizes[0] should 0
-    sums = [SUM_UNITY]
-    lefts = [0]
-    rights = [0]
+
+    MAX_NODES = 5 * 10 ** 5
+    values = np.repeat(SUM_UNITY, MAX_NODES)
+    sizes = np.zeros(MAX_NODES, dtype=np.int32)
+    sums = np.repeat(SUM_UNITY, MAX_NODES)
+    lefts = np.zeros(MAX_NODES, dtype=np.int32)
+    rights = np.zeros(MAX_NODES, dtype=np.int32)
+    node_id = 1
+
     ret_left = 0
     ret_right = 0
     root = 0
@@ -33,13 +37,15 @@ def main(N, Q, data):
         return tw
 
     def create_node(v):
-        id = len(values)
-        values.append(v)
-        sizes.append(1)
-        sums.append(v)
-        lefts.append(0)
-        rights.append(0)
-        return id
+        nonlocal node_id
+        i = node_id
+        values[i] = v
+        sizes[i] = 1
+        sums[i] = v
+        lefts[i] = 0
+        rights[i] = 0
+        node_id += 1
+        return i
 
     def update(node):
         sizes[node] = sizes[lefts[node]] + sizes[rights[node]] + 1
@@ -293,7 +299,7 @@ else:
     elif sys.argv[-1] == "-t":
         _test()
         exit()
-    elif len(sys.argv) == 2:
+    elif sys.argv[-1] != '-p' and len(sys.argv) == 2:
         # input given as file
         input_as_file = open(sys.argv[1])
         input = input_as_file.buffer.readline
