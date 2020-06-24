@@ -11,8 +11,8 @@ import sys
 import numpy as np
 
 
-def main():
-
+def main(N, Q, data):
+    INF = 10 ** 9 + 1
     SUM_UNITY = 0
     random_state = np.array([123456789, 362436069, 521288629, 88675123])
     values = [SUM_UNITY]
@@ -167,28 +167,6 @@ def main():
                 rights[node] = ret_left
                 ret_left = update(node)
 
-    def _split(node, k):
-        nonlocal ret_left, ret_right
-        "split tree into [0, k) and [k, n)"
-        # dp("split: node, k", node, k)
-        push(node)
-        if not node:
-            ret_left = 0
-            ret_right = 0
-            return
-        if k <= sizes[lefts[node]]:
-            # dp("split left")
-            split(lefts[node], k)
-            lefts[node] = ret_right
-            ret_right = update(node)
-            return
-        else:
-            # dp("split right")
-            split(rights[node], k - sizes[lefts[node]] - 1)
-            rights[node] = ret_left
-            ret_left = update(node)
-            return
-
     def count(val):
         return upper_bound(root, val) - lower_bound(root, val)
 
@@ -234,29 +212,43 @@ def main():
     #     return repr(node_as_list(self.root))
     # -- end RBST
 
-    N, Q = [int(x) for x in input().split()]
     # k: kindergarden, p: person
-    p_to_rate = [None] * (N + 1)  # 1-origin
-    p_to_k = [None] * (N + 1)  # 1-origin
+    p_to_rate = [0] * (N + 1)  # 1-origin
+    p_to_k = [0] * (N + 1)  # 1-origin
     # dsc. order heapq for each k
     MAX_K = 200000
-    k_to_ps = defaultdict(list)
+    # k_to_ps = defaultdict(list)
+    # k_to_ps = [[] for i in range(MAX_K + 1)]
+    k_to_ps = [[(-INF, 0)]]
+    for i in range(MAX_K):
+        x = [(-INF, 0)]
+        k_to_ps.append(x)
+        x.pop()
+    k_to_ps[0].pop()
 
+    AB = data[:2 * N]
+    CD = data[2 * N:]
+    AB = AB.reshape(-1, 2)
+    CD = CD.reshape(-1, 2)
     for i in range(N):
-        A, B = [int(x) for x in input().split()]
+        #A, B = [int(x) for x in input().split()]
+        A, B = AB[i]
         I = i + 1
         p_to_rate[I] = A
         p_to_k[I] = B
         heappush(k_to_ps[B], (-A, I))
 
     # RBST
-    for k in k_to_ps:
-        neg_rate, max_p = k_to_ps[k][0]
-        insert(-neg_rate)
+    for i in range(MAX_K + 1):
+        k = k_to_ps[i]
+        if k:
+            neg_rate, max_p = k[0]
+            insert(-neg_rate)
 
     answers = [0] * Q
     for t in range(Q):
-        C, D = map(int, input().split())
+        #C, D = map(int, input().split())
+        C, D = CD[t]
         src = p_to_k[C]
         dst = D
         rateC = p_to_rate[C]
@@ -311,19 +303,22 @@ def main():
             minvalue = values[cur]
             cur = lefts[cur]
         answers[t] = minvalue
-    return answers
+    return np.array(answers)
 
 
-USE_NUMBA = False
+USE_NUMBA = True
 if USE_NUMBA and sys.argv[-1] == 'ONLINE_JUDGE' or sys.argv[-1] == '-c':
     print("compiling")
     from numba.pycc import CC
     cc = CC('my_module')
-    cc.export('main', 'void(i8,i8)')(main)
+    cc.export('main', 'i8[:](i8,i8,i8[::1])')(main)
     # b1: bool, i4: int32, i8: int64, double: f8, [:], [:, :]
     cc.compile()
     exit()
 else:
+    input = sys.stdin.buffer.readline
+    read = sys.stdin.buffer.read
+
     if USE_NUMBA and sys.argv[-1] != '-p':
         # -p: pure python mode
         # if not -p, import compiled module
@@ -335,6 +330,9 @@ else:
         # input given as file
         input_as_file = open(sys.argv[1])
         input = input_as_file.buffer.readline
+        read = input_as_file.buffer.read
 
     # read parameter
-    print(*main(), sep="\n")
+    N, Q = [int(x) for x in input().split()]
+    data = np.int64(read().split())
+    print(*main(N, Q, data), sep="\n")
