@@ -1,5 +1,6 @@
-e.py
-segtree impl
+# e.py: segtree impl
+
+```
 test: handmade05 AC 1.277
 test: handmade02 AC 0.091
 test: handmade03 AC 0.089
@@ -12,10 +13,11 @@ test: handmade07 AC 1.763
 test: handmade09 AC 4.708
 test: random10 AC 4.235
 AC: 11, max_time: 4.74
+```
 
-main.py
-segtree impl
+# main.py segtree impl
 
+```
 test: handmade05 AC 1.307
 test: handmade02 AC 0.087
 test: handmade03 AC 0.092
@@ -28,8 +30,11 @@ test: handmade07 AC 1.712
 test: handmade09 AC 4.689
 test: random10 AC 4.827
 AC: 11, max_time: 4.83
+```
 
-RBST
+# RBST
+
+```
 test: handmade05 AC 1.824
 test: handmade02 AC 0.119
 test: handmade03 AC 0.122
@@ -42,8 +47,11 @@ test: handmade07 AC 1.857
 test: handmade09 AC 105.466
 test: random10 AC 103.126
 AC: 11, max_time: 105.47
+```
 
-put in local
+# put in local
+
+```
 test: handmade05 AC 1.764
 test: handmade02 AC 0.118
 test: handmade03 AC 0.124
@@ -56,8 +64,11 @@ test: handmade07 AC 1.891
 test: handmade09 AC 93.863
 test: random10 AC 98.278
 AC: 11, max_time: 98.28
+```
 
-replace Node class into 5 lists:
+# replace Node class into 5 lists:
+
+```
 test: handmade05 AC 1.828
 test: handmade02 AC 0.125
 test: handmade03 AC 0.128
@@ -70,9 +81,11 @@ test: handmade07 AC 1.870
 test: handmade09 AC 83.146
 test: random10 AC 100.851
 AC: 11, max_time: 100.85
+```
 
 # remove useless codes
 
+```
 test: handmade05 AC 1.902
 test: handmade02 AC 0.148
 test: handmade03 AC 0.140
@@ -85,9 +98,11 @@ test: handmade07 AC 1.757
 test: handmade09 AC 68.957
 test: random10 AC 72.870
 AC: 11, max_time: 72.87
+```
 
 # remove RBST class
 
+```
 test: handmade05 AC 1.652
 test: handmade02 AC 0.131
 test: handmade03 AC 0.133
@@ -100,9 +115,11 @@ test: handmade07 AC 1.823
 test: handmade09 AC 63.355
 test: random10 AC 67.006
 AC: 11, max_time: 67.01
+```
 
 # remove size() / rbst_sum()
 
+```
 test: handmade05 AC 1.604
 test: handmade02 AC 0.123
 test: handmade03 AC 0.123
@@ -115,9 +132,11 @@ test: handmade07 AC 1.787
 test: handmade09 AC 60.144
 test: random10 AC 60.644
 AC: 11, max_time: 60.64
+```
 
 # remove recursion of lower_bound()
 
+```
 test: handmade05 AC 1.603
 test: handmade02 AC 0.117
 test: handmade03 AC 0.121
@@ -130,14 +149,18 @@ test: handmade07 AC 1.844
 test: handmade09 AC 54.874
 test: random10 AC 57.978
 AC: 11, max_time: 57.98
+```
 
 # remove recursion of upper_bound()
 
+```
 test: random10 AC 59.782
 AC: 1, max_time: 59.78
+```
 
 # remove recursion of merge
 
+```
 test: handmade05 AC 1.691
 test: handmade02 AC 0.122
 test: handmade03 AC 0.131
@@ -150,5 +173,23 @@ test: handmade07 AC 1.790
 test: handmade09 AC 57.574
 test: random10 AC 64.418
 AC: 11, max_time: 64.42
+```
 
-new version of split has a bug
+# new version of split has a bug
+
+handmade08 > WA
+
+# compare.py
+
+handmade04
+
+```
+[0, 0, 4, 0, 6, 1, 7, 0, 3, 0, 11, 12, 0, 0]
+[0, 0, 4, 0, 6, 1, 7, 0, 3, 0, 11, 12, 0, 0]
+mismatch after insert 984611856
+True True
+[0, 0, 4, 0, 6, 1, 7, 0, 10, 0, 11, 12, 0, 14, 0]
+[0, 0, 4, 0, 6, 1, 7, 0, 14, 0, 11, 12, 0, 0, 3]
+[0, 0, 5, 8, 0, 0, 0, 0, 2, 0, 9, 0, 13, 0, 0]
+[0, 0, 5, 0, 0, 0, 0, 0, 2, 0, 9, 0, 13, 0, 10]
+```

@@ -11,8 +11,7 @@ import sys
 import numpy as np
 
 
-def main():
-
+def new_impl():
     SUM_UNITY = 0
     random_state = np.array([123456789, 362436069, 521288629, 88675123])
     values = [SUM_UNITY]
@@ -41,13 +40,6 @@ def main():
         lefts.append(0)
         rights.append(0)
         return id
-
-    # not called
-    # def repr(node):
-    #     left = repr(lefts[node]) if lefts[node] else "x"
-    #     right = repr(rights[node]) if rights[node] else "x"
-    #     v = repr(values[self])
-    #     return f"[{left} _{v}_ {right}]"
 
     def update(node):
         sizes[node] = sizes[lefts[node]] + sizes[rights[node]] + 1
@@ -83,18 +75,6 @@ def main():
                 node = rights[node]
             else:
                 node = lefts[node]
-
-    # not used
-    # def get(node, k):
-    #     "k: 0-origin"
-    #     push(node)
-    #     if not node:
-    #         return -1
-    #     if k == sizes[lefts[node]]:
-    #         return values[node]
-    #     if k < sizes[lefts[node]]:
-    #         return get(lefts[node], k)
-    #     return get(rights[node], k - sizes[lefts[node]] - 1)
 
     def merge(left, right):
         is_left = []
@@ -167,7 +147,142 @@ def main():
                 rights[node] = ret_left
                 ret_left = update(node)
 
-    def _split(node, k):
+    def count(val):
+        return upper_bound(root, val) - lower_bound(root, val)
+
+    def insert(val):
+        nonlocal root, ret_left, ret_right
+        split(root, lower_bound(root, val))
+        r = merge(ret_left, create_node(val))
+        # dp("merge(x1, Node(val)): ", r)
+        r = merge(r, ret_right)
+        # dp("merge(r, x2): ", r)
+        root = r
+
+    def erase(val):
+        nonlocal root, ret_left, ret_right
+        if count(val) == 0:
+            return  # erasing absent item
+        split(root, lower_bound(root, val))
+        lhs = ret_left
+        split(ret_right, 1)
+        rhs = ret_right
+        root = merge(lhs, rhs)
+
+    def min():
+        cur = root
+        while cur:
+            minvalue = values[cur]
+            cur = lefts[cur]
+        return minvalue
+
+    return insert, erase, min, lefts, rights
+
+
+def old_impl():
+    SUM_UNITY = 0
+    random_state = np.array([123456789, 362436069, 521288629, 88675123])
+    values = [SUM_UNITY]
+    sizes = [0]  # sizes[0] should 0
+    sums = [SUM_UNITY]
+    lefts = [0]
+    rights = [0]
+    ret_left = 0
+    ret_right = 0
+    root = 0
+
+    def randInt():
+        tx, ty, tz, tw = random_state
+        tt = tx ^ (tx << 11)
+        random_state[0] = ty
+        random_state[1] = tz
+        random_state[2] = tw
+        random_state[3] = tw = (tw ^ (tw >> 19)) ^ (tt ^ (tt >> 8))
+        return tw
+
+    def create_node(v):
+        id = len(values)
+        values.append(v)
+        sizes.append(1)
+        sums.append(v)
+        lefts.append(0)
+        rights.append(0)
+        return id
+
+    def update(node):
+        sizes[node] = sizes[lefts[node]] + sizes[rights[node]] + 1
+        sums[node] = sums[lefts[node]] + sums[rights[node]] + values[node]
+        # add extra code here
+        return node
+
+    def push(node):
+        if not node:
+            return
+        # add extra code here
+
+    def lower_bound(node, val):
+        ret = 0
+        while True:
+            push(node)
+            if not node:
+                return ret
+            if val <= values[node]:
+                node = lefts[node]
+            else:
+                ret += sizes[lefts[node]] + 1
+                node = rights[node]
+
+    def upper_bound(node, val):
+        ret = 0
+        while True:
+            push(node)
+            if not node:
+                return ret
+            if val >= values[node]:
+                ret += sizes[lefts[node]] + 1
+                node = rights[node]
+            else:
+                node = lefts[node]
+
+    def merge(left, right):
+        is_left = []
+        left_snapshot = []
+        right_snapshot = []
+        ret = 0
+        while True:
+            push(left)
+            push(right)
+
+            if not left or not right:
+                if left:
+                    ret = left
+                else:
+                    ret = right
+                break
+            if randInt() % (sizes[left] + sizes[right]) < sizes[left]:
+                is_left.append(True)
+                left_snapshot.append(left)
+                right_snapshot.append(right)
+                left = rights[left]
+            else:
+                is_left.append(False)
+                left_snapshot.append(left)
+                right_snapshot.append(right)
+                right = lefts[right]
+
+        for i in range(len(is_left) - 1, -1, -1):
+            x = is_left[i]
+            left = left_snapshot[i]
+            right = right_snapshot[i]
+            if x:
+                rights[left] = ret
+                ret = update(left)
+            else:
+                lefts[right] = ret
+                ret = update(right)
+        return ret
+
+    def split(node, k):
         nonlocal ret_left, ret_right
         "split tree into [0, k) and [k, n)"
         # dp("split: node, k", node, k)
@@ -211,29 +326,17 @@ def main():
         rhs = ret_right
         root = merge(lhs, rhs)
 
-    # class RBST:
-    #     debug = False
+    def min():
+        cur = root
+        while cur:
+            minvalue = values[cur]
+            cur = lefts[cur]
+        return minvalue
 
-    # def get(self, k):
-    #     get(self.root, k)
+    return insert, erase, min, lefts, rights
 
-    # def merge(self, add):
-    #     self.root = merge(self.root, add.root)
 
-    # def split(self, k):
-    #     split(self.root, k)
-    #     self.root = RBST.ret_left
-    #     return RBST.ret_right
-
-    # def print(self):
-    #     print("{ ", end="")
-    #     print_node(self.root)
-    #     print("}")
-
-    # def __repr__(self):
-    #     return repr(node_as_list(self.root))
-    # -- end RBST
-
+def main():
     N, Q = [int(x) for x in input().split()]
     # k: kindergarden, p: person
     p_to_rate = [None] * (N + 1)  # 1-origin
@@ -241,6 +344,35 @@ def main():
     # dsc. order heapq for each k
     MAX_K = 200000
     k_to_ps = defaultdict(list)
+
+    old_insert, old_erase, old_min, old_lefts, old_rights = old_impl()
+    new_insert, new_erase, new_min, new_lefts, new_rights = new_impl()
+
+    def insert(v):
+        print(old_lefts)
+        print(new_lefts)
+
+        old_insert(v)
+        new_insert(v)
+        if old_lefts != new_lefts or old_rights != new_rights:
+            print("mismatch after insert", v)
+            print(old_lefts != new_lefts, old_rights != new_rights)
+            print(old_lefts)
+            print(new_lefts)
+            print(old_rights)
+            print(new_rights)
+            raise RuntimeError
+
+    def erase(v):
+        old_erase(v)
+        new_erase(v)
+        if old_lefts != new_lefts or old_rights != new_rights:
+            print("mismatch after erase")
+            print(old_lefts)
+            print(new_lefts)
+            print(old_rights)
+            print(new_rights)
+            raise RuntimeError
 
     for i in range(N):
         A, B = [int(x) for x in input().split()]
@@ -306,10 +438,7 @@ def main():
                 pass
             heappush(k_to_ps[dst], (-rateC, C))
 
-        cur = root
-        while cur:
-            minvalue = values[cur]
-            cur = lefts[cur]
+        minvalue = old_min()
         answers[t] = minvalue
     return answers
 
