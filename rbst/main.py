@@ -1,17 +1,16 @@
 """
-RBST numba-able
+numba-able RBST(Randomized Binary Search Tree)
 
-testdata: ABC170E
+testdata: AtCoder: ABC170E 
 """
 from collections import defaultdict
 from heapq import heappush, heappop
 import sys
-
-# -- RBST
 import numpy as np
 
 
 def main(N, Q, data):
+    # --- RBST implementation
     INF = 10 ** 9 + 1
     SUM_UNITY = 0
     random_state = np.array([123456789, 362436069, 521288629, 88675123])
@@ -41,13 +40,6 @@ def main(N, Q, data):
         lefts.append(0)
         rights.append(0)
         return id
-
-    # not called
-    # def repr(node):
-    #     left = repr(lefts[node]) if lefts[node] else "x"
-    #     right = repr(rights[node]) if rights[node] else "x"
-    #     v = repr(values[self])
-    #     return f"[{left} _{v}_ {right}]"
 
     def update(node):
         sizes[node] = sizes[lefts[node]] + sizes[rights[node]] + 1
@@ -84,7 +76,6 @@ def main(N, Q, data):
             else:
                 node = lefts[node]
 
-    # not used
     # def get(node, k):
     #     "k: 0-origin"
     #     push(node)
@@ -174,9 +165,7 @@ def main(N, Q, data):
         nonlocal root, ret_left, ret_right
         split(root, lower_bound(root, val))
         r = merge(ret_left, create_node(val))
-        # dp("merge(x1, Node(val)): ", r)
         r = merge(r, ret_right)
-        # dp("merge(r, x2): ", r)
         root = r
 
     def erase(val):
@@ -189,29 +178,9 @@ def main(N, Q, data):
         rhs = ret_right
         root = merge(lhs, rhs)
 
-    # class RBST:
-    #     debug = False
+    # --- end RBST implementation
 
-    # def get(self, k):
-    #     get(self.root, k)
-
-    # def merge(self, add):
-    #     self.root = merge(self.root, add.root)
-
-    # def split(self, k):
-    #     split(self.root, k)
-    #     self.root = RBST.ret_left
-    #     return RBST.ret_right
-
-    # def print(self):
-    #     print("{ ", end="")
-    #     print_node(self.root)
-    #     print("}")
-
-    # def __repr__(self):
-    #     return repr(node_as_list(self.root))
-    # -- end RBST
-
+    # --- ABC170E implementation
     # k: kindergarden, p: person
     p_to_rate = [0] * (N + 1)  # 1-origin
     p_to_k = [0] * (N + 1)  # 1-origin
@@ -231,14 +200,13 @@ def main(N, Q, data):
     AB = AB.reshape(-1, 2)
     CD = CD.reshape(-1, 2)
     for i in range(N):
-        #A, B = [int(x) for x in input().split()]
         A, B = AB[i]
         I = i + 1
         p_to_rate[I] = A
         p_to_k[I] = B
         heappush(k_to_ps[B], (-A, I))
 
-    # RBST
+    # construct RBST
     for i in range(MAX_K + 1):
         k = k_to_ps[i]
         if k:
@@ -247,7 +215,6 @@ def main(N, Q, data):
 
     answers = [0] * Q
     for t in range(Q):
-        #C, D = map(int, input().split())
         C, D = CD[t]
         src = p_to_k[C]
         dst = D
