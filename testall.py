@@ -57,8 +57,9 @@ for f in test:
         continue
 
     ret = subprocess.call(
-        f"diff output out/{f}",
-        shell=True, stdout=DIFF_OUTPUT)
+        f"diff -w output out/{f}",
+        stdout=DIFF_OUTPUT,
+        shell=True)
     if ret:
         print("WA")
         num_wa += 1
