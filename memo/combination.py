@@ -1,6 +1,8 @@
 import numpy as np
 import sys
 import numba
+import math
+
 MOD = 10 ** 9 + 7
 K = 10 ** 6
 
@@ -52,6 +54,30 @@ def makeInverseTable(K=K, MOD=MOD):
     return ret
 
 
+def getSingleInverse(a, MOD=MOD):
+    """
+    >>> [getSingleInverse(x) for x in range(1, 11)] ==  makeInverseTable(10)[1:]
+    True
+
+    %timeit getSingleInverse(1000)
+    984 ns ± 10.4 ns per loop (mean ± std. dev. of 7 runs, 1000000 loops each)
+
+    %timeit [getSingleInverse(x) for x in range(1, K + 1)]
+    2.46 s ± 9.9 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+    """
+    b = MOD
+    u = 1
+    v = 0
+    while b:
+        t = a // b
+        a -= t * b
+        a, b = b, a
+        u -= t * v
+        u, v = v, u
+    u %= MOD
+    return u
+
+
 @numba.njit
 def makeFactorialTable(K=K, MOD=MOD):
     """calc i! for i in [0, K] mod MOD. MOD should be prime
@@ -75,6 +101,41 @@ def makeFactorialTable(K=K, MOD=MOD):
         cur *= i
         cur %= MOD
         ret[i] = cur
+    return ret
+
+
+@numba.njit
+def makeFactorialTableMaspy(K=K, MOD=MOD):
+    """calc i! for i in [0, K) mod MOD.
+    MOD should be prime, K should be squared number.
+    *NOTICE* K is not included.
+    see https://maspypy.com/numpyn-mod-p%e3%81%ae%e8%a8%88%e7%ae%97
+
+    >>> xs = makeFactorialTableMaspy(100, 23)[:11]
+    >>> xs
+    array([ 1,  1,  2,  6,  1,  5,  7,  3,  1,  9, 21])
+    >>> xs.tolist() == makeFactorialTable(10, 23)
+    True
+
+    %timeit makeFactorialTableMaspy()
+    35.1 ms ± 582 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
+
+    Numba-jit-ed
+    %timeit makeFactorialTableMaspy()
+    14 ms ± 1.18 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+    """
+    rootK = math.ceil(math.sqrt(K))
+
+    ret = np.arange(K, dtype=np.int64).reshape(rootK, rootK)
+    ret[0, 0] = 1
+    for n in range(1, rootK):
+        ret[:, n] *= ret[:, n-1]
+        ret[:, n] %= MOD
+    for n in range(1, rootK):
+        ret[n] *= ret[n-1, -1]
+        ret[n] %= MOD
+    ret = ret.ravel()
+
     return ret
 
 
