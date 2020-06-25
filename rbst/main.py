@@ -13,7 +13,8 @@ def main(N, Q, data):
     # --- RBST implementation
     INF = 10 ** 9 + 1
     SUM_UNITY = 0
-    random_state = np.array([123456789, 362436069, 521288629, 88675123])
+    random_state = np.array(
+        [123456789, 362436069, 521288629, 88675123], dtype=np.int16)
 
     MAX_NODES = 5 * 10 ** 5
     values = np.repeat(SUM_UNITY, MAX_NODES)

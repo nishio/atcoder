@@ -297,3 +297,20 @@ test: handmade09	AC 4.340
 test: random10	AC 4.596
 AC: 11, max_time: 4.60
 ```
+
+# randome_state int16
+
+```
+test: handmade05        AC 0.676
+test: handmade02        AC 0.197
+test: handmade03        AC 0.194
+test: handmade04        AC 0.197
+test: sample01  AC 0.190
+test: sample00  AC 0.196
+test: handmade08        AC 4.353
+test: handmade06        AC 0.547
+test: handmade07        AC 0.570
+test: handmade09        AC 4.504
+test: random10  AC 4.425
+AC: 11, max_time: 4.50
+```
