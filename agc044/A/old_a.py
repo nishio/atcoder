@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-import sys
 import heapq
-
-
-def solve(N, A, B, C, D):
-    "void()"
-
+T = int(input())
+# T = 1
+for t in range(T):
+    N, A, B, C, D = [int(x) for x in input().split()]
+    # N, A, B, C, D = 29384293847243, 454353412, 332423423, 934923490, 1
+    # import pdb
+    # pdb.set_trace()
     MIN_COST = min(A, B, C, D)
     headm = {0: 0}
     head = [(0, 0)]
@@ -18,7 +19,7 @@ def solve(N, A, B, C, D):
     answer = 1e+99
 
     def putHead(p, c):
-        nonlocal answer
+        global answer
         if p < 0:
             return
         if headm.get(p, 1e+99) > c:
@@ -30,7 +31,7 @@ def solve(N, A, B, C, D):
                     answer = v
 
     def stepHead():
-        nonlocal lastHeadCost
+        global lastHeadCost
         cost, position = heapq.heappop(head)
         lastHeadCost = cost
         if headm[position] > cost:
@@ -43,7 +44,7 @@ def solve(N, A, B, C, D):
         putHead(position - 1, cost + D)
 
     def putTail(p, c):
-        nonlocal answer
+        global answer
         if p < 0:
             return
         if tailm.get(p, 1e+99) > c:
@@ -54,7 +55,7 @@ def solve(N, A, B, C, D):
                 answer = v
 
     def stepTail():
-        nonlocal lastTailCost
+        global lastTailCost
         cost, position = heapq.heappop(tail)
         lastTailCost = cost
         if tailm[position] > cost:
@@ -104,55 +105,3 @@ def solve(N, A, B, C, D):
         if lastHeadCost + lastTailCost + MIN_COST >= answer:
             print(answer)
             break
-
-
-def main():
-    """
-    >>> solve(4, 1000000000, 1000000000, 1000000000, 1)
-    4
-    """
-    T = int(input())
-    for t in range(T):
-        solve(*[int(x) for x in input().split()])
-
-
-def _test():
-    import doctest
-    doctest.testmod()
-
-
-def as_input(s):
-    "use in test, use given string as input file"
-    import io
-    global read, input
-    f = io.StringIO(s.strip())
-    input = f.readline
-    read = f.read
-
-
-USE_NUMBA = False
-if (USE_NUMBA and sys.argv[-1] == 'ONLINE_JUDGE') or sys.argv[-1] == '-c':
-    print("compiling")
-    from numba.pycc import CC
-    cc = CC('my_module')
-    cc.export('solve', solve.__doc__.strip().split()[0])(solve)
-    cc.compile()
-    exit()
-else:
-    input = sys.stdin.buffer.readline
-    read = sys.stdin.buffer.read
-
-    if (USE_NUMBA and sys.argv[-1] != '-p') or sys.argv[-1] == "--numba":
-        # -p: pure python mode
-        # if not -p, import compiled module
-        from my_module import solve  # pylint: disable=all
-    elif sys.argv[-1] == "-t":
-        _test()
-        sys.exit()
-    elif sys.argv[-1] != '-p' and len(sys.argv) == 2:
-        # input given as file
-        input_as_file = open(sys.argv[1])
-        input = input_as_file.buffer.readline
-        read = input_as_file.buffer.read
-
-    main()
