@@ -84,6 +84,7 @@ def makeInvFactoTable(inv, K=K, MOD=MOD):
 
     %timeit makeInvFactoTable(inv)
     182 ms ± 1.08 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+
     inva = np.array(inv)
     %timeit makeInvFactoTable(inva)
     329 ms ± 5.22 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
@@ -134,6 +135,28 @@ def comb_rep(n, k, f, invf):
     [1, 3, 6, 10, 15, 21, 28]
     """
     return f[n + k - 1] * invf[k] % MOD * invf[n - 1] % MOD
+
+
+def makeCombibationTable(n, f, invf):
+    """make table of C(n, i) for i in [0, N]
+
+    %timeit makeCombibationTable(K, f, invf)
+    356 ms ± 10.8 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+    """
+    return [
+        f[n] * invf[k] % MOD * invf[n - k] % MOD
+        for k in range(n + 1)
+    ]
+
+
+def makeCombRepTable(n, f, invf):
+    """make table of C(n, i) for i in [0, N]
+
+    """
+    return [
+        f[n + k - 1] * invf[k] % MOD * invf[n - 1] % MOD
+        for k in range(n + 1)
+    ]
 
 
 def solve():

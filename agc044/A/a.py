@@ -2,6 +2,16 @@
 import sys
 import heapq
 
+sys.setrecursionlimit(10**6)
+input = sys.stdin.buffer.readline
+# INF = sys.maxsize
+INF = 10 ** 9 + 1
+# INF = float("inf")
+
+
+def dp(*x):  # debugprint
+    print(*x)
+
 
 def solve(N, A, B, C, D):
     "void()"
@@ -94,12 +104,14 @@ def solve(N, A, B, C, D):
 
     lastHeadCost = lastTailCost = 0
     while True:
-        if head[0][0] < tail[0][0] and False:
+        # print(head, tail)
+        if head[0][0] < tail[0][0]:
             # print("head")
             stepHead()
         else:
             # print("tail")
             stepTail()
+        # print(head, tail)
         # print(lastHeadCost + lastTailCost + MIN_COST)
         if lastHeadCost + lastTailCost + MIN_COST >= answer:
             print(answer)
