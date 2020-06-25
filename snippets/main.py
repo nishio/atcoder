@@ -15,6 +15,15 @@ def _test():
     doctest.testmod()
 
 
+def as_input(s):
+    "use in test, use given string as input file"
+    import io
+    global read, input
+    f = io.StringIO(s.strip())
+    input = f.readline
+    read = f.read
+
+
 USE_NUMBA = False
 if (USE_NUMBA and sys.argv[-1] == 'ONLINE_JUDGE') or sys.argv[-1] == '-c':
     print("compiling")
