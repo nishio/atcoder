@@ -23,6 +23,9 @@ parser.add_argument(
 parser.add_argument(
     "-p", "--pure-python", action="store_true",
     help="pass target an option `-p`")
+parser.add_argument(
+    "--no-diff", action="store_true",
+    help="do not show output of diff")
 
 args = parser.parse_args()
 
@@ -38,6 +41,7 @@ else:
 
 PURE_PYTHON = "-p" if args.pure_python else ""
 
+DIFF_OUTPUT = subprocess.DEVNULL if args.no_diff else None
 
 for f in test:
     print(f"test: {f}", end="\t")
@@ -51,7 +55,10 @@ for f in test:
         if not args.force_all:
             break
         continue
-    ret = subprocess.call(f"diff output out/{f}", shell=True)
+
+    ret = subprocess.call(
+        f"diff output out/{f}",
+        shell=True, stdout=DIFF_OUTPUT)
     if ret:
         print("WA")
         num_wa += 1
