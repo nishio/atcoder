@@ -2,6 +2,7 @@
 
 import os
 import json
+DIR = os.path.dirname(__file__)
 snippets = {}
 
 
@@ -88,54 +89,23 @@ ${1:xs} = [${2:(0, 0)}]
 ${1:xs}.pop()
 """)
 
-push("main", """
+push("constant_append", """
+${1:xs} = np.zeros(1, dtype=np.int32)
+${1:xs}_pointer = 0
 
-def solve():
-    passs
-solve.signature = "void()"
-
-
-def main():
-    #N, Q = [int(x) for x in input().split()]
-    #data = np.int64(read().split())
-    #print(*solve(N, Q, data), sep="\\n")
-    pass
-
-
-def _test():
-    import doctest
-    doctest.testmod()
-
-import sys
-USE_NUMBA = False
-if (USE_NUMBA and sys.argv[-1] == 'ONLINE_JUDGE') or sys.argv[-1] == '-c':
-    print("compiling")
-    from numba.pycc import CC
-    cc = CC('my_module')
-    cc.export('solve', solve.__doc__.strip().split()[0])(solve)
-    # cc.export('main', 'i8[:](i8,i8,i8[::1])')(main)
-    # b1: bool, i4: int32, i8: int64, double: f8, [:], [:, :], contiguous array[::1]
-    cc.compile()
-    exit()
-else:
-    input = sys.stdin.buffer.readline
-    read = sys.stdin.buffer.read
-
-    if (USE_NUMBA and sys.argv[-1] != '-p') or sys.argv[-1] == "--numba":
-        # -p: pure python mode
-        # if not -p, import compiled module
-        from my_module import solve  # pylint: disable=all
-    elif sys.argv[-1] == "-t":
-        _test()
-        sys.exit()
-    elif sys.argv[-1] != '-p' and len(sys.argv) == 2:
-        # input given as file
-        input_as_file = open(sys.argv[1])
-        input = input_as_file.buffer.readline
-        read = input_as_file.buffer.read
-
-    main()
+def ${1:xs}_push(v):
+    nonlocal ${1:xs}, ${1:xs}_pointer
+    if ${1:xs}_pointer == ${1:xs}.size:
+        # equivalent of `${1:xs}.resize(${1:xs}.size * 2)`
+        old = ${1:xs}
+        ${1:xs} = np.zeros(${1:xs}.size * 2, dtype=${1:xs}.dtype)
+        ${1:xs}[:old.size] = old
+        # ---
+    ${1:xs}[${1:xs}_pointer] = v
+    ${1:xs}_pointer += 1
 """)
 
-path = os.path.join(os.path.dirname(__file__), ".vscode/snippet.code-snippets")
+push("main", open(os.path.join(DIR, "snippets/main.py")).read())
+
+path = os.path.join(DIR, ".vscode/snippet.code-snippets")
 json.dump(snippets, open(path, "w"), indent=2)
