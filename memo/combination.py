@@ -5,9 +5,13 @@ best solution:
 
 - Power: makePowerTableMaspyNumba 13msec
 - Inverse: makeInverseTableNumba 47msec
-- Factorial: makeFactorialTableMaspyNumba: 13msec
-- InvFactorial: makeInvFactoTableWoInvNumba: 53msec
-- Combination: make tables of Factorial and InvFactorial, then calc in time (O(1))
+- Factorial: makeFactorialTableMaspyNumba: 13msec (K is excluded)
+- ...: makeFactorialTableMaspy2Numba: 13msec (K is included, x! == ret[n-1])
+- InvFactorial: makeInvFactoTableMaspyOriginalNumba 17msec (Need to give (K - 1)!) 
+- ...: makeInvFactoTableWoInvNumba: 53msec
+- Combination: makeCombibationTableJointedNumba: 35msec (if you need C(n, r) for specific n)
+- ...: makeCombibationTableMaspy: 19msec (need f and invf. 13 + 17 + 19 = 49msec)
+
 
 """
 
@@ -392,6 +396,62 @@ def makeInvFactoTableMaspy(inva, K=K, MOD=MOD):
 makeInvFactoTableMaspyNumba = numba.njit(makeInvFactoTableMaspy)
 
 
+def makeInvFactoTableMaspyOriginal(factKm1, K=K, MOD=MOD):
+    """calc i!^-1 for i in [0, K) mod MOD.
+    MOD should be prime, K should be squared number.
+    *NOTICE* K is not included.
+    Need to give factKm1 = (K - 1)!
+
+    see https://maspypy.com/numpyn-mod-p%e3%81%ae%e8%a8%88%e7%ae%97
+
+    >>> f = bestFactorial()
+    >>> f[99]
+    104379182
+    >>> xs = list(makeInvFactoTableMaspyOriginal(f[99], 100)[:5])
+    >>> xs
+    [1, 1, 500000004, 166666668, 41666667]
+    >>> xs == makeInvFactoTableWoInvNumba(4)
+    True
+    >>> list(makeInvFactoTableMaspyOriginalNumba(f[99], 100)) == list(makeInvFactoTableMaspyOriginal(f[99], 100))
+    True
+
+    %timeit makeInvFactoTableMaspyOriginal(f[K - 1])
+    35.2 ms ± 543 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
+    33.1 ms ± 312 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
+
+    %timeit makeInvFactoTableMaspyOriginalNumba(f[K - 1])
+    16.6 ms ± 2.01 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+    """
+    rootK = math.ceil(math.sqrt(K))
+    ret = np.arange(1, K + 1, dtype=np.int64)[::-1].reshape(rootK, rootK)
+    ret[0, 0] = pow(int(factKm1), MOD-2, MOD)  # inverse of (k-1)!
+    for n in range(1, rootK):
+        ret[:, n] *= ret[:, n-1]
+        ret[:, n] %= MOD
+    for n in range(1, rootK):
+        ret[n] *= ret[n-1, -1]
+        ret[n] %= MOD
+    ret = ret.ravel()[::-1]
+    return ret
+
+
+@numba.njit
+def makeInvFactoTableMaspyOriginalNumba(factKm1, K=K, MOD=MOD):
+    rootK = math.ceil(math.sqrt(K))
+    ret = np.ascontiguousarray(
+        np.arange(1, K + 1, dtype=np.int64)[::-1]
+    ).reshape(rootK, rootK)
+    ret[0, 0] = getSingleInverseNumba(factKm1)  # inverse of (k-1)!
+    for n in range(1, rootK):
+        ret[:, n] *= ret[:, n-1]
+        ret[:, n] %= MOD
+    for n in range(1, rootK):
+        ret[n] *= ret[n-1, -1]
+        ret[n] %= MOD
+    ret = ret.ravel()[::-1]
+    return ret
+
+
 def combination(n, k, f, invf):
     """combination C(n, k)
     >>> f = makeFactorialTable()
@@ -399,6 +459,9 @@ def combination(n, k, f, invf):
     >>> invf = makeInvFactoTable(inv)
     >>> [combination(10000, i, f, invf) for i in range(7)]
     [1, 10000, 49995000, 616668838, 709582588, 797500005, 2082363]
+
+    %timeit combination(10000, 100, f, invf)
+    814 ns ± 6.5 ns per loop (mean ± std. dev. of 7 runs, 1000000 loops each)
     """
     return f[n] * invf[k] % MOD * invf[n - k] % MOD
 
@@ -410,6 +473,9 @@ def comb_rep(n, k, f, invf):
     >>> invf = makeInvFactoTable(inv)
     >>> [comb_rep(3, i, f, invf) for i in range(7)]
     [1, 3, 6, 10, 15, 21, 28]
+
+    %timeit comb_rep(10000, 100, f, invf)
+    881 ns ± 8.53 ns per loop (mean ± std. dev. of 7 runs, 1000000 loops each)
     """
     return f[n + k - 1] * invf[k] % MOD * invf[n - 1] % MOD
 
@@ -419,11 +485,124 @@ def makeCombibationTable(n, f, invf):
 
     %timeit makeCombibationTable(K, f, invf)
     356 ms ± 10.8 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+
+    %timeit makeCombibationTable(10000, f, invf)
+    7.43 ms ± 60.7 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
+
+    %timeit makeCombibationTableNumba(K, f, invf)
+    27.2 ms ± 365 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
     """
     return [
         f[n] * invf[k] % MOD * invf[n - k] % MOD
         for k in range(n + 1)
     ]
+
+
+makeCombibationTableNumba = numba.njit(makeCombibationTable)
+
+
+def makeCombibationTableMaspy(n, f, invf):
+    """make table of C(n, i) for i in [0, N)
+    >>> f = makeFactorialTableMaspyNumba()
+    >>> f[:4]
+    array([1, 1, 2, 6])
+    >>> N = 10000
+    >>> UBOUND = math.ceil(math.sqrt(N + 1)) ** 2
+    >>> UBOUND
+    10201
+    >>> invf = makeInvFactoTableMaspyOriginalNumba(f[UBOUND - 1], UBOUND)
+    >>> invf[:4]
+    array([        1,         1, 500000004, 166666668])
+    >>> list(makeCombibationTableMaspy(N, f, invf)[:5])
+    [1, 10000, 49995000, 616668838, 709582588]
+
+    >>> f = makeFactorialTableMaspyNumba()
+    >>> invf = makeInvFactoTableMaspyOriginalNumba(f[K - 1], K)
+    >>> list(makeCombibationTableMaspy(K - 1, f, invf)[:5])
+    [1, 999999, 998496508, 501840344, 583281443]
+
+    %timeit makeCombibationTableMaspy(K - 1, f, invf)
+    18.5 ms ± 231 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
+    """
+    return f[n] * invf[: n + 1] % MOD * invf[n::-1] % MOD
+
+
+def makeCombibationTableJointed(N):
+    """ make table of C(n, i) for i in [0, N)
+    Jointed version of makeFactorialTableMaspy, 
+    makeInvFactoTableMaspyOriginal, and makeCombibationTableMaspy.
+
+    >>> list(makeCombibationTableJointed(10000)[:5])
+    [1, 10000, 49995000, 616668838, 709582588]
+
+    %timeit makeCombibationTableJointed(K)
+    89.5 ms ± 1.15 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+    """
+    K = math.ceil(math.sqrt(N + 1)) ** 2
+    rootK = math.ceil(math.sqrt(K))
+
+    facto = np.arange(K, dtype=np.int64).reshape(rootK, rootK)
+    facto[0, 0] = 1
+    for n in range(1, rootK):
+        facto[:, n] *= facto[:, n-1]
+        facto[:, n] %= MOD
+    for n in range(1, rootK):
+        facto[n] *= facto[n-1, -1]
+        facto[n] %= MOD
+    facto = facto.ravel()
+
+    invf = np.arange(1, K + 1, dtype=np.int64)[::-1].reshape(rootK, rootK)
+    invf[0, 0] = pow(int(facto[K - 1]), MOD-2, MOD)  # inverse of (k-1)!
+    for n in range(1, rootK):
+        invf[:, n] *= invf[:, n-1]
+        invf[:, n] %= MOD
+    for n in range(1, rootK):
+        invf[n] *= invf[n-1, -1]
+        invf[n] %= MOD
+    invf = invf.ravel()[::-1]
+
+    return facto[N] * invf[: N + 1] % MOD * invf[N::-1] % MOD
+
+
+@numba.njit
+def makeCombibationTableJointedNumba(N):
+    """ make table of C(n, i) for i in [0, N)
+    Jointed version of makeFactorialTableMaspy, 
+    makeInvFactoTableMaspyOriginal, and makeCombibationTableMaspy.
+
+    >>> list(makeCombibationTableJointedNumba(10000)[:5])
+    [1, 10000, 49995000, 616668838, 709582588]
+
+    %timeit makeCombibationTableJointedNumba(K)
+    35.5 ms ± 410 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
+    """
+    K = math.ceil(math.sqrt(N + 1)) ** 2
+    rootK = math.ceil(math.sqrt(K))
+
+    facto = np.arange(K, dtype=np.int64).reshape(rootK, rootK)
+    facto[0, 0] = 1
+    for n in range(1, rootK):
+        facto[:, n] *= facto[:, n-1]
+        facto[:, n] %= MOD
+    for n in range(1, rootK):
+        facto[n] *= facto[n-1, -1]
+        facto[n] %= MOD
+    facto = facto.ravel()
+
+    invf = np.ascontiguousarray(
+        np.arange(1, K + 1, dtype=np.int64)[::-1]
+    ).reshape(rootK, rootK)
+
+    invf[0, 0] = getSingleInverseNumba(facto[K - 1])  # inverse of (k-1)!
+    for n in range(1, rootK):
+        invf[:, n] *= invf[:, n-1]
+        invf[:, n] %= MOD
+    for n in range(1, rootK):
+        invf[n] *= invf[n-1, -1]
+        invf[n] %= MOD
+    invf = invf.ravel()[::-1]
+
+    return facto[N] * invf[: N + 1] % MOD * invf[N::-1] % MOD
 
 
 def makeCombRepTable(n, f, invf):
@@ -434,6 +613,13 @@ def makeCombRepTable(n, f, invf):
         f[n + k - 1] * invf[k] % MOD * invf[n - 1] % MOD
         for k in range(n + 1)
     ]
+
+
+bestPower = makePowerTableMaspyNumba
+bestInverse = makeInverseTableNumba
+bestFactorial = makeFactorialTableMaspyNumba
+bestInvFactorial = makeInvFactoTableMaspyOriginalNumba
+bestCombination = makeCombibationTableJointedNumba
 
 
 def solve():
