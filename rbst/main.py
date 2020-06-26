@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 numba-able RBST(Randomized Binary Search Tree)
 
@@ -9,6 +10,10 @@ import sys
 import numpy as np
 
 
+def dp(*x):  # debugprint
+    print(*x)
+
+
 def main(N, Q, data):
     # --- RBST implementation
     INF = 10 ** 9 + 1
@@ -16,7 +21,7 @@ def main(N, Q, data):
     random_state = np.array(
         [123456789, 362436069, 521288629, 88675123], dtype=np.int16)
 
-    MAX_NODES = 5 * 10 ** 5
+    MAX_NODES = 10 ** 6
     values = np.repeat(SUM_UNITY, MAX_NODES)
     sizes = np.zeros(MAX_NODES, dtype=np.int32)
     sums = np.repeat(SUM_UNITY, MAX_NODES)
@@ -26,7 +31,7 @@ def main(N, Q, data):
 
     ret_left = 0
     ret_right = 0
-    roots = [0]
+    roots = np.zeros(2 * 10 ** 5 + 1, dtype=np.int32)
 
     def randInt():
         tx, ty, tz, tw = random_state
@@ -62,6 +67,7 @@ def main(N, Q, data):
     def lower_bound(node, val):
         ret = 0
         while True:
+            # dp("lower_bound: node, val", node, val)
             push(node)
             if not node:
                 return ret
@@ -177,13 +183,40 @@ def main(N, Q, data):
 
     def erase(root_id, val):
         nonlocal ret_left, ret_right
+        # dp("erase: root_id, val", root_id, val)
         if count(root_id, val) == 0:
             return  # erasing absent item
+        # print("lowewr_bound", lower_bound(roots[root_id], val))
         split(roots[root_id], lower_bound(roots[root_id], val))
         lhs = ret_left
+        # print("lhs: ", node_to_list(lhs))
         split(ret_right, 1)
         rhs = ret_right
+        # print("rhs: ", node_to_list(rhs))
         roots[root_id] = merge(lhs, rhs)
+
+    def get_min(root_id):
+        cur = roots[root_id]
+        while cur:
+            minvalue = values[cur]
+            cur = lefts[cur]
+        return minvalue
+
+    def get_max(root_id):
+        cur = roots[root_id]
+        while cur:
+            maxvalue = values[cur]
+            cur = rights[cur]
+        return maxvalue
+
+    if 0:  # for debug, pure python mode only
+        def node_to_list(node):
+            if not node:
+                return []
+            return (
+                node_to_list(lefts[node]) +
+                [values[node]] +
+                node_to_list(rights[node]))
 
     # --- end RBST implementation
 
@@ -193,14 +226,6 @@ def main(N, Q, data):
     p_to_k = [0] * (N + 1)  # 1-origin
     # dsc. order heapq for each k
     MAX_K = 200000
-    # k_to_ps = defaultdict(list)
-    # k_to_ps = [[] for i in range(MAX_K + 1)]
-    k_to_ps = [[(-INF, 0)]]
-    for i in range(MAX_K):
-        x = [(-INF, 0)]
-        k_to_ps.append(x)
-        x.pop()
-    k_to_ps[0].pop()
 
     AB = data[:2 * N]
     CD = data[2 * N:]
@@ -211,14 +236,17 @@ def main(N, Q, data):
         I = i + 1
         p_to_rate[I] = A
         p_to_k[I] = B
-        heappush(k_to_ps[B], (-A, I))
+        insert(B, A)
 
-    # construct RBST
-    for i in range(MAX_K + 1):
-        k = k_to_ps[i]
-        if k:
-            neg_rate, max_p = k[0]
-            insert(0, -neg_rate)
+    for i in range(1, MAX_K + 1):
+        if roots[i]:
+            rate = get_max(i)
+            insert(0, rate)
+
+    # for i in range(21):
+    #     xs = node_to_list(roots[i])
+    #     if len(xs):
+    #         print(f"{i}: ", xs)
 
     answers = [0] * Q
     for t in range(Q):
@@ -229,54 +257,41 @@ def main(N, Q, data):
         p_to_k[C] = dst
 
         # remove from `src`
-        # print(f"move {C} from {src} to {dst}")
-        neg_rate, max_p = k_to_ps[src][0]
-        if max_p == C:
+        # print(f"move {C}(rate:{rateC}) from {src} to {dst}")
+        rate = get_max(src)
+        if rate == rateC:
             # print("max person leaving")
-            erase(0, -neg_rate)
-
-            heappop(k_to_ps[src])
-            if not k_to_ps[src]:
-                # now it is empty
-                pass
-
-            else:
+            erase(0, rate)
+            erase(src, rate)
+            if roots[src]:
                 # find next person
-                while True:
-                    if not k_to_ps[src]:
-                        break
-                    neg_rate, max_p = k_to_ps[src][0]
-                    if p_to_k[max_p] != src:
-                        heappop(k_to_ps[src])
-                        continue
-                    insert(0, -neg_rate)
-                    break
+                rate = get_max(src)
+                insert(0, rate)
         else:
             # not max person leaving, no update on max_ps
-            pass
+            erase(src, rateC)
 
         # move to `dst`
-        if not k_to_ps[dst]:
+        if not roots[dst]:
             # destination is empty
-            heappush(k_to_ps[dst], (-rateC, C))
+            insert(dst, rateC)
             insert(0, rateC)
         else:
             # compare to existing max person
-            neg_rate, max_p = k_to_ps[dst][0]
-            if -neg_rate < rateC:
+            rate = get_max(dst)
+            if rate < rateC:
                 # max person changed
-                erase(0, -neg_rate)
+                erase(0, rate)
                 insert(0, rateC)
-            else:
-                # no update on max_ps
-                pass
-            heappush(k_to_ps[dst], (-rateC, C))
+            insert(dst, rateC)
 
-        cur = roots[0]
-        while cur:
-            minvalue = values[cur]
-            cur = lefts[cur]
-        answers[t] = minvalue
+        answers[t] = get_min(0)
+        # print(t)
+        # for i in range(21):
+        #     xs = node_to_list(roots[i])
+        #     if len(xs):
+        #         print(f"{i}: ", xs)
+        # print("answer", answers[t])
     return np.array(answers)
 
 

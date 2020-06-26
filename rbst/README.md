@@ -314,3 +314,29 @@ test: handmade09        AC 4.504
 test: random10  AC 4.425
 AC: 11, max_time: 4.50
 ```
+
+# multi-root
+
+```
+test: handmade02        AC 0.175
+test: sample01  AC 0.132
+test: sample00  AC 0.132
+test: handmade05_mod    AC 0.133
+test: handmade03        AC 0.136
+test: handmade04        AC 0.141
+test: handmade05        AC 1.642
+test: handmade06        AC 4.044
+test: handmade07        AC 3.898
+test: handmade08        AC 5.209
+test: random10  AC 5.106
+test: handmade09        AC 5.287
+```
+
+```
+time ./main.py -c
+compiling
+
+real    2m48.329s
+user    2m41.474s
+sys     0m4.630s
+```
