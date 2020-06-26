@@ -9,6 +9,7 @@ metadata.json
 error
 output
 expect
+diff_output
 input
 prof*
 tmp
