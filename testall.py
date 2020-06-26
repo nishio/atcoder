@@ -42,7 +42,6 @@ else:
 
 PURE_PYTHON = "-p" if args.pure_python else ""
 
-DIFF_OUTPUT = subprocess.DEVNULL if args.no_diff else None
 
 for f in test:
     print(f"test: {f}", end="\t")
@@ -58,12 +57,18 @@ for f in test:
         continue
 
     ret = subprocess.call(
-        f"diff -w output out/{f}",
-        stdout=DIFF_OUTPUT,
+        f"diff -w output out/{f} > diff_output",
         shell=True)
     if ret:
         print("WA")
         num_wa += 1
+        # show diff only when it is small
+        if not args.no_diff:
+            data = open("diff_output").read()
+            if len(data) < 1000:
+                print(data)
+            else:
+                print("too long output, omitted")
         if not args.force_all:
             break
         continue
