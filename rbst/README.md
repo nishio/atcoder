@@ -318,18 +318,19 @@ AC: 11, max_time: 4.50
 # multi-root
 
 ```
-test: handmade02        AC 0.175
-test: sample01  AC 0.132
-test: sample00  AC 0.132
-test: handmade05_mod    AC 0.133
-test: handmade03        AC 0.136
-test: handmade04        AC 0.141
-test: handmade05        AC 1.642
-test: handmade06        AC 4.044
-test: handmade07        AC 3.898
-test: handmade08        AC 5.209
-test: random10  AC 5.106
-test: handmade09        AC 5.287
+test: handmade02        AC 0.194
+test: sample01  AC 0.154
+test: sample00  AC 0.175
+test: handmade05_mod    AC 0.169
+test: handmade03        AC 0.164
+test: handmade04        AC 0.188
+test: handmade05        AC 1.722
+test: handmade06        AC 4.495
+test: handmade07        AC 4.488
+test: handmade08        AC 6.414
+test: random10  AC 5.501
+test: handmade09        AC 5.530
+AC: 12, max_time: 6.41
 ```
 
 ```
@@ -339,4 +340,22 @@ compiling
 real    2m48.329s
 user    2m41.474s
 sys     0m4.630s
+```
+
+Pure Python mode
+
+```
+test: handmade02        AC 0.208
+test: sample01  AC 0.164
+test: sample00  AC 0.152
+test: handmade05_mod    AC 0.154
+test: handmade03        AC 0.188
+test: handmade04        AC 0.217
+test: handmade05        AC 42.867
+test: handmade06        AC 287.386
+test: handmade07        AC 263.162
+test: handmade08        AC 277.958
+test: random10  AC 305.557
+test: handmade09        AC 308.058
+AC: 12, max_time: 308.06
 ```
