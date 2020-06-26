@@ -7,7 +7,6 @@ MOD = 10 ** 9 + 7
 K = 10 ** 6
 
 
-@numba.njit
 def makePowerTable(x, K=K, MOD=MOD):
     """calc x^i for i in [0, K] mod MOD
     >>> xs = makePowerTable(2, 20, 1000)
@@ -18,10 +17,12 @@ def makePowerTable(x, K=K, MOD=MOD):
 
     %timeit makePowerTable(23)
     165 ms ± 1.5 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+    166 ms ± 536 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
 
     Numba-jit-ed
-    %timeit makePowerTable(23)
+    %timeit makePowerTableNumba(23)
     45 ms ± 546 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
+    48.7 ms ± 3.12 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
     """
     ret = [1] * (K + 1)
     cur = 1
@@ -32,7 +33,9 @@ def makePowerTable(x, K=K, MOD=MOD):
     return ret
 
 
-@numba.njit
+makePowerTableNumba = numba.njit(makePowerTable)
+
+
 def makeInverseTable(K=K, MOD=MOD):
     """calc i^-1 for i in [1, K] mod MOD. MOD should be prime
     >>> invs = makeInverseTable(10)
@@ -41,29 +44,43 @@ def makeInverseTable(K=K, MOD=MOD):
 
     %timeit makeInverseTable()
     516 ms ± 26.6 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+    525 ms ± 19.5 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
 
     Numba-jit-ed
-    %timeit makeInverseTable()
+    %timeit makeInverseTableNumba()
     47 ms ± 765 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
+    45.9 ms ± 1.98 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
     """
     ret = [1] * (K + 1)
-    invf = 1
     for i in range(2, K + 1):
         q, r = divmod(MOD, i)
         ret[i] = -ret[r] * q % MOD
     return ret
 
 
+makeInverseTableNumba = numba.njit(makeInverseTable)
+
+
 def getSingleInverse(a, MOD=MOD):
     """
+    get single inverse. O(log N).
     >>> [getSingleInverse(x) for x in range(1, 11)] ==  makeInverseTable(10)[1:]
     True
 
     %timeit getSingleInverse(1000)
     984 ns ± 10.4 ns per loop (mean ± std. dev. of 7 runs, 1000000 loops each)
+    953 ns ± 15 ns per loop (mean ± std. dev. of 7 runs, 1000000 loops each)
 
     %timeit [getSingleInverse(x) for x in range(1, K + 1)]
     2.46 s ± 9.9 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+    2.55 s ± 26.1 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+
+    %timeit getSingleInverseNumba(1000)
+    15.7 µs ± 278 ns per loop (mean ± std. dev. of 7 runs, 100000 loops each)
+
+    %timeit [getSingleInverseNumba(x) for x in range(1, K + 1)]
+    16.6 s ± 1.3 s per loop (mean ± std. dev. of 7 runs, 1 loop each)
+
     """
     b = MOD
     u = 1
@@ -78,7 +95,9 @@ def getSingleInverse(a, MOD=MOD):
     return u
 
 
-@numba.njit
+getSingleInverseNumba = numba.njit(getSingleInverse)
+
+
 def makeFactorialTable(K=K, MOD=MOD):
     """calc i! for i in [0, K] mod MOD. MOD should be prime
     >>> fs = makeFactorialTable(10, 23)
@@ -90,10 +109,11 @@ def makeFactorialTable(K=K, MOD=MOD):
 
     %timeit makeFactorialTable()
     163 ms ± 805 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
+    169 ms ± 1.97 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 
-    Numba-jit-ed
-    %timeit makeFactorialTable()
+    %timeit makeFactorialTableNumba()
     45 ms ± 1.18 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+    46.1 ms ± 1.43 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
     """
     ret = [1] * (K + 1)
     cur = 1
@@ -104,7 +124,9 @@ def makeFactorialTable(K=K, MOD=MOD):
     return ret
 
 
-@numba.njit
+makeFactorialTableNumba = numba.njit(makeFactorialTable)
+
+
 def makeFactorialTableMaspy(K=K, MOD=MOD):
     """calc i! for i in [0, K) mod MOD.
     MOD should be prime, K should be squared number.
@@ -119,10 +141,12 @@ def makeFactorialTableMaspy(K=K, MOD=MOD):
 
     %timeit makeFactorialTableMaspy()
     35.1 ms ± 582 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
+    33.6 ms ± 1.08 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 
     Numba-jit-ed
-    %timeit makeFactorialTableMaspy()
+    %timeit makeFactorialTableMaspyNumba()
     14 ms ± 1.18 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+    12.3 ms ± 782 µs per loop (mean ± std. dev. of 7 runs, 1 loop each)
     """
     rootK = math.ceil(math.sqrt(K))
 
@@ -139,16 +163,22 @@ def makeFactorialTableMaspy(K=K, MOD=MOD):
     return ret
 
 
+makeFactorialTableMaspyNumba = numba.njit(makeFactorialTableMaspy)
+
+
 def makeInvFactoTable(inv, K=K, MOD=MOD):
     """calc i!^-1 for i in [0, K] mod MOD. MOD should be prime
     You can not do inv[f[i]], because f[i] may greater than K.
 
+    inv = makeInverseTable()
     %timeit makeInvFactoTable(inv)
     182 ms ± 1.08 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+    189 ms ± 1.56 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 
-    inva = np.array(inv)
+    inva = np.array(makeInverseTable())
     %timeit makeInvFactoTable(inva)
     329 ms ± 5.22 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+    339 ms ± 4 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
     """
     ret = [1] * (K + 1)
     cur = 1
@@ -159,11 +189,12 @@ def makeInvFactoTable(inv, K=K, MOD=MOD):
     return ret
 
 
-@numba.njit("i8[:](i8[::1], i8, i8)")
+@numba.njit
 def makeInvFactoTableNumba(inv, K=K, MOD=MOD):
     """calc i!^-1 for i in [0, K] mod MOD. MOD should be prime
     You can not do inv[f[i]], because f[i] may greater than K.
 
+    inva = np.array(makeInverseTable())
     %timeit makeInvFactoTableNumba(inva, K, MOD)
     12.5 ms ± 93.5 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
     """
@@ -174,6 +205,49 @@ def makeInvFactoTableNumba(inv, K=K, MOD=MOD):
         cur %= MOD
         ret[i] = cur
     return ret
+
+
+def makeInvFactoTableWoInv(K=K, MOD=MOD):
+    """calc i!^-1 for i in [0, K] mod MOD. MOD should be prime.
+    You can not do inv[f[i]], because f[i] may greater than K.
+
+    No need to pass inv. Makke inv and inv_facto in single loop.
+
+    >>> makeInvFactoTableWoInv(10) == makeInvFactoTable(makeInverseTable(10), 10)
+    True
+
+    %timeit makeInvFactoTableWoInv()
+    749 ms ± 30.6 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+    729 ms ± 54.4 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+
+    %timeit makeInvFactoTable(makeInverseTable())
+    743 ms ± 22.2 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+
+    %timeit makeInvFactoTable(makeInverseTableNumba())
+    233 ms ± 5.02 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+    226 ms ± 2.4 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+
+    %timeit makeInvFactoTableNumba(np.array(makeInverseTableNumba()))
+    111 ms ± 1.85 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+
+    %timeit makeInvFactoTableWoInvNumba()
+    53.7 ms ± 1.62 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+    53 ms ± 743 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
+    """
+
+    inv = [1] * (K + 1)
+    invf = [1] * (K + 1)
+    cur = 1
+    for i in range(2, K + 1):
+        q, r = divmod(MOD, i)
+        inv[i] = -inv[r] * q % MOD
+        cur *= inv[i]
+        cur %= MOD
+        invf[i] = cur
+    return invf
+
+
+makeInvFactoTableWoInvNumba = numba.njit(makeInvFactoTableWoInv)
 
 
 def combination(n, k, f, invf):
