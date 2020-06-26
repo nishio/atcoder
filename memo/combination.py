@@ -237,6 +237,42 @@ def makeFactorialTableMaspy(K=K, MOD=MOD):
 makeFactorialTableMaspyNumba = numba.njit(makeFactorialTableMaspy)
 
 
+def makeFactorialTableMaspy2(K=K, MOD=MOD):
+    """calc i! for i in [1, K] mod MOD.
+    MOD should be prime, K should be squared number.
+    see https://maspypy.com/numpyn-mod-p%e3%81%ae%e8%a8%88%e7%ae%97
+
+    >>> xs = makeFactorialTableMaspy2(100, 23)[:11]
+    >>> xs
+    array([ 1,  2,  6,  1,  5,  7,  3,  1,  9, 21,  1])
+    >>> xs.tolist() == makeFactorialTable(11, 23)[1:]
+    True
+
+    %timeit makeFactorialTableMaspy2()
+    32.2 ms ± 601 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
+
+    Numba-jit-ed
+    %timeit makeFactorialTableMaspy2Numba()
+    12.5 ms ± 938 µs per loop (mean ± std. dev. of 7 runs, 1 loop each)
+    """
+    rootK = math.ceil(math.sqrt(K))
+
+    ret = np.arange(1, K + 1, dtype=np.int64).reshape(rootK, rootK)
+    ret[0, 0] = 1
+    for n in range(1, rootK):
+        ret[:, n] *= ret[:, n-1]
+        ret[:, n] %= MOD
+    for n in range(1, rootK):
+        ret[n] *= ret[n-1, -1]
+        ret[n] %= MOD
+    ret = ret.ravel()
+
+    return ret
+
+
+makeFactorialTableMaspy2Numba = numba.njit(makeFactorialTableMaspy2)
+
+
 def makeInvFactoTable(inv, K=K, MOD=MOD):
     """calc i!^-1 for i in [0, K] mod MOD. MOD should be prime
     You can not do inv[f[i]], because f[i] may greater than K.
