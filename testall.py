@@ -38,6 +38,7 @@ if args.test:
     test = [x.replace("in/", "") for x in args.test.split(",")]
 else:
     test = os.listdir("in")
+    test.sort(key=lambda x: os.stat("in/" + x).st_size)
 
 PURE_PYTHON = "-p" if args.pure_python else ""
 
