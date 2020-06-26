@@ -13,11 +13,12 @@ stored in snippets/main.py.
 runtime options:
 
 - -c: compile `solve` with numba
-- USE_NUMBA: you need to make it True if you want to compile ahead-of-time on atcoder server
+- `USE_NUMBA`: you need to make it True if you want to compile ahead-of-time on atcoder server
 - --numba: force numba mode. use compiled library even if USE_NUMBA=False
 - -p: pure python mode. not use compiled library even if USE_NUMBA=True
-- -t: test mode. call `_test()` and exit without running `main`
-- given filename as argument, read from it instead of sys.stdin.
+- -t: test mode. call `_test()` and exit without running `main`. In default, it calls doctest.
+- If filename given as argument, read from it instead of sys.stdin.
+- `as_input`: take string and make `read` and `input` read from the string. To use in testcase.
 
 # testall.py
 
