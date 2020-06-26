@@ -26,7 +26,7 @@ def main(N, Q, data):
 
     ret_left = 0
     ret_right = 0
-    root = 0
+    roots = [0]
 
     def randInt():
         tx, ty, tz, tw = random_state
@@ -165,25 +165,25 @@ def main(N, Q, data):
                 rights[node] = ret_left
                 ret_left = update(node)
 
-    def count(val):
-        return upper_bound(root, val) - lower_bound(root, val)
+    def count(root_id, val):
+        return upper_bound(roots[root_id], val) - lower_bound(roots[root_id], val)
 
-    def insert(val):
-        nonlocal root, ret_left, ret_right
-        split(root, lower_bound(root, val))
+    def insert(root_id, val):
+        nonlocal ret_left, ret_right
+        split(roots[root_id], lower_bound(roots[root_id], val))
         r = merge(ret_left, create_node(val))
         r = merge(r, ret_right)
-        root = r
+        roots[root_id] = r
 
-    def erase(val):
-        nonlocal root, ret_left, ret_right
-        if count(val) == 0:
+    def erase(root_id, val):
+        nonlocal ret_left, ret_right
+        if count(root_id, val) == 0:
             return  # erasing absent item
-        split(root, lower_bound(root, val))
+        split(roots[root_id], lower_bound(roots[root_id], val))
         lhs = ret_left
         split(ret_right, 1)
         rhs = ret_right
-        root = merge(lhs, rhs)
+        roots[root_id] = merge(lhs, rhs)
 
     # --- end RBST implementation
 
@@ -218,7 +218,7 @@ def main(N, Q, data):
         k = k_to_ps[i]
         if k:
             neg_rate, max_p = k[0]
-            insert(-neg_rate)
+            insert(0, -neg_rate)
 
     answers = [0] * Q
     for t in range(Q):
@@ -233,7 +233,7 @@ def main(N, Q, data):
         neg_rate, max_p = k_to_ps[src][0]
         if max_p == C:
             # print("max person leaving")
-            erase(-neg_rate)
+            erase(0, -neg_rate)
 
             heappop(k_to_ps[src])
             if not k_to_ps[src]:
@@ -249,7 +249,7 @@ def main(N, Q, data):
                     if p_to_k[max_p] != src:
                         heappop(k_to_ps[src])
                         continue
-                    insert(-neg_rate)
+                    insert(0, -neg_rate)
                     break
         else:
             # not max person leaving, no update on max_ps
@@ -259,20 +259,20 @@ def main(N, Q, data):
         if not k_to_ps[dst]:
             # destination is empty
             heappush(k_to_ps[dst], (-rateC, C))
-            insert(rateC)
+            insert(0, rateC)
         else:
             # compare to existing max person
             neg_rate, max_p = k_to_ps[dst][0]
             if -neg_rate < rateC:
                 # max person changed
-                erase(-neg_rate)
-                insert(rateC)
+                erase(0, -neg_rate)
+                insert(0, rateC)
             else:
                 # no update on max_ps
                 pass
             heappush(k_to_ps[dst], (-rateC, C))
 
-        cur = root
+        cur = roots[0]
         while cur:
             minvalue = values[cur]
             cur = lefts[cur]
