@@ -1,3 +1,16 @@
+"""
+Power, Inverse, Factorial, InvFactorial, Combination
+
+best solution:
+
+- Power: makePowerTableMaspyNumba 13msec
+- Inverse: makeInverseTableNumba 47msec
+- Factorial: makeFactorialTableMaspyNumba: 13msec
+- InvFactorial: makeInvFactoTableWoInvNumba: 53msec
+- Combination: make tables of Factorial and InvFactorial, then calc in time (O(1))
+
+"""
+
 import numpy as np
 import sys
 import numba
@@ -34,6 +47,64 @@ def makePowerTable(x, K=K, MOD=MOD):
 
 
 makePowerTableNumba = numba.njit(makePowerTable)
+
+
+def makePowerTableBin(x, K=K, MOD=MOD):
+    """calc x^i for i in [1, K] mod MOD, K should be power of 2
+    >>> xs = list(makePowerTableBin(2, 16, 1000))
+    >>> xs
+    [2, 4, 8, 16, 32, 64, 128, 256, 512, 24, 48, 96, 192, 384, 768, 536]
+    >>> xs == [pow(2, i, 1000) for i in range(1, 17)]
+    True
+
+    %timeit makePowerTableBin(23)
+    199 ms ± 2.11 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+
+    %timeit makePowerTableBinNumba(23)
+    79.5 ms ± 4.84 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+    """
+    ret = np.repeat(x, K)
+    w = K // 2
+    ret[w:] *= x
+    w //= 2
+    while w:
+        ret[w:] *= ret[: - w]
+        ret %= MOD
+        w //= 2
+
+    return ret
+
+
+makePowerTableBinNumba = numba.njit(makePowerTableBin)
+
+
+def makePowerTableMaspy(x, K=K, MOD=MOD):
+    """calc x^i for i in [1, K] mod MOD, K should be power of 2
+    >>> xs = list(makePowerTableMaspy(2, 16, 1000))
+    >>> xs
+    [2, 4, 8, 16, 32, 64, 128, 256, 512, 24, 48, 96, 192, 384, 768, 536]
+    >>> xs == [pow(2, i, 1000) for i in range(1, 17)]
+    True
+
+    %timeit makePowerTableMaspy(23)
+    36.3 ms ± 597 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
+
+    %timeit makePowerTableMaspyNumba(23)
+    13 ms ± 748 µs per loop (mean ± std. dev. of 7 runs, 1 loop each)
+    """
+    rootK = math.ceil(math.sqrt(K))
+    ret = np.repeat(x, K).reshape(rootK, rootK)
+    for n in range(1, rootK):
+        ret[:, n] *= ret[:, n-1]
+        ret[:, n] %= MOD
+    for n in range(1, rootK):
+        ret[n] *= ret[n-1, -1]
+        ret[n] %= MOD
+    ret = ret.ravel()
+    return ret
+
+
+makePowerTableMaspyNumba = numba.njit(makePowerTableMaspy)
 
 
 def makeInverseTable(K=K, MOD=MOD):
@@ -211,7 +282,7 @@ def makeInvFactoTableWoInv(K=K, MOD=MOD):
     """calc i!^-1 for i in [0, K] mod MOD. MOD should be prime.
     You can not do inv[f[i]], because f[i] may greater than K.
 
-    No need to pass inv. Makke inv and inv_facto in single loop.
+    No need to pass inv. Make inv and inv_facto in single loop.
 
     >>> makeInvFactoTableWoInv(10) == makeInvFactoTable(makeInverseTable(10), 10)
     True
@@ -248,6 +319,41 @@ def makeInvFactoTableWoInv(K=K, MOD=MOD):
 
 
 makeInvFactoTableWoInvNumba = numba.njit(makeInvFactoTableWoInv)
+
+
+def makeInvFactoTableMaspy(inva, K=K, MOD=MOD):
+    """calc i!^-1 for i in [0, K) mod MOD.
+    MOD should be prime, K should be squared number.
+    *NOTICE* K is not included.
+    see https://maspypy.com/numpyn-mod-p%e3%81%ae%e8%a8%88%e7%ae%97
+
+    >>> inva = np.array(makeInverseTable(100))
+    >>> list(makeInvFactoTableMaspy(inva, 100)) == makeInvFactoTable(inva, 99)
+    True
+
+    %timeit makeInvFactoTableMaspy(np.array(makeInverseTable()))
+    612 ms ± 9.57 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+    613 ms ± 14.3 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+
+    %timeit makeInvFactoTableMaspyNumba(np.array(makeInverseTable()))
+    617 ms ± 20.3 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+    """
+    rootK = math.ceil(math.sqrt(K))
+
+    ret = inva[np.arange(K, dtype=np.int64)].reshape(rootK, rootK)
+    ret[0, 0] = 1
+    for n in range(1, rootK):
+        ret[:, n] *= ret[:, n-1]
+        ret[:, n] %= MOD
+    for n in range(1, rootK):
+        ret[n] *= ret[n-1, -1]
+        ret[n] %= MOD
+    ret = ret.ravel()
+
+    return ret
+
+
+makeInvFactoTableMaspyNumba = numba.njit(makeInvFactoTableMaspy)
 
 
 def combination(n, k, f, invf):
