@@ -12,5 +12,6 @@ expect
 diff_output
 input
 prof*
+mprofile*
 tmp
 tmp.py
