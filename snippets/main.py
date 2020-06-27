@@ -1,4 +1,16 @@
+#!/usr/bin/env python3
+
+from collections import defaultdict
+from heapq import heappush, heappop
 import sys
+
+sys.setrecursionlimit(10**6)
+input = sys.stdin.buffer.readline
+INF = 10 ** 9 + 1  # sys.maxsize # float("inf")
+
+
+def debug(*x):
+    print(*x)
 
 
 def solve():

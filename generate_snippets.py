@@ -54,26 +54,7 @@ push("stest", """
 """)
 
 push("dp", """
-dp("$1: $2", $2)
-""")
-
-
-push("init", """
-#!/usr/bin/env python3
-
-from collections import defaultdict
-from heapq import heappush, heappop
-import sys
-
-sys.setrecursionlimit(10**6)
-input = sys.stdin.buffer.readline
-# INF = sys.maxsize
-INF = 10 ** 9 + 1
-# INF = float("inf")
-
-def dp(*x):  # debugprint
-    print(*x)
-
+debug("$1: $2", $2)
 """)
 
 push("npreadints", """
