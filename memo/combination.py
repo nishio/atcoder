@@ -277,6 +277,46 @@ def makeFactorialTableMaspy2(K=K, MOD=MOD):
 makeFactorialTableMaspy2Numba = numba.njit(makeFactorialTableMaspy2)
 
 
+def makeFactorialTableMaspyNoReshape(K=K, MOD=MOD):
+    """calc i! for i in [0, K) mod MOD.
+    MOD should be prime, K should be squared number.
+    *NOTICE* K is not included.
+    see https://maspypy.com/numpyn-mod-p%e3%81%ae%e8%a8%88%e7%ae%97
+
+    >>> xs = makeFactorialTableMaspyNoReshape(100, 23)[:11]
+    >>> xs
+    array([ 1,  1,  2,  6,  1,  5,  7,  3,  1,  9, 21])
+    >>> xs.tolist() == makeFactorialTable(10, 23)
+    True
+
+    %timeit makeFactorialTableMaspyNoReshape()
+    31.4 ms ± 333 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
+
+    Numba-jit-ed
+    %timeit makeFactorialTableMaspyNoReshape()
+
+    %timeit makeFactorialTableMaspyNoReshapeNumba()
+    12.3 ms ± 428 µs per loop (mean ± std. dev. of 7 runs, 1 loop each)
+    """
+    rootK = math.ceil(math.sqrt(K))
+    K = rootK ** 2
+
+    ret = np.arange(K, dtype=np.int64)
+    ret[0] = 1
+    for i in range(1, rootK):
+        ret[i::rootK] *= ret[i-1::rootK]
+        ret[i::rootK] %= MOD
+    for i in range(1, rootK):
+        ret[i * rootK:i * rootK + rootK] *= ret[i * rootK - 1]
+        ret[i * rootK:i * rootK + rootK] %= MOD
+
+    return ret
+
+
+makeFactorialTableMaspyNoReshapeNumba = numba.njit(
+    makeFactorialTableMaspyNoReshape)
+
+
 def makeInvFactoTable(inv, K=K, MOD=MOD):
     """calc i!^-1 for i in [0, K] mod MOD. MOD should be prime
     You can not do inv[f[i]], because f[i] may greater than K.
@@ -603,6 +643,44 @@ def makeCombibationTableJointedNumba(N):
     invf = invf.ravel()[::-1]
 
     return facto[N] * invf[: N + 1] % MOD * invf[N::-1] % MOD
+
+
+@numba.njit
+def makeCombibationTableJointedNoReshapeNumba(N):
+    """ make table of C(n, i) for i in [0, N)
+    Jointed version of makeFactorialTableMaspy, 
+    makeInvFactoTableMaspyOriginal, and makeCombibationTableMaspy.
+
+    >>> list(makeCombibationTableJointedNumba(10000)[:5])
+    [1, 10000, 49995000, 616668838, 709582588]
+
+    %timeit makeCombibationTableJointedNoReshapeNumba(K)
+    33 ms ± 809 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
+    """
+    K = math.ceil(math.sqrt(N + 1)) ** 2
+    rootK = math.ceil(math.sqrt(K))
+
+    facto = np.arange(K, dtype=np.int64)
+    facto[0] = 1
+    for i in range(1, rootK):
+        facto[i::rootK] *= facto[i-1::rootK]
+        facto[i::rootK] %= MOD
+    for start in range(rootK, K, rootK):
+        end = start + rootK
+        facto[start:end] *= facto[start - 1]
+        facto[start:end] %= MOD
+
+    invf = np.arange(1, K + 1, dtype=np.int64)
+    invf[-1] = getSingleInverseNumba(facto[K - 1])  # inverse of (k-1)!
+    for pos in range(rootK - 2, -1, -1):
+        invf[pos::rootK] *= invf[pos + 1::rootK]
+        invf[pos::rootK] %= MOD
+
+    for end in range(-rootK, -K, -rootK):
+        start = end - rootK
+        invf[start:end] *= invf[end]
+        invf[start:end] %= MOD
+    return facto[N] * invf[:N + 1] % MOD * invf[N::-1] % MOD
 
 
 def makeCombRepTable(n, f, invf):
