@@ -37,14 +37,6 @@ except:
     def profile(f): return f
 """)
 
-push("line_profiler", """
-kernprof -l $1.py && python3 -m line_profiler $1.py.lprof > ${2:prof}
-""")
-
-push("new", """
-code $1.py && chmod +x $1.py
-""")
-
 push("test", """
 ./$1.py < in/$2 > output && diff output out/$2
 """)
