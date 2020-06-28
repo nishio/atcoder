@@ -4,7 +4,8 @@ from collections import defaultdict
 from heapq import heappush, heappop
 import sys
 import numpy as np
-
+from random import random
+from time import perf_counter
 
 sys.setrecursionlimit(10**6)
 input = sys.stdin.buffer.readline
@@ -12,26 +13,124 @@ INF = 10 ** 9 + 1  # sys.maxsize # float("inf")
 
 
 def debug(*x):
-    print(*x)
+    print(*x, file=sys.stderr)
 
 
-def solve():
+def solve(D, CS, S):
     "void()"
-    pass
+    for i in range(D):
+        print(S[i].argmax() + 1)
 
 
-def main():
-    D = int(input())
-    CS = list(map(int, input().split()))
-    S = np.int16(read().split())
-    S = S.reshape((D, 26))
-    print(S)
-    print(S[4, 0])
+def solve2(D, CS, S):
+    "void()"
+    last = [-1] * 26
+    for i in range(D):
+        dscore = np.zeros(26)
+        for j in range(26):
+            dscore[j] += S[i, j]
+            dscore[j] -= sum(CS[k] * (i - last[k])
+                             for k in range(26) if j != k)
 
-    as_input(OUT)
-    answer = np.int16(read().split())
-    print(answer)
+        j = dscore.argmax()
+        print(j + 1)
+        last[j] = i
 
+
+def solve3(D, CS, S):
+    "void()"
+    from time import perf_counter
+    time = perf_counter()
+
+    answer = []
+    last = [-1] * 26
+    for i in range(D):
+        dscore = np.zeros(26)
+        for j in range(26):
+            dscore[j] += S[i, j]
+            dscore[j] -= sum(CS[k] * (i - last[k])
+                             for k in range(26) if j != k)
+
+        j = dscore.argmax()
+        answer.append(j + 1)
+        last[j] = i
+    s = calcScore(answer, D, CS, S)
+
+    bestscore = s
+    bestanswer = answer
+    while perf_counter() - time < 1.5:
+        answer = []
+        last = [-1] * 26
+        for i in range(D):
+            dscore = np.zeros(26)
+            if random() > 0.99:
+
+                for j in range(26):
+                    dscore[j] += S[i, j]
+                    dscore[j] -= sum(CS[k] * (i - last[k])
+                                     for k in range(26) if j != k)
+
+                j = dscore.argmax()
+            else:
+                j = int(random() * 26)
+            answer.append(j + 1)
+            last[j] = i
+        s = calcScore(answer, D, CS, S)
+        if s > bestscore:
+            bestscore = s
+            debug(": bestscore", bestscore)
+            bestanswer = answer
+    print(*bestanswer, sep="\n")
+
+
+def solve(D, CS, S):
+    "void()"
+    time = perf_counter()
+
+    answer = []
+    last = [-1] * 26
+    for i in range(D):
+        dscore = np.zeros(26)
+        for j in range(26):
+            dscore[j] += S[i, j]
+            dscore[j] -= sum(CS[k] * (i - last[k])
+                             for k in range(26) if j != k)
+
+        j = dscore.argmax()
+        answer.append(j + 1)
+        last[j] = i
+    s = calcScore(answer, D, CS, S)
+
+    bestscore = s
+    bestanswer = answer
+
+    ORIG_S = S.astype(np.float)
+    while perf_counter() - time < 10.5:
+        answer = []
+        last = [-1] * 26
+        k1 = random()
+        k2 = random() * k1
+        S = ORIG_S.copy()
+        S[:-1] = (S[:-1] + k1 * ORIG_S[1:]) / (1 + k1)
+        S[:-2] = (S[:-2] + k2 * ORIG_S[2:]) / (1 + k2)
+        for i in range(D):
+            dscore = np.zeros(26)
+            for j in range(26):
+                dscore[j] += S[i, j]
+                dscore[j] -= sum(CS[k] * (i - last[k])
+                                 for k in range(26) if j != k)
+
+            j = dscore.argmax()
+            answer.append(j + 1)
+            last[j] = i
+        s = calcScore(answer, D, CS, ORIG_S)
+        if s > bestscore:
+            bestscore = s
+            bestanswer = answer
+    print(*bestanswer, sep="\n")
+
+
+def calcScore(answer, D, CS, S):
     last = [-1] * 26
     score = 0
     for i in range(D):
@@ -39,8 +138,21 @@ def main():
         score += S[i, j]
         last[j] = i
         score -= sum(CS[j] * (i - last[j]) for j in range(26))
-    print(score)
-    # solve()
+    return score
+
+
+# def solve():
+#     print([1] * 26, set="\n")
+
+
+def main():
+    D = int(input())
+    CS = list(map(int, input().split()))
+    S = np.int16(read().split())
+    S = S.reshape((D, 26))
+
+    # print(calcScore(answer, D, CS, S))
+    solve(D, CS, S)
 
 
 T = """
