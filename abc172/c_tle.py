@@ -1,53 +1,68 @@
 #!/usr/bin/env python3
-
-from functools import reduce
-from operator import mul
-from collections import defaultdict, Counter
-from heapq import heappush, heappop
 import sys
-from math import sqrt, floor
-
-sys.setrecursionlimit(10**6)
-input = sys.stdin.buffer.readline
-INF = 10 ** 9 + 1  # sys.maxsize # float("inf")
+from itertools import accumulate
+import numba
+import numpy as np
 
 
 def debug(*x):
     print(*x)
 
 
-def solve(N):
-    "void(i8)"
-    ret = 0
-    i = 2
-    while True:
-        step = i // 2
-        start = (i + 1) // 2 * step
-        if start > N:
+@numba.njit
+def solve(N, M, K, sA, sB):
+    "void()"
+
+    last_can_read = 0
+    for ij in range(1, N + M + 2):
+        # debug(": ij", ij)
+        for i in range(0, ij + 1):
+            j = ij - i
+            # debug(": i,j", i, j)
+            if j > M:
+                # debug("cont: ", )
+                continue
+            if i > N:
+                # debug("break: ", )
+                break
+            cost = sA[i] + sB[j]
+            # debug(": cost", cost)
+            if cost <= K:
+                # can read
+                # debug("can read: ", i, j, cost)
+                last_can_read = ij
+                break
+        else:
+            # no break = can't read
             break
-        end = N // step * step
-        ret += (start + end) * ((end - start) // step + 1) // 2
-        i += 1
-    print(ret)
+
+    print(last_can_read)
 
 
 def main():
-    N = int(input())
-    solve(N)
+    N, M, K = map(int, input().split())
+
+    AS = list(map(int, input().split()))
+    BS = list(map(int, input().split()))
+
+    sA = np.array([0] + list(accumulate(AS)))
+    sB = np.array([0] + list(accumulate(BS)))
+    # debug("s:sA,sB", sA, sB)
+    solve(N, M, K, sA, sB)
 
 
 def _test():
     """
-    >>> solve(4)
-    23
-
-    >>> solve(100)
-    26879
-
-    >>> solve(10000000)
-    838627288460105
+    >>> 
+    >>> main()
     """
     import doctest
+    as_input('''
+    3 4 240
+    60 90 120
+    80 150 80 150
+    ''')
+    main()
     doctest.testmod()
 
 
