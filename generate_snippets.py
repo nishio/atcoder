@@ -37,9 +37,20 @@ except:
     def profile(f): return f
 """)
 
-push("test", """
-./$1.py < in/$2 > output && diff output out/$2
-""")
+push("test", '''
+${1:T} = """
+$2
+"""
+
+def test_$1():
+    """
+    >>> as_input($1)
+    >>> main()
+    """
+''')
+# push("test", """
+# ./$1.py < in/$2 > output && diff output out/$2
+# """)
 
 push("stest", """
 ./$1.py < input > output && diff output expect
