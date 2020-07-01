@@ -19,7 +19,7 @@ def solve():
 
 
 def main():
-    solve()
+    print(solve())
 
 
 def _test():
@@ -32,8 +32,12 @@ def as_input(s):
     import io
     global read, input
     f = io.StringIO(s.strip())
-    input = f.readline
-    read = f.read
+
+    def input():
+        return bytes(f.readline(), "ascii")
+
+    def read():
+        return bytes(f.read(), "ascii")
 
 
 USE_NUMBA = False
