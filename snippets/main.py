@@ -10,16 +10,17 @@ INF = 10 ** 9 + 1  # sys.maxsize # float("inf")
 
 
 def debug(*x):
-    print(*x)
+    print(*x, file=sys.stderr)
 
 
-def solve():
+def solve(SOLVE_PARAMS):
     "void()"
     pass
 
 
 def main():
-    print(solve())
+    $1
+    print(solve(SOLVE_PARAMS))
 
 
 def _test():
@@ -57,6 +58,7 @@ else:
         # if not -p, import compiled module
         from my_module import solve  # pylint: disable=all
     elif sys.argv[-1] == "-t":
+        print("testing")
         _test()
         sys.exit()
     elif sys.argv[-1] != '-p' and len(sys.argv) == 2:
