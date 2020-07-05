@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
-from collections import defaultdict
-from heapq import heappush, heappop
+#from collections import defaultdict
+#from heapq import heappush, heappop
 import sys
 
 sys.setrecursionlimit(10**6)
@@ -14,14 +14,16 @@ def debug(*x):
 
 
 def solve(SOLVE_PARAMS):
-    "void()"
     pass
 
 
 def main():
-    $1
+    # parse input
     print(solve(SOLVE_PARAMS))
 
+
+# tests
+# add tests above
 
 def _test():
     import doctest
