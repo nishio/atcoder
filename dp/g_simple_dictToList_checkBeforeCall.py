@@ -11,21 +11,25 @@ sys.setrecursionlimit(10**6)
 
 
 def solve(N, M, edges):
-    longest = {}
+    longest = [-1] * (N + 1)
+    for i in range(N + 1):
+        if not edges[i]:
+            longest[i] = 0
 
     def get_longest(start):
-        if start in longest:
-            return longest[start]
+        next = edges[start]
+        for v in next:
+            if longest[v] == -1:
+                longest[v] = get_longest(v)
 
-        next_edges = edges.get(start)
-        if not next_edges:
-            ret = 0
-        else:
-            ret = max(get_longest(v) for v in edges[start]) + 1
-        longest[start] = ret
+        ret = max(longest[v] for v in next) + 1
         return ret
 
-    return max(get_longest(v) for v in edges)
+    for i in range(N + 1):
+        if longest[i] == -1:
+            longest[i] = get_longest(i)
+
+    return max(longest[v] for v in edges)
 
 
 def main():

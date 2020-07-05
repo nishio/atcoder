@@ -1,8 +1,5 @@
-#!/usr/bin/env python3
 """
-Simple Version
-Python TLE https://atcoder.jp/contests/dp/submissions/14906600
-PyPy TLE https://atcoder.jp/contests/dp/submissions/14906630
+Simple Cython
 """
 from collections import defaultdict
 import sys
