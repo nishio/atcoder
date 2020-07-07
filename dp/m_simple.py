@@ -22,27 +22,15 @@ def solve(N, K, XS):
     for i in range(1, N):
         v = 0
         newtable = [0] * (K + 1)
-        accum = [0] * (K + 1)
-        acc = 0
         for j in range(K + 1):
-            acc += table[j]
-            accum[j] = acc
+            v = 0
+            for k in range(XS[i] + 1):
+                if j - k < 0:
+                    break
+                v += table[j - k]
+                v %= MOD
 
-        # debug(": table", table)
-        # debug(": accum", accum)
-        for j in range(K + 1):
-            # v = 0
-            # for k in range(XS[i] + 1):
-            #     if j - k < 0:
-            #         break
-            #     v += table[j - k]
-            #     v %= MOD
-            v = accum[j]
-            k = j - XS[i] - 1
-            if k >= 0:
-                v -= accum[k]
-
-            newtable[j] = v % MOD
+            newtable[j] = v
         table = newtable
 
     return table[K]
