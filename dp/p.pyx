@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
 
-#from collections import defaultdict
+from collections import defaultdict
 #from heapq import heappush, heappop
-#import numpy as np
-from itertools import accumulate
 import sys
 
 sys.setrecursionlimit(10**6)
@@ -11,116 +9,59 @@ input = sys.stdin.buffer.readline
 INF = 10 ** 9 + 1  # sys.maxsize # float("inf")
 MOD = 10 ** 9 + 7
 
-debug_indent = 0
-
 
 def debug(*x):
-    global debug_indent
-    x = list(x)
-    indent = 0
-    if x[0].startswith("enter") or x[0][0] == ">":
-        indent = 1
-    if x[0].startswith("leave") or x[0][0] == "<":
-        debug_indent -= 1
-    x[0] = "  " * debug_indent + x[0]
     print(*x, file=sys.stderr)
-    debug_indent += indent
 
 
-def solve(N, lessthan):
-    k = 1
-    table = [0] * (k + 1)
-    if lessthan[-1]:
-        for i in range(k + 1):
-            table[i] = k - i
-    else:
-        for i in range(k + 1):
-            table[i] = i
+cdef long ret_white
+cdef long ret_total
 
-    for k in range(2, N):
-        newtable = [0] * (k + 1)
-        acc = [0] + list(accumulate(table))
-        if lessthan[-k]:
-            for i in range(k + 1):
-                # for j in range(k - i):
-                #    newtable[i] += table[j + i]
-                newtable[i] += acc[k] - acc[i]
-        else:
-            for i in range(k + 1):
-                # for j in range(i):
-                #    newtable[i] += table[j]
-                newtable[i] += acc[i]
-        table = [x % MOD for x in newtable]
-    return sum(table) % MOD
+cdef visit(long parent, long self):
+    global ret_white, ret_total
+    if parent != 0 and len(edges[self]) == 1:
+        # self is leaf
+        ret_white = 1
+        ret_total = 2
+        return
+
+    black = 1
+    white = 1
+    for child in edges[self]:
+        if child == parent:
+            continue
+        visit(self, child)
+        black *= ret_white
+        black %= MOD
+        white *= ret_total
+        white %= MOD
+    ret_white = white
+    ret_total = white + black
+    return
+
+
+def solve(N, edges):
+    visit(0, 1)
+    return ret_total % MOD
 
 
 def main():
+    global edges
     # parse input
     N = int(input())
-    lessthan = [c == ord("<") for c in input().strip()]
-    print(solve(N, lessthan))
+    edges = defaultdict(list)
+    for i in range(N - 1):
+        x, y = map(int, input().split())
+        edges[x].append(y)
+        edges[y].append(x)
+    print(solve(N, edges))
 
 
 # tests
-T0 = """
-2
->
-"""
-
-
-def test_T0():
-    """
-    >>> as_input(T0)
-    >>> main()
-    1
-    """
-
-
-T01 = """
-3
-<<
-"""
-
-
-def test_T01():
-    """
-    >>> as_input(T01)
-    >>> main()
-    1
-    """
-
-
-T02 = """
-3
->>
-"""
-
-
-def test_T02():
-    """
-    >>> as_input(T02)
-    >>> main()
-    1
-    """
-
-
-T03 = """
-3
-<>
-"""
-
-
-def test_T03():
-    """
-    >>> as_input(T03)
-    >>> main()
-    2
-    """
-
-
 T1 = """
-4
-<><
+3
+1 2
+2 3
 """
 
 
@@ -133,8 +74,10 @@ def test_T1():
 
 
 T2 = """
-5
-<<<<
+4
+1 2
+1 3
+1 4
 """
 
 
@@ -142,13 +85,12 @@ def test_T2():
     """
     >>> as_input(T2)
     >>> main()
-    1
+    9
     """
 
 
 T3 = """
-20
->>>><>>><>><>>><<>>
+1
 """
 
 
@@ -156,7 +98,29 @@ def test_T3():
     """
     >>> as_input(T3)
     >>> main()
-    217136290
+    2
+    """
+
+
+T4 = """
+10
+8 5
+10 8
+6 5
+1 5
+4 8
+2 10
+3 6
+9 2
+1 7
+"""
+
+
+def test_T4():
+    """
+    >>> as_input(T4)
+    >>> main()
+    157
     """
 # add tests above
 
