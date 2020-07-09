@@ -2,15 +2,28 @@
 
 #from collections import defaultdict
 #from heapq import heappush, heappop
+#import numpy as np
 import sys
 
 sys.setrecursionlimit(10**6)
 input = sys.stdin.buffer.readline
 INF = 10 ** 9 + 1  # sys.maxsize # float("inf")
+MOD = 10 ** 9 + 7
+
+debug_indent = 0
 
 
 def debug(*x):
+    global debug_indent
+    x = list(x)
+    indent = 0
+    if x[0].startswith("enter") or x[0][0] == ">":
+        indent = 1
+    if x[0].startswith("leave") or x[0][0] == "<":
+        debug_indent -= 1
+    x[0] = "  " * debug_indent + x[0]
     print(*x, file=sys.stderr)
+    debug_indent += indent
 
 
 def solve(SOLVE_PARAMS):
