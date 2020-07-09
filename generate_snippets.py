@@ -30,6 +30,12 @@ push("readints", "map(int, input().split())")
 
 push("readanint", "read an integer", "int(input())")
 
+push("readstr",  "input().strip()")
+
+push("readstrascii", "input().strip().decode('ascii')")
+
+push("readrest", "np.int64(read().split())")
+
 push("profile", """
 try:
     profile
@@ -38,26 +44,34 @@ except:
 """)
 
 push("test", '''
-${1:T} = """
+T${1:} = """
 $2
 """
 
-def test_$1():
+def test_T$1():
     """
-    >>> as_input($1)
+    >>> as_input(T$1)
     >>> main()
+    ${3:result}
     """
+
 ''')
+
+push("dp", """
+debug("$1: $2", $2)
+""")
+
+push("cache", """
+from functools import lru_cache
+@lru_cache(maxsize=None)
+""")
+
 # push("test", """
 # ./$1.py < in/$2 > output && diff output out/$2
 # """)
 
 push("stest", """
 ./$1.py < input > output && diff output expect
-""")
-
-push("dp", """
-debug("$1: $2", $2)
 """)
 
 push("npreadints", """
