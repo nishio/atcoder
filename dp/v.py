@@ -4,11 +4,11 @@ from collections import defaultdict
 #from heapq import heappush, heappop
 #import numpy as np
 import sys
+from collections import deque
 
 sys.setrecursionlimit(10**6)
 input = sys.stdin.buffer.readline
 INF = 10 ** 9 + 1  # sys.maxsize # float("inf")
-MOD = 10 ** 9 + 7
 
 debug_indent = 0
 
@@ -27,51 +27,61 @@ def debug(*x):
 
 
 def solve(N, M, edges):
-    cache = [-1] * ((N + 1) ** 2 + 10)
-    for v in edges:
-        if len(edges[v]) == 1:
-            cache[v * (N + 1) + edges[v][0]] = (1, 0)
-
-    def visit(parent, self):
-        "return (blackroot, whiteroot)"
-        cacheindex = self * (N + 1) + parent
-        ret = cache[cacheindex]
-        if ret != -1:
-            return ret
-
-        total = 1
-        fw_b = 1  # full white or black
-        one_black = 0  # only one black-root
-
-        for child in edges[self]:
-            if child == parent:
+    # convert bidirectional graph to tree
+    root = 1
+    parent = [-1] * (N + 1)
+    to_visit = deque([root])
+    bfs_visited_order = []
+    while to_visit:
+        cur = to_visit.popleft()
+        bfs_visited_order.append(cur)
+        for child in edges[cur]:
+            if child == parent[cur]:
                 continue
-            b, w = visit(self, child)
-            total *= (1 + w + b)
-            fw_b *= (1 + b)
-            one_black += b
+            parent[child] = cur
+            edges[child].remove(cur)  # remove back-link
+            to_visit.append(child)
 
-        ret_b = ret_w = 0
-        # when all child are fill-white, one black-root and one full-white
-        ret_b += 1
-        # when only one child is black-root and others are full-white
-        # both white-root and black-root are OK
-        ret_b += one_black
-        ret_w += one_black
-        # when multiple black-root and no white-root, it should be black
-        ret_b += (fw_b - one_black - 1)
-        # otherwise there are one or more white-root, it should be white
-        ret_w += total - fw_b
+    # up-edge: v -> parent[v]
+    # default: if no child, one black, one white (1 + 1)
+    # f(x) = prod(f(c) for c in children) + 1
+    upedge = [0] * (N + 1)
+    # stores multiply result (1 is unity)
+    multiply_of_upedge = [1] * (N + 1)
+    for cur in reversed(bfs_visited_order[1:]):
+        # visit vertexes except root, in reversed order
+        upedge[cur] = multiply_of_upedge[cur] + 1
+        p = parent[cur]
+        multiply_of_upedge[p] *= upedge[cur]
+        multiply_of_upedge[p] %= M
+    # root: multiply children and don't add one
+    # the one is "all-white" pattern
+    upedge[root] = multiply_of_upedge[root]
+    final_result = upedge[:]
 
-        if parent != 0:
-            ret = (ret_b, ret_w)
-            cache[cacheindex] = ret
-            return ret
-        else:
-            return ret_b
+    # down-edge: parent[v] -> v
+    downedge = [1] * (N + 1)
+    for cur in bfs_visited_order:
+        prod = 1
+        # left-to-right accumlated products (* downedge[cur])
+        for child in edges[cur]:
+            downedge[child] = prod
+            prod *= upedge[child]
+            prod %= M
+        # multiply right-to-left accumlated products
+        prod = 1
+        for child in reversed(edges[cur]):
+            downedge[child] = (downedge[cur] * downedge[child] * prod) % M + 1
+            prod *= upedge[child]
+            prod %= M
 
-    ret = [visit(0, i + 1) % M for i in range(N)]
-    return ret
+        for child in edges[cur]:
+            # update final result
+            final_result[child] = (
+                multiply_of_upedge[child]
+                * downedge[child]) % M
+
+    return final_result[1:]
 
 
 def main():
