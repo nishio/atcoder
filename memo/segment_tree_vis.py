@@ -263,8 +263,25 @@ def up_propagate_from_leaf(table, pos, binop):
 
 def down_propagate_to_leaf(table, pos, binop):
     pos += NONLEAF_SIZE
-    for level in range(N - 1):
-        i = pos >> (N - 1 - level)
+    down_propagate(table, pos, binop)
+
+
+def up_propagate(table, pos, binop):
+    while pos > 1:
+        pos >>= 1
+        table[pos] = binop(
+            table[pos * 2],
+            table[pos * 2 + 1]
+        )
+
+
+def down_propagate(table, pos, binop):
+    for max_level in range(N):
+        if 2 ** max_level > pos:
+            max_level -= 1
+            break
+    for level in range(max_level):
+        i = pos >> (max_level - level)
         assert i > 0
         table[i * 2] = binop(table[i * 2], table[i])
         table[i * 2 + 1] = binop(table[i * 2 + 1], table[i])
