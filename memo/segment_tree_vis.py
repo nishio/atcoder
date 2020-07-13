@@ -33,26 +33,34 @@ Segment Tree Visualizer
 |   0+1   |  f(2+3) |   4+5   |   6+7   |   8+9   |  10+11  |  12+13  |  14+15  |
 | 0  | 1  | 2  |f(3)| 4  | 5  | 6  | 7  | 8  | 9  | 10 | 11 | 12 | 13 | 14 | 15 |
 
+>>> point_set(table, 3, "x", lambda x, y: f"{x}+{y}")
+>>> debugprint(table, 3)
+|             0+1+2+x+4+5+6+7+8+9+10+11+12+13+14+15             |
+|        0+1+2+x+4+5+6+7        |     8+9+10+11+12+13+14+15     |
+|    0+1+2+x    |    4+5+6+7    |   8+9+10+11   |  12+13+14+15  |
+|  0+1  |  2+x  |  4+5  |  6+7  |  8+9  | 10+11 | 12+13 | 14+15 |
+| 0 | 1 | 2 | x | 4 | 5 | 6 | 7 | 8 | 9 | 10| 11| 12| 13| 14| 15|
+
+
 # range update
 
 >>> table = [""] * SEGTREE_SIZE
 >>> set_items(table, range(16))
->>> range_update(table, 1, 11, lambda x: f"f({x})")
->>> debugprint(table, maxsize=4)
-|                                                                               |
-|                                       |                                       |
-|                   |        f()        |                   |                   |
-|         |   f()   |         |         |   f()   |         |         |         |
-| 0  |f(1)| 2  | 3  | 4  | 5  | 6  | 7  | 8  | 9  |f(10| 11 | 12 | 13 | 14 | 15 |
+>>> range_update(table, 1, 11, lambda x: f"f")
+>>> debugprint(table)
+|                                               |
+|                       |                       |
+|           |     f     |           |           |
+|     |  f  |     |     |  f  |     |     |     |
+|0 |f |2 |3 |4 |5 |6 |7 |8 |9 |f |11|12|13|14|15|
 
->>> range_update(table, 3, 15, lambda x: f"g({x})")
->>> debugprint(table, maxsize=4)
-|                                                                               |
-|                                       |                                       |
-|                   |       g(f())      |        g()        |                   |
-|         |   f()   |         |         |   f()   |         |   g()   |         |
-| 0  |f(1)| 2  |g(3)| 4  | 5  | 6  | 7  | 8  | 9  |f(10| 11 | 12 | 13 |g(14| 15 |
-
+>>> range_update(table, 3, 15, lambda x: f"{x}g")
+>>> debugprint(table)
+|                                                               |
+|                               |                               |
+|               |       fg      |       g       |               |
+|       |   f   |       |       |   f   |       |   g   |       |
+| 0 | f | 2 | 3g| 4 | 5 | 6 | 7 | 8 | 9 | f | 11| 12| 13|14g| 15|
 
 # range reduce
 
@@ -116,7 +124,7 @@ Segment Tree Visualizer
 |  1  |  3  |  99 |  7  |  9  |  11 |  13 |  15 |
 |0 |1 |2 |3 |4 |99|6 |7 |8 |9 |10|11|12|13|14|15|
 
-# range add, point get
+# range add, point get (dual segment tree)
 
 >>> table = [0] * SEGTREE_SIZE
 >>> range_update(table, 1, 11, lambda x: x + 1)
@@ -354,6 +362,17 @@ def point_update(table, pos, action):
     while pos > 1:
         pos >>= 1
         table[pos] = action(table[pos])
+
+
+def point_set(table, pos, value, binop):
+    pos = pos + NONLEAF_SIZE
+    table[pos] = value
+    while pos > 1:
+        pos >>= 1
+        table[pos] = binop(
+            table[pos * 2],
+            table[pos * 2 + 1],
+        )
 
 
 def set_items(table, xs):
