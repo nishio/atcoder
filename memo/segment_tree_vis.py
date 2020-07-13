@@ -135,7 +135,7 @@ Segment Tree Visualizer
 | 0 | 1 | 0 | 0 | 1 | 0 | 2 | 0 |
 |0|1|0|2|0|0|0|0|0|0|1|0|0|0|2|0|
 
->>> down_propagate_to_leaf(table, 5, lambda x, y: x + y, 0)
+>>> down_propagate_to_leaf(table, 5, add, 0)
 >>> debugprint(table, maxsize=4)
 |               0               |
 |       0       |       0       |
@@ -143,7 +143,7 @@ Segment Tree Visualizer
 | 0 | 1 | 0 | 3 | 1 | 0 | 2 | 0 |
 |0|1|0|2|3|3|0|0|0|0|1|0|0|0|2|0|
 
->>> down_propagate_to_leaf(table, 9, lambda x, y: x + y, 0)
+>>> down_propagate_to_leaf(table, 9, add, 0)
 >>> debugprint(table, maxsize=4)
 |               0               |
 |       0       |       0       |
@@ -220,8 +220,8 @@ Segment Tree Visualizer
 |  ^1 |  ^1 |  ^1 |  ^1 |
 |^2|^1|^6|^6|^1|^2|^1|^1|
 
->>> force_child(value_table, action_table, up(1) // 2, PowAction(1))
->>> force_child(value_table, action_table, up(5) // 2, PowAction(1))
+>>> force_sibling(value_table, action_table, up(1), PowAction(1))
+>>> force_sibling(value_table, action_table, up(5), PowAction(1))
 >>> debugprint(action_table)
 |           ^1          |
 |     ^1    |     ^1    |
@@ -244,12 +244,13 @@ Segment Tree Visualizer
 
 # range add, renge sum
 
+>>> unity = AddAction(0)
 >>> value_table = [0] * SEGTREE_SIZE
->>> action_table = [AddAction(0)] * SEGTREE_SIZE
+>>> action_table = [unity] * SEGTREE_SIZE
 >>> range_update(action_table, 0, 6, AddAction(1))
->>> force_range_update(value_table, action_table, 0, 6, AddAction(0))
->>> up_propagate(value_table, up(0), lambda x, y: x + y)
->>> up_propagate(value_table, up(6), lambda x, y: x + y)
+>>> force_range_update(value_table, action_table, 0, 6, unity)
+>>> up_propagate(value_table, up(0), add)
+>>> up_propagate(value_table, up(6), add)
 >>> debugprint(value_table)
 |       6       |
 |   4   |   2   |
@@ -261,31 +262,44 @@ Segment Tree Visualizer
 |  +1 |  +1 |  +0 |  +0 |
 |+0|+0|+0|+0|+1|+1|+0|+0|
 
->>> down_propagate(action_table, up(1), lambda x, y: x(y), AddAction(0))
->>> down_propagate(action_table, up(5), lambda x, y: x(y), AddAction(0))
+>>> down_propagate(action_table, up(1), lambda x, y: x(y), unity)
+>>> down_propagate(action_table, up(5), lambda x, y: x(y), unity)
 >>> range_update(action_table, 1, 5, AddAction(2))
->>> force_range_update(value_table, action_table, 1, 5, AddAction(0))
->>> force_child(value_table, action_table, up(1) // 2, AddAction(0))
->>> force_child(value_table, action_table, up(5) // 2, AddAction(0))
->>> up_propagate(value_table, up(1), lambda x, y: x + y)
->>> up_propagate(value_table, up(5), lambda x, y: x + y)
+>>> force_range_update(value_table, action_table, 1, 5, unity)
+>>> force_sibling(value_table, action_table, up(1), unity)
+>>> force_sibling(value_table, action_table, up(5), unity)
+>>> up_propagate(value_table, up(1), add)
+>>> up_propagate(value_table, up(5), add)
 >>> debugprint(value_table)
 |       14      |
 |   10  |   4   |
 | 4 | 6 | 4 | 0 |
 |1|3|0|0|3|1|0|0|
 
->>> force_range_update(value_table, action_table, 3, 6, AddAction(0))
+>>> force_range_update(value_table, action_table, 3, 6, unity)
 >>> debugprint(value_table)
 |       14      |
 |   10  |   4   |
 | 4 | 6 | 4 | 0 |
 |1|3|0|3|3|1|0|0|
->>> range_reduce(value_table, 3, 6, lambda x, y: x + y, 0)
+>>> range_reduce(value_table, 3, 6, add, 0)
 7
+
+>>> lazy_range_update(value_table, action_table, 1, 7, AddAction(5), unity)
+>>> debugprint(value_table)
+|       44      |
+|   25  |   19  |
+| 9 | 16| 14| 5 |
+|1|8|0|3|3|1|5|0|
+>>> debugprint(action_table)
+|           +0          |
+|     +0    |     +0    |
+|  +0 |  +0 |  +0 |  +0 |
+|+0|+0|+8|+5|+5|+5|+0|+0|
 """
 
 import sys
+from operator import add
 
 
 def set_depth(depth):
@@ -392,12 +406,7 @@ def range_reduce(table, left, right, binop, unity):
 
 def up_propagate_from_leaf(table, pos, binop):
     pos += NONLEAF_SIZE
-    while pos > 1:
-        pos >>= 1
-        table[pos] = binop(
-            table[pos * 2],
-            table[pos * 2 + 1]
-        )
+    up_propagate(table, pos, binop)
 
 
 def down_propagate_to_leaf(table, pos, binop, unity):
@@ -444,10 +453,9 @@ def force_point(value_table, action_table, pos, unity_action):
         action_table[pos * 2 + 1] = action(action_table[pos * 2 + 1])
 
 
-def force_child(value_table, action_table, pos, unity_action):
-    if pos < NONLEAF_SIZE:
-        force_point(value_table, action_table, pos * 2, unity_action)
-        force_point(value_table, action_table, pos * 2 + 1, unity_action)
+def force_sibling(value_table, action_table, pos, unity_action):
+    force_point(value_table, action_table, pos, unity_action)
+    force_point(value_table, action_table, pos ^ 1, unity_action)
 
 
 def force_range_update(value_table, action_table, left, right, unity_action):
@@ -503,6 +511,17 @@ class AddAction:
     def force(self, v, size):
         assert isinstance(v, int)
         return v + self.value * size
+
+
+def lazy_range_update(value_table, action_table, left, right, action, unity):
+    down_propagate(action_table, up(left), lambda x, y: x(y), unity)
+    down_propagate(action_table, up(right), lambda x, y: x(y), unity)
+    range_update(action_table, left, right, action)
+    force_range_update(value_table, action_table, left, right, unity)
+    force_sibling(value_table, action_table, up(left), unity)
+    force_sibling(value_table, action_table, up(right), unity)
+    up_propagate(value_table, up(left), add)
+    up_propagate(value_table, up(right), add)
 
 
 def main():
