@@ -241,6 +241,48 @@ Segment Tree Visualizer
 |    (a)^2(b)^6(cd)^6   |      (e)^6(f)^2gh     |
 | (a)^2(b)^6|   (cd)^6  | (e)^6(f)^2|     gh    |
 |(a)^2|(b)^6|  c  |  d  |(e)^6|(f)^2|  g  |  h  |
+
+# range add, renge sum
+
+>>> value_table = [0] * SEGTREE_SIZE
+>>> action_table = [AddAction(0)] * SEGTREE_SIZE
+>>> range_update(action_table, 0, 6, AddAction(1))
+>>> force_range_update(value_table, action_table, 0, 6, AddAction(0))
+>>> up_propagate(value_table, up(0), lambda x, y: x + y)
+>>> up_propagate(value_table, up(6), lambda x, y: x + y)
+>>> debugprint(value_table)
+|       6       |
+|   4   |   2   |
+| 0 | 0 | 2 | 0 |
+|0|0|0|0|0|0|0|0|
+>>> debugprint(action_table)
+|           +0          |
+|     +0    |     +0    |
+|  +1 |  +1 |  +0 |  +0 |
+|+0|+0|+0|+0|+1|+1|+0|+0|
+
+>>> down_propagate(action_table, up(1), lambda x, y: x(y), AddAction(0))
+>>> down_propagate(action_table, up(5), lambda x, y: x(y), AddAction(0))
+>>> range_update(action_table, 1, 5, AddAction(2))
+>>> force_range_update(value_table, action_table, 1, 5, AddAction(0))
+>>> force_child(value_table, action_table, up(1) // 2, AddAction(0))
+>>> force_child(value_table, action_table, up(5) // 2, AddAction(0))
+>>> up_propagate(value_table, up(1), lambda x, y: x + y)
+>>> up_propagate(value_table, up(5), lambda x, y: x + y)
+>>> debugprint(value_table)
+|       14      |
+|   10  |   4   |
+| 4 | 6 | 4 | 0 |
+|1|3|0|0|3|1|0|0|
+
+>>> force_range_update(value_table, action_table, 3, 6, AddAction(0))
+>>> debugprint(value_table)
+|       14      |
+|   10  |   4   |
+| 4 | 6 | 4 | 0 |
+|1|3|0|3|3|1|0|0|
+>>> range_reduce(value_table, 3, 6, lambda x, y: x + y, 0)
+7
 """
 
 import sys
@@ -385,9 +427,17 @@ def down_propagate(table, pos, binop, unity):
         table[i] = unity
 
 
+def get_size(pos):
+    ret = 0
+    while pos:
+        pos >>= 1
+        ret += 1
+    return (1 << (N - ret))
+
+
 def force_point(value_table, action_table, pos, unity_action):
     action = action_table[pos]
-    value_table[pos] = action.force(value_table[pos])
+    value_table[pos] = action.force(value_table[pos], get_size(pos))
     action_table[pos] = unity_action
     if pos < NONLEAF_SIZE:
         action_table[pos * 2] = action(action_table[pos * 2])
@@ -425,7 +475,7 @@ class PowAction:
         assert isinstance(v, PowAction)
         return PowAction(v.value * self.value)
 
-    def force(self, v):
+    def force(self, v, size):
         # assert isinstance(v, int)
         # return v + self.value
         assert isinstance(v, str)
@@ -437,6 +487,22 @@ class PowAction:
 def up(pos):
     pos += SEGTREE_SIZE // 2
     return pos // (pos & -pos)
+
+
+class AddAction:
+    def __init__(self, value):
+        self.value = value
+
+    def __repr__(self):
+        return f"+{self.value}"
+
+    def __call__(self, v):
+        assert isinstance(v, AddAction)
+        return AddAction(v.value + self.value)
+
+    def force(self, v, size):
+        assert isinstance(v, int)
+        return v + self.value * size
 
 
 def main():
