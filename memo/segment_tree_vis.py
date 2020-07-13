@@ -220,15 +220,27 @@ Segment Tree Visualizer
 |  ^1 |  ^1 |  ^1 |  ^1 |
 |^2|^1|^6|^6|^1|^2|^1|^1|
 
+>>> force_child(value_table, action_table, up(1) // 2, PowAction(1))
+>>> force_child(value_table, action_table, up(5) // 2, PowAction(1))
+>>> debugprint(action_table)
+|           ^1          |
+|     ^1    |     ^1    |
+|  ^1 |  ^1 |  ^1 |  ^1 |
+|^1|^1|^6|^6|^1|^1|^1|^1|
+
+>>> debugprint(value_table, minsize=5)
+|                (abcd)^2(ef)^2gh               |
+|        (abcd)^2       |        (ef)^2gh       |
+|     ab    |   (cd)^6  |   (ef)^2  |     gh    |
+|(a)^2|(b)^6|  c  |  d  |(e)^6|(f)^2|  g  |  h  |
+
 >>> up_propagate(value_table, up(1), lambda x, y: f"{x}{y}")
 >>> up_propagate(value_table, up(5), lambda x, y: f"{x}{y}")
 >>> debugprint(value_table, minsize=5)
-|              a(b)^6(cd)^6(e)^6fgh             |
-|      a(b)^6(cd)^6     |        (e)^6fgh       |
-|   a(b)^6  |   (cd)^6  |   (e)^6f  |     gh    |
-|  a  |(b)^6|  c  |  d  |(e)^6|  f  |  g  |  h  |
-INCORRECT RESULT
-
+|          (a)^2(b)^6(cd)^6(e)^6(f)^2gh         |
+|    (a)^2(b)^6(cd)^6   |      (e)^6(f)^2gh     |
+| (a)^2(b)^6|   (cd)^6  | (e)^6(f)^2|     gh    |
+|(a)^2|(b)^6|  c  |  d  |(e)^6|(f)^2|  g  |  h  |
 """
 
 import sys
@@ -374,13 +386,18 @@ def down_propagate(table, pos, binop, unity):
 
 
 def force_point(value_table, action_table, pos, unity_action):
-    debug("force_point: pos", pos)
     action = action_table[pos]
     value_table[pos] = action.force(value_table[pos])
     action_table[pos] = unity_action
     if pos < NONLEAF_SIZE:
         action_table[pos * 2] = action(action_table[pos * 2])
         action_table[pos * 2 + 1] = action(action_table[pos * 2 + 1])
+
+
+def force_child(value_table, action_table, pos, unity_action):
+    if pos < NONLEAF_SIZE:
+        force_point(value_table, action_table, pos * 2, unity_action)
+        force_point(value_table, action_table, pos * 2 + 1, unity_action)
 
 
 def force_range_update(value_table, action_table, left, right, unity_action):
@@ -412,6 +429,8 @@ class PowAction:
         # assert isinstance(v, int)
         # return v + self.value
         assert isinstance(v, str)
+        if self.value == 1:
+            return v
         return f"({v}){self}"
 
 
