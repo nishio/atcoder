@@ -33,7 +33,7 @@ if argv(1) == "gen":
             break
     exit()
 
-if argv(1) == "clean":
+if argv(1) == "clean" or argv(1) == "comment":
     """
     comment out all debug print
     """
@@ -45,7 +45,7 @@ if argv(1) == "clean":
     exit()
 
 
-if argv(1) == "unclean":
+if argv(1) == "unclean" or argv(1) == "uncomment":
     """
     uncomment all debug print
     """
@@ -82,3 +82,18 @@ if argv(1) == "mprof":
     print(cmd)
     subprocess.call(cmd, shell=True)
     exit()
+
+if argv(1) == "cython":
+    """
+    create cython file and open
+    """
+    target = argv(2)
+    if not target.endswith(".py"):
+        target = target + ".py"
+    cyfile = target.replace(".py", ".pyx")
+    cmd = f"cp {target} {cyfile} && code {cyfile}"
+    print(cmd)
+    subprocess.call(cmd, shell=True)
+    exit()
+
+print("error: no command matched")

@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
-
-# from collections import defaultdict
-# from heapq import heappush, heappop
-# import numpy as np
 import sys
-import doctest
 sys.setrecursionlimit(10**6)
 input = sys.stdin.buffer.readline
 INF = 10 ** 9 + 1  # sys.maxsize # float("inf")
@@ -22,6 +17,8 @@ def solve(SOLVE_PARAMS):
 def main():
     # parse input
     print(solve(SOLVE_PARAMS))
+
+# tests
 
 
 def _test():
@@ -44,9 +41,6 @@ def as_input(s):
 
     def read():
         return bytes(f.read(), "ascii")
-
-# tests
-# add tests above
 
 
 input = sys.stdin.buffer.readline

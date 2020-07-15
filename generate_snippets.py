@@ -115,6 +115,12 @@ def ${1:xs}_push(v):
     ${1:xs}_pointer += 1
 """)
 
+# import
+push("impdef", "from collections import defaultdict")
+push("impdeq", "from collections import deque")
+push("impheap", "from heapq import heappush, heappop")
+push("impnp", "import numpy as np")
+
 push("main", open(os.path.join(DIR, "snippets/main.py")).read())
 push("numbamain", open(os.path.join(DIR, "snippets/numbamain.py")).read())
 push("debug_indent", open(os.path.join(DIR, "snippets/debug_indent.py")).read())
