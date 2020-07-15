@@ -144,6 +144,8 @@ Segment Tree Visualizer
 |0|1|0|2|0|0|0|0|0|0|1|0|0|0|2|0|
 
 >>> down_propagate_to_leaf(table, 5, add, 0)
+3
+
 >>> debugprint(table, maxsize=4)
 |               0               |
 |       0       |       0       |
@@ -152,6 +154,8 @@ Segment Tree Visualizer
 |0|1|0|2|3|3|0|0|0|0|1|0|0|0|2|0|
 
 >>> down_propagate_to_leaf(table, 9, add, 0)
+3
+
 >>> debugprint(table, maxsize=4)
 |               0               |
 |       0       |       0       |
@@ -317,8 +321,9 @@ Segment Tree Visualizer
 |0 |0 |0 |0 |0 |0 |0 |0 |
 
 >>> table = [CombinedCell() for i in range(SEGTREE_SIZE)]
->>> lazy_range_update_combined(table, 0, 6, addAction(AddAction(1)))
->>> debugprint(table)
+
+#>>> lazy_range_update_combined(table, 0, 6, addAction(AddAction(1)))
+#>>> debugprint(table)
 
 
 """
@@ -445,11 +450,6 @@ def up_propagate_from_leaf(table, pos, binop):
     up_propagate(table, pos, binop)
 
 
-def down_propagate_to_leaf(table, pos, binop, unity):
-    pos += NONLEAF_SIZE
-    down_propagate(table, pos, binop, unity)
-
-
 def up_propagate(table, pos, binop):
     while pos > 1:
         pos >>= 1
@@ -459,6 +459,12 @@ def up_propagate(table, pos, binop):
         )
 
 
+def down_propagate_to_leaf(table, pos, binop, unity):
+    pos += NONLEAF_SIZE
+    down_propagate(table, pos, binop, unity)
+    return table[pos]
+
+
 def down_propagate(table, pos, binop, unity):
     for max_level in range(N):
         if 2 ** max_level > pos:
@@ -466,9 +472,9 @@ def down_propagate(table, pos, binop, unity):
             break
     for level in range(max_level):
         i = pos >> (max_level - level)
-        assert i > 0
-        table[i * 2] = binop(table[i * 2], table[i])
-        table[i * 2 + 1] = binop(table[i * 2 + 1], table[i])
+
+        table[i * 2] = binop(table[i], table[i * 2])
+        table[i * 2 + 1] = binop(table[i], table[i * 2 + 1])
         table[i] = unity
 
 
@@ -549,15 +555,63 @@ class AddAction:
         return v + self.value * size
 
 
-def lazy_range_update(value_table, action_table, left, right, action, unity):
+def lazy_range_update(value_table, action_table, left, right, binop, action, unity):
     down_propagate(action_table, up(left), lambda x, y: x(y), unity)
     down_propagate(action_table, up(right), lambda x, y: x(y), unity)
     range_update(action_table, left, right, action)
     force_range_update(value_table, action_table, left, right, unity)
     force_sibling(value_table, action_table, up(left), unity)
     force_sibling(value_table, action_table, up(right), unity)
-    up_propagate(value_table, up(left), add)
-    up_propagate(value_table, up(right), add)
+    up_propagate(value_table, up(left), binop)
+    up_propagate(value_table, up(right), binop)
+
+
+# def lazy_range_update_combined(table, left, right, action):
+#     down_propagate(table, up(left), lambda x, y: x(y), ****)
+#     down_propagate(table, up(right), lambda x, y: x(y), unity)
+#     range_update(table, left, right, action)
+#     left += SEGTREE_SIZE // 2
+#     right += SEGTREE_SIZE // 2
+#     while left < right:
+#         if left & 1:
+#             table[left].force()
+#             left += 1
+#         if right & 1:
+#             right -= 1
+#             table[right].force()
+#         left //= 2
+#         right //= 2
+
+#     table[up(left)].force()
+#     table[up(left) ^ 1].force()
+#     table[up(right)].force()
+#     table[up(right) ^ 1].force()
+#     up_propagate(table, up(left), add)
+#     up_propagate(table, up(right), add)
+
+
+class CombinedCell:
+    def __init__(self):
+        self.value = 0
+        self.action = []
+
+    def __repr__(self):
+        ret = str(self.value)
+        if self.action:
+            ret += "/" + "".join(repr(x) for x in self.action)
+        return ret
+
+    def force(self):
+        from functools import reduce
+        self.value = reduce(self.action, self.value)
+        self.action = []
+
+
+def addAction(action):
+    def f(self):
+        self.action.append(action)
+        return self
+    return f
 
 
 def main():
