@@ -43,7 +43,7 @@ except:
     def profile(f): return f
 """)
 
-push("test", '''
+push("oldtest", '''
 T${1:} = """
 $2
 """
@@ -55,6 +55,18 @@ def test_T$1():
     ${3:result}
     """
 
+''')
+
+# indent-less test code
+push("test", '''
+T${1:} = """
+$2
+"""
+TEST_T$1 = """
+>>> as_input(T$1)
+>>> main()
+${3:result}
+"""
 ''')
 
 push("dp", """
@@ -104,6 +116,8 @@ def ${1:xs}_push(v):
 """)
 
 push("main", open(os.path.join(DIR, "snippets/main.py")).read())
+push("numbamain", open(os.path.join(DIR, "snippets/numbamain.py")).read())
+push("debug_indent", open(os.path.join(DIR, "snippets/debug_indent.py")).read())
 
 path = os.path.join(DIR, ".vscode/snippet.code-snippets")
 json.dump(snippets, open(path, "w"), indent=2)
