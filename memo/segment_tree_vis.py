@@ -41,27 +41,6 @@ Segment Tree Visualizer
 |  0+1  |  2+x  |  4+5  |  6+7  |  8+9  | 10+11 | 12+13 | 14+15 |
 | 0 | 1 | 2 | x | 4 | 5 | 6 | 7 | 8 | 9 | 10| 11| 12| 13| 14| 15|
 
-
-# range update
-
->>> table = [""] * SEGTREE_SIZE
->>> set_items(table, range(16))
->>> range_update(table, 1, 11, lambda x: f"f")
->>> debugprint(table)
-|                                               |
-|                       |                       |
-|           |     f     |           |           |
-|     |  f  |     |     |  f  |     |     |     |
-|0 |f |2 |3 |4 |5 |6 |7 |8 |9 |f |11|12|13|14|15|
-
->>> range_update(table, 3, 15, lambda x: f"{x}g")
->>> debugprint(table)
-|                                                               |
-|                               |                               |
-|               |       fg      |       g       |               |
-|       |   f   |       |       |   f   |       |   g   |       |
-| 0 | f | 2 | 3g| 4 | 5 | 6 | 7 | 8 | 9 | f | 11| 12| 13|14g| 15|
-
 # range reduce
 
 >>> set_items(table, range(16))
@@ -95,6 +74,27 @@ Segment Tree Visualizer
 
 >>> range_reduce(table, 3, 11, lambda x, y: f"{x}+{y}", "0")
 '0+3+4+5+6+7+99+8+9+10+0'
+
+# range update
+
+>>> table = [""] * SEGTREE_SIZE
+>>> set_items(table, range(16))
+>>> range_update(table, 1, 11, lambda x: f"f")
+>>> debugprint(table)
+|                                               |
+|                       |                       |
+|           |     f     |           |           |
+|     |  f  |     |     |  f  |     |     |     |
+|0 |f |2 |3 |4 |5 |6 |7 |8 |9 |f |11|12|13|14|15|
+
+>>> range_update(table, 3, 15, lambda x: f"{x}g")
+>>> debugprint(table)
+|                                                               |
+|                               |                               |
+|               |       fg      |       g       |               |
+|       |   f   |       |       |   f   |       |   g   |       |
+| 0 | f | 2 | 3g| 4 | 5 | 6 | 7 | 8 | 9 | f | 11| 12| 13|14g| 15|
+
 
 # Point update, range max
 
@@ -293,7 +293,7 @@ Segment Tree Visualizer
 >>> range_reduce(value_table, 3, 6, add, 0)
 7
 
->>> lazy_range_update(value_table, action_table, 1, 7, AddAction(5), unity)
+>>> lazy_range_update(value_table, action_table, 1, 7, add, AddAction(5), unity)
 >>> debugprint(value_table)
 |       44      |
 |   25  |   19  |
@@ -304,6 +304,23 @@ Segment Tree Visualizer
 |     +0    |     +0    |
 |  +0 |  +0 |  +0 |  +0 |
 |+0|+0|+8|+5|+5|+5|+0|+0|
+
+# Combined table
+
+>>> unity = AddAction(0)
+>>> table = [CombinedCell() for i in range(SEGTREE_SIZE)]
+>>> range_update(table, 0, 6, addAction(AddAction(1)))
+>>> debugprint(table, minsize=2)
+|           0           |
+|    0/+1   |     0     |
+|  0  |  0  | 0/+1|  0  |
+|0 |0 |0 |0 |0 |0 |0 |0 |
+
+>>> table = [CombinedCell() for i in range(SEGTREE_SIZE)]
+>>> lazy_range_update_combined(table, 0, 6, addAction(AddAction(1)))
+>>> debugprint(table)
+
+
 """
 
 import sys
