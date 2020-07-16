@@ -176,14 +176,14 @@ Segment Tree Visualizer
 |a|b|c|d|e|f|g|h|
 
 >>> action_table = [PowAction(1)] * SEGTREE_SIZE
->>> range_update(action_table, 0, 6, PowAction(2))
+>>> range_update(action_table, 0, 6, lambda x: pow_composite(x, PowAction(2)))
 >>> debugprint(action_table)
 |           ^1          |
 |     ^2    |     ^1    |
 |  ^1 |  ^1 |  ^2 |  ^1 |
 |^1|^1|^1|^1|^1|^1|^1|^1|
 
->>> force_range_update(value_table, action_table, 0, 6, PowAction(1))
+>>> force_range_update(value_table, action_table, 0, 6, pow_force, pow_composite, PowAction(1))
 >>> debugprint(value_table, minsize=3)
 |            abcdefgh           |
 |    (abcd)^2   |      efgh     |
@@ -204,22 +204,22 @@ Segment Tree Visualizer
 |    ab   |    cd   |  (ef)^2 |    gh   |
 | a  | b  | c  | d  | e  | f  | g  | h  |
 
->>> down_propagate(action_table, up(1), lambda x, y: x(y), PowAction(1))
->>> down_propagate(action_table, up(5), lambda x, y: x(y), PowAction(1))
+>>> down_propagate(action_table, up(1), pow_composite, PowAction(1))
+>>> down_propagate(action_table, up(5), pow_composite, PowAction(1))
 >>> debugprint(action_table)
 |           ^1          |
 |     ^1    |     ^1    |
 |  ^1 |  ^2 |  ^1 |  ^1 |
 |^2|^2|^1|^1|^2|^2|^1|^1|
 
->>> range_update(action_table, 1, 5, PowAction(3))
+>>> range_update(action_table, 1, 5, lambda x: pow_composite(x, PowAction(3)))
 >>> debugprint(action_table)
 |           ^1          |
 |     ^1    |     ^1    |
 |  ^1 |  ^6 |  ^1 |  ^1 |
 |^2|^6|^1|^1|^6|^2|^1|^1|
 
->>> force_range_update(value_table, action_table, 1, 5, PowAction(1))
+>>> force_range_update(value_table, action_table, 1, 5, pow_force, pow_composite, PowAction(1))
 >>> debugprint(value_table, minsize=5)
 |                (abcd)^2(ef)^2gh               |
 |        (abcd)^2       |        (ef)^2gh       |
@@ -232,8 +232,8 @@ Segment Tree Visualizer
 |  ^1 |  ^1 |  ^1 |  ^1 |
 |^2|^1|^6|^6|^1|^2|^1|^1|
 
->>> force_sibling(value_table, action_table, up(1), PowAction(1))
->>> force_sibling(value_table, action_table, up(5), PowAction(1))
+>>> force_children(value_table, action_table, up(1), pow_force, pow_composite, PowAction(1))
+>>> force_children(value_table, action_table, up(5), pow_force, pow_composite, PowAction(1))
 >>> debugprint(action_table)
 |           ^1          |
 |     ^1    |     ^1    |
@@ -259,8 +259,8 @@ Segment Tree Visualizer
 >>> unity = AddAction(0)
 >>> value_table = [0] * SEGTREE_SIZE
 >>> action_table = [unity] * SEGTREE_SIZE
->>> range_update(action_table, 0, 6, AddAction(1))
->>> force_range_update(value_table, action_table, 0, 6, unity)
+>>> range_update(action_table, 0, 6, lambda x: add_composite(AddAction(1), x))
+>>> force_range_update(value_table, action_table, 0, 6, add_force, add_composite, unity)
 >>> up_propagate(value_table, up(0), add)
 >>> up_propagate(value_table, up(6), add)
 >>> debugprint(value_table)
@@ -277,9 +277,9 @@ Segment Tree Visualizer
 >>> down_propagate(action_table, up(1), lambda x, y: x(y), unity)
 >>> down_propagate(action_table, up(5), lambda x, y: x(y), unity)
 >>> range_update(action_table, 1, 5, AddAction(2))
->>> force_range_update(value_table, action_table, 1, 5, unity)
->>> force_sibling(value_table, action_table, up(1), unity)
->>> force_sibling(value_table, action_table, up(5), unity)
+>>> force_range_update(value_table, action_table, 1, 5, add_force, add_composite, unity)
+>>> force_children(value_table, action_table, up(1), add_force, add_composite, unity)
+>>> force_children(value_table, action_table, up(5), add_force, add_composite, unity)
 >>> up_propagate(value_table, up(1), add)
 >>> up_propagate(value_table, up(5), add)
 >>> debugprint(value_table)
@@ -288,7 +288,7 @@ Segment Tree Visualizer
 | 4 | 6 | 4 | 0 |
 |1|3|0|0|3|1|0|0|
 
->>> force_range_update(value_table, action_table, 3, 6, unity)
+>>> force_range_update(value_table, action_table, 3, 6, add_force, add_composite, unity)
 >>> debugprint(value_table)
 |       14      |
 |   10  |   4   |
@@ -297,7 +297,7 @@ Segment Tree Visualizer
 >>> range_reduce(value_table, 3, 6, add, 0)
 7
 
->>> lazy_range_update(value_table, action_table, 1, 7, add, AddAction(5), unity)
+>>> lazy_range_update(value_table, action_table, 1, 7, add, AddAction(5), add_force, add_composite, unity)
 >>> debugprint(value_table)
 |       44      |
 |   25  |   19  |
@@ -526,30 +526,45 @@ def get_size(pos):
     return (1 << (N - ret))
 
 
-def force_point(value_table, action_table, pos, unity_action):
+def force_point(value_table, action_table, pos, force, composite, unity_action):
     action = action_table[pos]
-    value_table[pos] = action.force(value_table[pos], get_size(pos))
+    value_table[pos] = force(action, value_table[pos], get_size(pos))
     action_table[pos] = unity_action
     if pos < NONLEAF_SIZE:
-        action_table[pos * 2] = action(action_table[pos * 2])
-        action_table[pos * 2 + 1] = action(action_table[pos * 2 + 1])
+        action_table[pos * 2] = composite(action, action_table[pos * 2])
+        action_table[pos * 2 + 1] = composite(
+            action, action_table[pos * 2 + 1])
 
 
-def force_sibling(value_table, action_table, pos, unity_action):
-    force_point(value_table, action_table, pos, unity_action)
-    force_point(value_table, action_table, pos ^ 1, unity_action)
+def force_children(value_table, action_table, pos, force, composite, unity_action):
+    while pos > 1:
+        pos >>= 1
+        force_point(
+            value_table, action_table,
+            pos * 2, force, composite, unity_action)
+        force_point(
+            value_table, action_table,
+            pos * 2 + 1, force, composite, unity_action)
 
 
-def force_range_update(value_table, action_table, left, right, unity_action):
+def force_range_update(value_table, action_table, left, right, force, composite, unity_action):
+    """
+    force: action, value, cell_size => new_value
+    composite: new_action, old_action => composite_action
+    """
     left += SEGTREE_SIZE // 2
     right += SEGTREE_SIZE // 2
     while left < right:
         if left & 1:
-            force_point(value_table, action_table, left, unity_action)
+            force_point(
+                value_table, action_table,
+                left, force, composite, unity_action)
             left += 1
         if right & 1:
             right -= 1
-            force_point(value_table, action_table, right, unity_action)
+            force_point(
+                value_table, action_table,
+                right, force, composite, unity_action)
         left //= 2
         right //= 2
 
@@ -561,17 +576,15 @@ class PowAction:
     def __repr__(self):
         return f"^{self.value}"
 
-    def __call__(self, v):
-        assert isinstance(v, PowAction)
-        return PowAction(v.value * self.value)
 
-    def force(self, v, size):
-        # assert isinstance(v, int)
-        # return v + self.value
-        assert isinstance(v, str)
-        if self.value == 1:
-            return v
-        return f"({v}){self}"
+def pow_composite(a1, a2):
+    return PowAction(a1.value * a2.value)
+
+
+def pow_force(action, value, size):
+    if action.value == 1:
+        return value
+    return f"({value}){action}"
 
 
 def up(pos):
@@ -595,13 +608,25 @@ class AddAction:
         return v + self.value * size
 
 
-def lazy_range_update(value_table, action_table, left, right, binop, action, unity):
-    down_propagate(action_table, up(left), lambda x, y: x(y), unity)
-    down_propagate(action_table, up(right), lambda x, y: x(y), unity)
-    range_update(action_table, left, right, action)
-    force_range_update(value_table, action_table, left, right, unity)
-    force_sibling(value_table, action_table, up(left), unity)
-    force_sibling(value_table, action_table, up(right), unity)
+def add_composite(a1, a2):
+    return AddAction(a1.value + a2.value)
+
+
+def add_force(action, value, size):
+    return value + action.value * size
+
+
+def lazy_range_update(value_table, action_table, left, right, binop, action, action_force, action_composite, action_unity):
+    down_propagate(action_table, up(left), lambda x, y: x(y), action_unity)
+    down_propagate(action_table, up(right), lambda x, y: x(y), action_unity)
+    range_update(action_table, left, right,
+                 lambda x: action_composite(action, x))
+    force_range_update(value_table, action_table, left, right,
+                       action_force, action_composite, action_unity)
+    force_children(value_table, action_table, up(left),
+                   action_force, action_composite, action_unity)
+    force_children(value_table, action_table, up(right),
+                   action_force, action_composite, action_unity)
     up_propagate(value_table, up(left), binop)
     up_propagate(value_table, up(right), binop)
 
