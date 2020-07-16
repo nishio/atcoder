@@ -93,20 +93,11 @@ def debugprint(xs, minsize=0, maxsize=None):
 
 
 def main():
-    from operator import add
     N, Q = map(int, input().split())
     depth = N.bit_length() + 1
     set_depth(depth)
-    table = [None] * SEGTREE_SIZE
-    set_items(table, [(-1, INF)] * N)
-    action_unity = None
-
-    def action_binop(x, y):
-        if x != action_unity:
-            if y != action_unity:
-                return max(x, y)
-            return x
-        return y
+    action_unity = (-1, INF)
+    table = [action_unity] * SEGTREE_SIZE
 
     for time in range(Q):
         q, *args = map(int, input().split())
@@ -118,7 +109,7 @@ def main():
         else:
             # find
             print(down_propagate_to_leaf(
-                table, args[0], action_binop, action_unity)[1])
+                table, args[0], max, action_unity)[1])
 
 
 # tests
