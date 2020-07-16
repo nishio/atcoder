@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import sys
 sys.setrecursionlimit(10**6)
-input = sys.stdin.buffer.readline
 INF = 10 ** 9 + 1  # sys.maxsize # float("inf")
 MOD = 10 ** 9 + 7
 
@@ -33,14 +32,10 @@ def _test():
 def as_input(s):
     "use in test, use given string as input file"
     import io
-    global read, input
     f = io.StringIO(s.strip())
-
-    def input():
-        return bytes(f.readline(), "ascii")
-
-    def read():
-        return bytes(f.read(), "ascii")
+    g = globals()
+    g["input"] = lambda: bytes(f.readline(), "ascii")
+    g["read"] = lambda: bytes(f.read(), "ascii")
 
 
 input = sys.stdin.buffer.readline
