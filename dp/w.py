@@ -30,8 +30,7 @@ def solve(N, M, LS, RS, AS):
     table = [None] * (N + 1)
     table[-1] = 0
     for i in range(N):
-
-    pass
+        pass
 
 
 def main():
