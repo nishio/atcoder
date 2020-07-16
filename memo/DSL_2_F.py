@@ -226,6 +226,9 @@ def main():
             force_children(
                 value_table, action_table,
                 up(t + 1), force, composite, action_unity)
+            up_propagate(value_table, up(s), min)
+            up_propagate(value_table, up(t + 1), min)
+
             # debugprint(action_table)
             # debugprint(value_table)
             print(range_reduce(value_table, s, t + 1, min, value_unity))
