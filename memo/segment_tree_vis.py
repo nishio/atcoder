@@ -326,6 +326,45 @@ Segment Tree Visualizer
 #>>> debugprint(table)
 
 
+# dual segment tree and down propagation
+>>> set_depth(5)
+>>> range_update(table, 3, 10, lambda x: "f")
+>>> range_update(table, 5, 15, lambda x: "g")
+>>> debugprint(table)
+|               0               |
+|       0       |       0       |
+|   0   |   f   |   g   |   0   |
+| 0 | 0 | 0 | g | f | 0 | g | 0 |
+|0|0|0|f|0|g|0|0|0|0|0|0|0|0|g|0|
+
+>>> table = [0] * SEGTREE_SIZE
+>>> range_update(table, 3, 10, lambda x: "f")
+>>> down_propagate(table, up(5), lambda x, y: x if x else y, 0)
+>>> down_propagate(table, up(15), lambda x, y: x if x else y, 0)
+>>> debugprint(table)
+|               0               |
+|       0       |       0       |
+|   0   |   0   |   0   |   0   |
+| 0 | 0 | 0 | f | f | 0 | 0 | 0 |
+|0|0|0|f|f|f|0|0|0|0|0|0|0|0|0|0|
+
+>>> range_update(table, 5, 15, lambda x: "g")
+>>> debugprint(table)
+|               0               |
+|       0       |       0       |
+|   0   |   0   |   g   |   0   |
+| 0 | 0 | 0 | g | f | 0 | g | 0 |
+|0|0|0|f|f|g|0|0|0|0|0|0|0|0|g|0|
+
+# down propagation targets
+>>> table = [0] * SEGTREE_SIZE
+>>> down_propagate(table, up(5), lambda x,y: "+", "*")
+>>> debugprint(table)
+|               *               |
+|       *       |       +       |
+|   +   |   *   |   0   |   0   |
+| 0 | 0 | * | + | 0 | 0 | 0 | 0 |
+|0|0|0|0|+|+|0|0|0|0|0|0|0|0|0|0|
 """
 
 import sys
@@ -460,6 +499,7 @@ def up_propagate(table, pos, binop):
 
 
 def down_propagate_to_leaf(table, pos, binop, unity):
+    "binop(parent, child): new value of child"
     pos += NONLEAF_SIZE
     down_propagate(table, pos, binop, unity)
     return table[pos]
