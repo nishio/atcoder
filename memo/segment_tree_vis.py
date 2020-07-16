@@ -506,10 +506,7 @@ def down_propagate_to_leaf(table, pos, binop, unity):
 
 
 def down_propagate(table, pos, binop, unity):
-    for max_level in range(N):
-        if 2 ** max_level > pos:
-            max_level -= 1
-            break
+    max_level = pos.bit_length() - 1
     for level in range(max_level):
         i = pos >> (max_level - level)
 
