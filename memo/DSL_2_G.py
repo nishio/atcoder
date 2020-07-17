@@ -1,17 +1,44 @@
 #!/usr/bin/env python3
-
-# from collections import defaultdict
-# from heapq import heappush, heappop
-# import numpy as np
 import sys
 sys.setrecursionlimit(10**6)
+input = sys.stdin.buffer.readline
 INF = 10 ** 9 + 1  # sys.maxsize # float("inf")
 MOD = 10 ** 9 + 7
 
 
-def up_propagate_from_leaf(table, pos, binop):
-    pos += NONLEAF_SIZE
-    up_propagate(table, pos, binop)
+def debug(*x):
+    print(*x, file=sys.stderr)
+
+
+def set_depth(depth):
+    global DEPTH, SEGTREE_SIZE, NONLEAF_SIZE
+    DEPTH = depth
+    SEGTREE_SIZE = 1 << DEPTH
+    NONLEAF_SIZE = 1 << (DEPTH - 1)
+
+
+def set_width(width):
+    set_depth((width - 1).bit_length() + 1)
+
+
+def get_size(pos):
+    ret = pos.bit_length()
+    return (1 << (DEPTH - ret))
+
+
+def up(pos):
+    pos += SEGTREE_SIZE // 2
+    return pos // (pos & -pos)
+
+
+def force_point(value_table, action_table, pos, force, composite, unity_action):
+    action = action_table[pos]
+    value_table[pos] = force(action, value_table[pos], get_size(pos))
+    action_table[pos] = unity_action
+    if pos < NONLEAF_SIZE:
+        action_table[pos * 2] = composite(action, action_table[pos * 2])
+        action_table[pos * 2 + 1] = composite(
+            action, action_table[pos * 2 + 1])
 
 
 def up_propagate(table, pos, binop):
@@ -23,41 +50,13 @@ def up_propagate(table, pos, binop):
         )
 
 
-def down_propagate_to_leaf(table, pos, binop, unity):
-    "binop(parent, child): new value of child"
-    pos += NONLEAF_SIZE
-    down_propagate(table, pos, binop, unity)
-    return table[pos]
-
-
 def down_propagate(table, pos, binop, unity):
     max_level = pos.bit_length() - 1
     for level in range(max_level):
         i = pos >> (max_level - level)
-        action = table[i]
-        if action != -1:
-            table[i * 2] = action
-            table[i * 2 + 1] = action
-            table[i] = -1
-
-
-def get_size(pos):
-    ret = 0
-    while pos:
-        pos >>= 1
-        ret += 1
-    return (1 << (N - ret))
-
-
-def force_point(value_table, action_table, pos, force, composite, unity_action):
-    action = action_table[pos]
-    #value_table[pos] = force(action, value_table[pos], get_size(pos))
-    if action != -1:
-        value_table[pos] = action
-        if pos < NONLEAF_SIZE:
-            action_table[pos * 2] = action
-            action_table[pos * 2 + 1] = action
-    action_table[pos] = unity_action
+        table[i * 2] = binop(table[i], table[i * 2])
+        table[i * 2 + 1] = binop(table[i], table[i * 2 + 1])
+        table[i] = unity
 
 
 def force_children(value_table, action_table, pos, force, composite, unity_action):
@@ -71,25 +70,7 @@ def force_children(value_table, action_table, pos, force, composite, unity_actio
             pos * 2 + 1, force, composite, unity_action)
 
 
-def up_prop_force_children(value_table, action_table, pos, binop, force, composite, unity_action):
-    """
-    force_children + up_propagation
-    """
-    while pos > 1:
-        pos >>= 1
-        force_point(
-            value_table, action_table,
-            pos * 2, force, composite, unity_action)
-        force_point(
-            value_table, action_table,
-            pos * 2 + 1, force, composite, unity_action)
-        value_table[pos] = binop(
-            value_table[pos * 2],
-            value_table[pos * 2 + 1]
-        )
-
-
-def force_range_update(value_table, action_table, value, left, right, force, composite, unity_action):
+def force_range_update(value_table, action_table, left, right, force, composite, unity_action):
     """
     force: action, value, cell_size => new_value
     composite: new_action, old_action => composite_action
@@ -98,39 +79,17 @@ def force_range_update(value_table, action_table, value, left, right, force, com
     right += SEGTREE_SIZE // 2
     while left < right:
         if left & 1:
-            action_table[left] = value
             force_point(
                 value_table, action_table,
                 left, force, composite, unity_action)
             left += 1
         if right & 1:
             right -= 1
-            action_table[right] = value
             force_point(
                 value_table, action_table,
                 right, force, composite, unity_action)
         left //= 2
         right //= 2
-
-
-def set_depth(depth):
-    global N, SEGTREE_SIZE, NONLEAF_SIZE
-    N = depth
-    SEGTREE_SIZE = 1 << N
-    NONLEAF_SIZE = 1 << (N - 1)
-
-
-def debug(*x):
-    print(*x, file=sys.stderr)
-
-
-def solve(SOLVE_PARAMS):
-    pass
-
-
-def up(pos):
-    pos += SEGTREE_SIZE // 2
-    return pos // (pos & -pos)
 
 
 def range_update(table, left, right, action):
@@ -166,6 +125,7 @@ def range_reduce(table, left, right, binop, unity):
 
 
 def debugprint(xs, minsize=0, maxsize=None):
+    global DEPTH
     strs = [str(x) for x in xs]
     if maxsize != None:
         for i in range(NONLEAF_SIZE, SEGTREE_SIZE):
@@ -174,145 +134,103 @@ def debugprint(xs, minsize=0, maxsize=None):
     if s > minsize:
         minsize = s
 
-    result = ["|"] * N
+    result = ["|"] * DEPTH
     level = 0
     next_level = 2
     for i in range(1, SEGTREE_SIZE):
         if i == next_level:
             level += 1
             next_level *= 2
-        width = ((minsize + 1) << (N - 1 - level)) - 1
+        width = ((minsize + 1) << (DEPTH - 1 - level)) - 1
         result[level] += strs[i].center(width) + "|"
     print(*result, sep="\n", file=sys.stderr)
 
 
-try:
-    profile
-except:
-    def profile(f): return f
-
-
-@profile
 def main():
+    from operator import add
     # parse input
-    s = input()
-    xs = s.split()
-    N, Q = map(int, xs)
+    N, Q = map(int, input().split())
+    set_width(N)
 
-    depth = N.bit_length() + 1
-    set_depth(depth)
-    value_unity = (1 << 31) - 1
-    # value_unity = 99
+    value_unity = 0
     value_table = [value_unity] * SEGTREE_SIZE
-    action_unity = -1
+    value_binop = add
+    action_unity = 0
     action_table = [action_unity] * SEGTREE_SIZE
 
     def force(action, value, size):
-        if action == action_unity:
-            return value
-        return action
+        return action * size + value
 
     def composite(new_action, old_action):
-        if new_action != action_unity:
-            return new_action
-        return old_action
+        return new_action + old_action
 
     for time in range(Q):
         q, *args = map(int, input().split())
         if q == 0:
-            # update
-            # debug("update: args", args)
+            # add
             s, t, value = args
+            s -= 1
+            t -= 1
             down_propagate(action_table, up(s), composite, action_unity)
             down_propagate(action_table, up(t + 1), composite, action_unity)
-            #range_update(action_table, s, t + 1, lambda x: value)
-            # debugprint(action_table)
+            range_update(action_table, s, t + 1, lambda x: x + value)
 
             force_range_update(
-                value_table, action_table, value,
+                value_table, action_table,
                 s, t + 1, force, composite, action_unity)
-            up_prop_force_children(
+            force_children(
                 value_table, action_table,
-                up(s), min, force, composite, action_unity)
-            up_prop_force_children(
+                up(s), force, composite, action_unity)
+            force_children(
                 value_table, action_table,
-                up(t + 1), min,  force, composite, action_unity)
+                up(t + 1), force, composite, action_unity)
+            up_propagate(value_table, up(s), value_binop)
+            up_propagate(value_table, up(t + 1), value_binop)
         else:
-            # find
+            # getSum
             s, t = args
+            s -= 1
+            t -= 1
             down_propagate(action_table, up(s), composite, action_unity)
             down_propagate(action_table, up(t + 1), composite, action_unity)
-            up_prop_force_children(
+            force_children(
                 value_table, action_table,
-                up(s), min, force, composite, action_unity)
-            up_prop_force_children(
+                up(s), force, composite, action_unity)
+            force_children(
                 value_table, action_table,
-                up(t + 1), min, force, composite, action_unity)
+                up(t + 1), force, composite, action_unity)
+            up_propagate(value_table, up(s), value_binop)
+            up_propagate(value_table, up(t + 1), value_binop)
 
-            # debugprint(action_table)
-            # debugprint(value_table)
-            print(range_reduce(value_table, s, t + 1, min, value_unity))
+            print(range_reduce(value_table, s, t + 1, value_binop, value_unity))
 
 
+# tests
 T1 = """
 3 5
-0 0 1 1
-0 1 2 3
-0 2 2 2
-1 0 2
+0 1 2 1
+0 2 3 2
+0 3 3 3
 1 1 2
+1 2 3
 """
 TEST_T1 = """
 >>> as_input(T1)
 >>> main()
-1
-2
+4
+8
 """
 T2 = """
-1 3
-1 0 0
-0 0 0 5
-1 0 0
+4 3
+1 1 4
+0 1 4 1
+1 1 4
 """
 TEST_T2 = """
 >>> as_input(T2)
 >>> main()
-2147483647
-5
-"""
-T3 = """
-8 10
-0 1 6 5
-0 2 7 2
-0 2 5 7
-1 3 3
-1 2 4
-1 0 3
-1 5 7
-1 2 6
-0 3 7 9
-1 2 6
-"""
-TEST_T3 = """
->>> as_input(T3)
->>> main()
-7
-7
-5
-2
-2
-7
-"""
-T4 = """
-15 3
-0 1 6 5
-0 2 7 2
-1 6 7
-"""
-TEST_T4 = """
->>> as_input(T4)
->>> main()
-2
+0
+4
 """
 
 
@@ -337,6 +255,9 @@ def as_input(s):
     def read():
         return bytes(f.read(), "ascii")
 
+
+input = sys.stdin.buffer.readline
+read = sys.stdin.buffer.read
 
 if sys.argv[-1] == "-t":
     print("testing")
