@@ -521,10 +521,7 @@ def down_propagate(table, pos, binop, unity):
 
 
 def get_size(pos):
-    ret = 0
-    while pos:
-        pos >>= 1
-        ret += 1
+    ret = pos.bit_length()
     return (1 << (DEPTH - ret))
 
 
