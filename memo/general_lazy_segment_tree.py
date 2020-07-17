@@ -274,6 +274,125 @@ def mainG():
             print(range_reduce(value_table, s, t + 1, value_binop, value_unity))
 
 
+def mainH():
+    # parse input
+    N, Q = map(int, input().split())
+    set_width(N)
+
+    value_unity = 10 ** 9
+    value_table = [0] * SEGTREE_SIZE
+    for i in range(N + NONLEAF_SIZE, SEGTREE_SIZE):
+        value_table[i] = value_unity
+    full_up(value_table, min)
+    value_binop = min
+    action_unity = 0
+    action_table = [action_unity] * SEGTREE_SIZE
+
+    def force(action, value, size):
+        return action + value
+
+    def composite(new_action, old_action):
+        return new_action + old_action
+
+    for _ in range(Q):
+        q, *args = map(int, input().split())
+        if q == 0:
+            # add
+            s, t, value = args
+            down_propagate(action_table, up(s), composite, action_unity)
+            down_propagate(action_table, up(t + 1), composite, action_unity)
+            range_update(action_table, s, t + 1, lambda x: x + value)
+
+            force_range_update(
+                value_table, action_table,
+                s, t + 1, force, composite, action_unity)
+            force_children(
+                value_table, action_table,
+                up(s), force, composite, action_unity)
+            force_children(
+                value_table, action_table,
+                up(t + 1), force, composite, action_unity)
+            up_propagate(value_table, up(s), value_binop)
+            up_propagate(value_table, up(t + 1), value_binop)
+        else:
+            # getSum
+            s, t = args
+            down_propagate(action_table, up(s), composite, action_unity)
+            down_propagate(action_table, up(t + 1), composite, action_unity)
+            force_children(
+                value_table, action_table,
+                up(s), force, composite, action_unity)
+            force_children(
+                value_table, action_table,
+                up(t + 1), force, composite, action_unity)
+            up_propagate(value_table, up(s), value_binop)
+            up_propagate(value_table, up(t + 1), value_binop)
+
+            print(range_reduce(value_table, s, t + 1, value_binop, value_unity))
+        # debugprint(action_table)
+        # debugprint(value_table)
+
+
+def mainI():
+    # parse input
+    from operator import add
+    N, Q = map(int, input().split())
+    set_width(N)
+
+    value_unity = 0
+    value_table = [0] * SEGTREE_SIZE
+    value_binop = add
+    action_unity = None
+    action_table = [action_unity] * SEGTREE_SIZE
+
+    def force(action, value, size):
+        if action == action_unity:
+            return value
+        return action * size
+
+    def composite(new_action, old_action):
+        if new_action != action_unity:
+            return new_action
+        return old_action
+
+    for _ in range(Q):
+        q, *args = map(int, input().split())
+        # debug(": q,", q, args)
+        if q == 0:
+            # update
+            s, t, value = args
+            down_propagate(action_table, up(s), composite, action_unity)
+            down_propagate(action_table, up(t + 1), composite, action_unity)
+            range_update(action_table, s, t + 1, lambda x: value)
+
+            force_range_update(
+                value_table, action_table,
+                s, t + 1, force, composite, action_unity)
+            force_children(
+                value_table, action_table,
+                up(s), force, composite, action_unity)
+            force_children(
+                value_table, action_table,
+                up(t + 1), force, composite, action_unity)
+            up_propagate(value_table, up(s), value_binop)
+            up_propagate(value_table, up(t + 1), value_binop)
+        else:
+            # getSum
+            s, t = args
+            down_propagate(action_table, up(s), composite, action_unity)
+            down_propagate(action_table, up(t + 1), composite, action_unity)
+            force_children(
+                value_table, action_table,
+                up(s), force, composite, action_unity)
+            force_children(
+                value_table, action_table,
+                up(t + 1), force, composite, action_unity)
+            up_propagate(value_table, up(s), value_binop)
+            up_propagate(value_table, up(t + 1), value_binop)
+
+            print(range_reduce(value_table, s, t + 1, value_binop, value_unity))
+
+
 T1F = """
 3 5
 0 0 1 1
@@ -360,6 +479,44 @@ TEST_T2G = """
 >>> mainG()
 0
 4
+"""
+
+T1H = """
+6 7
+0 1 3 1
+0 2 4 -2
+1 0 5
+1 0 1
+0 3 5 3
+1 3 4
+1 0 5
+"""
+TEST_T1H = """
+>>> as_input(T1H)
+>>> mainH()
+-2
+0
+1
+-1
+"""
+
+T1I = """
+6 7
+0 1 3 1
+0 2 4 -2
+1 0 5
+1 0 1
+0 3 5 3
+1 3 4
+1 0 5
+"""
+TEST_T1I = """
+>>> as_input(T1I)
+>>> mainI()
+-5
+1
+6
+8
 """
 
 
