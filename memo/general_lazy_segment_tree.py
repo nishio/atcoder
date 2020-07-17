@@ -22,7 +22,7 @@ def get_size(pos):
 
 
 def up(pos):
-    pos += SEGTREE_SIZE // 2
+    pos += NONLEAF_SIZE
     return pos // (pos & -pos)
 
 
@@ -50,8 +50,8 @@ def force_range_update(value_table, action_table, left, right, action, force, co
     force: action, value, cell_size => new_value
     composite: new_action, old_action => composite_action
     """
-    left += SEGTREE_SIZE // 2
-    right += SEGTREE_SIZE // 2
+    left += NONLEAF_SIZE
+    right += NONLEAF_SIZE
     while left < right:
         if left & 1:
             action_table[left] = composite(action, action_table[left])
@@ -72,8 +72,8 @@ def force_range_update(value_table, action_table, left, right, action, force, co
 def range_reduce(table, left, right, binop, unity):
     ret_left = unity
     ret_right = unity
-    left += SEGTREE_SIZE // 2
-    right += SEGTREE_SIZE // 2
+    left += NONLEAF_SIZE
+    right += NONLEAF_SIZE
     while left < right:
         if left & 1:
             ret_left = binop(ret_left, table[left])
