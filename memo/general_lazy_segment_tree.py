@@ -139,8 +139,9 @@ def up_prop_force(value_table, action_table, pos, binop, action_force, action_co
         )
 
 
-def lazy_range_update(action_table, value_table, start, end,
-                      action, action_composite, action_force, action_unity, value_binop):
+def lazy_range_update(
+        action_table, value_table, start, end,
+        action, action_composite, action_force, action_unity, value_binop):
     "update [start, end)"
     pos = start + NONLEAF_SIZE
     L = pos // (pos & -pos)
@@ -165,6 +166,7 @@ def lazy_range_reduce(
     action_composite, action_force, action_unity,
     value_binop, value_unity
 ):
+    "reduce [start, end)"
     pos = start + NONLEAF_SIZE
     L = pos // (pos & -pos)
     pos = end + NONLEAF_SIZE
