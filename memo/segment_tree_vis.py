@@ -422,6 +422,17 @@ def debugprint(xs, minsize=0, maxsize=None):
     print(*result, sep="\n")
 
 
+def show_forced(action_table, value_table, N, force, composite, action_unity):
+    table = action_table[:]
+    ret = [0] * N
+    for i in range(N):
+        pos = i + NONLEAF_SIZE
+        down_propagate(table, pos, composite, action_unity)
+        ret[i] = force(table[pos], value_table[pos], 1)
+
+    return ret
+
+
 def point_update(table, pos, action):
     pos = pos + NONLEAF_SIZE
     table[pos] = action(table[pos])
