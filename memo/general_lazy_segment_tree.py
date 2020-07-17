@@ -54,14 +54,14 @@ def force_range_update(value_table, action_table, left, right, action, force, co
     right += SEGTREE_SIZE // 2
     while left < right:
         if left & 1:
-            action_table[left] = action(action_table[left])
+            action_table[left] = composite(action, action_table[left])
             force_point(
                 value_table, action_table,
                 left, force, composite, unity_action)
             left += 1
         if right & 1:
             right -= 1
-            action_table[right] = action(action_table[right])
+            action_table[right] = composite(action, action_table[right])
             force_point(
                 value_table, action_table,
                 right, force, composite, unity_action)
@@ -152,7 +152,7 @@ def lazy_range_update(action_table, value_table, start, end,
     down_propagate(action_table, up(end), action_composite, action_unity)
     force_range_update(
         value_table, action_table,
-        start, end, lambda x: action_composite(action, x), action_force, action_composite, action_unity)
+        start, end, action, action_force, action_composite, action_unity)
     up_prop_force(
         value_table, action_table,
         up(start), value_binop, action_force, action_composite, action_unity)
