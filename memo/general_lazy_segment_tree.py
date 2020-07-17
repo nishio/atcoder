@@ -36,15 +36,6 @@ def force_point(value_table, action_table, pos, force, composite, unity_action):
             action, action_table[pos * 2 + 1])
 
 
-def up_propagate(table, pos, binop):
-    while pos > 1:
-        pos >>= 1
-        table[pos] = binop(
-            table[pos * 2],
-            table[pos * 2 + 1]
-        )
-
-
 def down_propagate(table, pos, binop, unity):
     max_level = pos.bit_length() - 1
     for level in range(max_level):
@@ -54,18 +45,7 @@ def down_propagate(table, pos, binop, unity):
         table[i] = unity
 
 
-def force_children(value_table, action_table, pos, force, composite, unity_action):
-    while pos > 1:
-        pos >>= 1
-        force_point(
-            value_table, action_table,
-            pos * 2, force, composite, unity_action)
-        force_point(
-            value_table, action_table,
-            pos * 2 + 1, force, composite, unity_action)
-
-
-def force_range_update(value_table, action_table, left, right, force, composite, unity_action):
+def force_range_update(value_table, action_table, left, right, action, force, composite, unity_action):
     """
     force: action, value, cell_size => new_value
     composite: new_action, old_action => composite_action
@@ -74,29 +54,17 @@ def force_range_update(value_table, action_table, left, right, force, composite,
     right += SEGTREE_SIZE // 2
     while left < right:
         if left & 1:
+            action_table[left] = action(action_table[left])
             force_point(
                 value_table, action_table,
                 left, force, composite, unity_action)
             left += 1
         if right & 1:
             right -= 1
+            action_table[right] = action(action_table[right])
             force_point(
                 value_table, action_table,
                 right, force, composite, unity_action)
-        left //= 2
-        right //= 2
-
-
-def range_update(table, left, right, action):
-    left += SEGTREE_SIZE // 2
-    right += SEGTREE_SIZE // 2
-    while left < right:
-        if left & 1:
-            table[left] = action(table[left])
-            left += 1
-        if right & 1:
-            right -= 1
-            table[right] = action(table[right])
         left //= 2
         right //= 2
 
@@ -159,26 +127,38 @@ def show_forced(action_table, value_table, N, force, composite, action_unity):
     return ret
 
 
+def up_prop_force(value_table, action_table, pos, binop, force, composite, unity_action):
+    """
+    force_children + up_propagation
+    """
+    while pos > 1:
+        pos >>= 1
+        force_point(
+            value_table, action_table,
+            pos * 2, force, composite, unity_action)
+        force_point(
+            value_table, action_table,
+            pos * 2 + 1, force, composite, unity_action)
+        value_table[pos] = binop(
+            value_table[pos * 2],
+            value_table[pos * 2 + 1]
+        )
+
+
 def lazy_range_update(action_table, value_table, start, end,
                       action, action_composite, action_force, action_unity, value_binop):
     "update [start, end)"
     down_propagate(action_table, up(start), action_composite, action_unity)
     down_propagate(action_table, up(end), action_composite, action_unity)
-    range_update(
-        action_table, start, end,
-        lambda x: action_composite(action, x))
-
     force_range_update(
         value_table, action_table,
-        start, end, action_force, action_composite, action_unity)
-    force_children(
+        start, end, lambda x: action_composite(action, x), action_force, action_composite, action_unity)
+    up_prop_force(
         value_table, action_table,
-        up(start), action_force, action_composite, action_unity)
-    force_children(
+        up(start), value_binop, action_force, action_composite, action_unity)
+    up_prop_force(
         value_table, action_table,
-        up(end), action_force, action_composite, action_unity)
-    up_propagate(value_table, up(start), value_binop)
-    up_propagate(value_table, up(end), value_binop)
+        up(end), value_binop,  action_force, action_composite, action_unity)
 
 
 def lazy_range_reduce(
@@ -188,14 +168,12 @@ def lazy_range_reduce(
 ):
     down_propagate(action_table, up(start), action_composite, action_unity)
     down_propagate(action_table, up(end), action_composite, action_unity)
-    force_children(
+    up_prop_force(
         value_table, action_table,
-        up(start), action_force, action_composite, action_unity)
-    force_children(
+        up(start), value_binop, action_force, action_composite, action_unity)
+    up_prop_force(
         value_table, action_table,
-        up(end), action_force, action_composite, action_unity)
-    up_propagate(value_table, up(start), value_binop)
-    up_propagate(value_table, up(end), value_binop)
+        up(end), value_binop,  action_force, action_composite, action_unity)
 
     return range_reduce(value_table, start, end, value_binop, value_unity)
 
