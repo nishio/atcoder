@@ -372,10 +372,14 @@ from operator import add
 
 
 def set_depth(depth):
-    global N, SEGTREE_SIZE, NONLEAF_SIZE
-    N = depth
-    SEGTREE_SIZE = 1 << N
-    NONLEAF_SIZE = 1 << (N - 1)
+    global DEPTH, SEGTREE_SIZE, NONLEAF_SIZE
+    DEPTH = depth
+    SEGTREE_SIZE = 1 << DEPTH
+    NONLEAF_SIZE = 1 << (DEPTH - 1)
+
+
+def set_width(width):
+    set_depth((width - 1).bit_length() + 1)
 
 
 set_depth(5)
@@ -397,6 +401,7 @@ def debug(*x):
 
 
 def debugprint(xs, minsize=0, maxsize=None):
+    global DEPTH
     strs = [str(x) for x in xs]
     if maxsize != None:
         for i in range(NONLEAF_SIZE, SEGTREE_SIZE):
@@ -405,14 +410,14 @@ def debugprint(xs, minsize=0, maxsize=None):
     if s > minsize:
         minsize = s
 
-    result = ["|"] * N
+    result = ["|"] * DEPTH
     level = 0
     next_level = 2
     for i in range(1, SEGTREE_SIZE):
         if i == next_level:
             level += 1
             next_level *= 2
-        width = ((minsize + 1) << (N - 1 - level)) - 1
+        width = ((minsize + 1) << (DEPTH - 1 - level)) - 1
         result[level] += strs[i].center(width) + "|"
     print(*result, sep="\n")
 
@@ -520,7 +525,7 @@ def get_size(pos):
     while pos:
         pos >>= 1
         ret += 1
-    return (1 << (N - ret))
+    return (1 << (DEPTH - ret))
 
 
 def force_point(value_table, action_table, pos, force, composite, unity_action):
