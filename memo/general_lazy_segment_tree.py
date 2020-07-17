@@ -181,6 +181,25 @@ def lazy_range_update(action_table, value_table, start, end,
     up_propagate(value_table, up(end), value_binop)
 
 
+def lazy_range_reduce(
+    action_table, value_table, start, end,
+    action_composite, action_force, action_unity,
+    value_binop, value_unity
+):
+    down_propagate(action_table, up(start), action_composite, action_unity)
+    down_propagate(action_table, up(end), action_composite, action_unity)
+    force_children(
+        value_table, action_table,
+        up(start), action_force, action_composite, action_unity)
+    force_children(
+        value_table, action_table,
+        up(end), action_force, action_composite, action_unity)
+    up_propagate(value_table, up(start), value_binop)
+    up_propagate(value_table, up(end), value_binop)
+
+    return range_reduce(value_table, start, end, value_binop, value_unity)
+
+
 def mainF():
     N, Q = map(int, input().split())
     set_width(N)
@@ -212,18 +231,9 @@ def mainF():
         else:
             # find
             s, t = args
-            down_propagate(action_table, up(s), composite, action_unity)
-            down_propagate(action_table, up(t + 1), composite, action_unity)
-            force_children(
-                value_table, action_table,
-                up(s), force, composite, action_unity)
-            force_children(
-                value_table, action_table,
-                up(t + 1), force, composite, action_unity)
-            up_propagate(value_table, up(s), min)
-            up_propagate(value_table, up(t + 1), min)
-
-            print(range_reduce(value_table, s, t + 1, min, value_unity))
+            print(lazy_range_reduce(
+                action_table, value_table, s, t + 1,
+                composite, force, action_unity, min, value_unity))
 
 
 def mainG():
@@ -256,20 +266,9 @@ def mainG():
         else:
             # getSum
             s, t = args
-            s -= 1
-            t -= 1
-            down_propagate(action_table, up(s), composite, action_unity)
-            down_propagate(action_table, up(t + 1), composite, action_unity)
-            force_children(
-                value_table, action_table,
-                up(s), force, composite, action_unity)
-            force_children(
-                value_table, action_table,
-                up(t + 1), force, composite, action_unity)
-            up_propagate(value_table, up(s), value_binop)
-            up_propagate(value_table, up(t + 1), value_binop)
-
-            print(range_reduce(value_table, s, t + 1, value_binop, value_unity))
+            print(lazy_range_reduce(
+                action_table, value_table, s - 1, t,
+                composite, force, action_unity, value_binop, value_unity))
 
 
 def mainH():
@@ -304,20 +303,9 @@ def mainH():
         else:
             # getSum
             s, t = args
-            down_propagate(action_table, up(s), composite, action_unity)
-            down_propagate(action_table, up(t + 1), composite, action_unity)
-            force_children(
-                value_table, action_table,
-                up(s), force, composite, action_unity)
-            force_children(
-                value_table, action_table,
-                up(t + 1), force, composite, action_unity)
-            up_propagate(value_table, up(s), value_binop)
-            up_propagate(value_table, up(t + 1), value_binop)
-
-            print(range_reduce(value_table, s, t + 1, value_binop, value_unity))
-        # debugprint(action_table)
-        # debugprint(value_table)
+            print(lazy_range_reduce(
+                action_table, value_table, s, t + 1,
+                composite, force, action_unity, value_binop, value_unity))
 
 
 def mainI():
@@ -355,18 +343,9 @@ def mainI():
         else:
             # getSum
             s, t = args
-            down_propagate(action_table, up(s), composite, action_unity)
-            down_propagate(action_table, up(t + 1), composite, action_unity)
-            force_children(
-                value_table, action_table,
-                up(s), force, composite, action_unity)
-            force_children(
-                value_table, action_table,
-                up(t + 1), force, composite, action_unity)
-            up_propagate(value_table, up(s), value_binop)
-            up_propagate(value_table, up(t + 1), value_binop)
-
-            print(range_reduce(value_table, s, t + 1, value_binop, value_unity))
+            print(lazy_range_reduce(
+                action_table, value_table, s, t + 1,
+                composite, force, action_unity, value_binop, value_unity))
 
 
 T1F = """
@@ -501,7 +480,7 @@ def _test():
     doctest.testmod()
     g = globals()
     for k in sorted(g):
-        if k.startswith("TEST_"):
+        if k.startswith("TEST_T1I"):
             doctest.run_docstring_examples(g[k], g)
 
 
