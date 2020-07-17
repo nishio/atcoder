@@ -5,6 +5,11 @@
 # import numpy as np
 import sys
 
+try:
+    profile
+except:
+    def profile(f): return f
+
 
 def set_depth(depth):
     global DEPTH, SEGTREE_SIZE, NONLEAF_SIZE
@@ -17,29 +22,30 @@ def set_width(width):
     set_depth((width - 1).bit_length() + 1)
 
 
+@profile
 def force_point(value_table, action_table, pos, action_force, action_composite, action_unity):
     action = action_table[pos]
-    # get_size
-    size = (1 << (DEPTH - pos.bit_length()))
-    # end get_size
-    value_table[pos] = action_force(action, value_table[pos], size)
+    if action != action_unity:
+        value_table[pos] = action
+
+        if pos < NONLEAF_SIZE:
+            action_table[pos * 2] = action
+            action_table[pos * 2 + 1] = action
     action_table[pos] = action_unity
-    if pos < NONLEAF_SIZE:
-        action_table[pos * 2] = action_composite(
-            action, action_table[pos * 2])
-        action_table[pos * 2 + 1] = action_composite(
-            action, action_table[pos * 2 + 1])
 
 
 def down_propagate(table, pos, binop, unity):
     max_level = pos.bit_length() - 1
+
     for level in range(max_level):
         i = pos >> (max_level - level)
-        table[i * 2] = binop(table[i], table[i * 2])
-        table[i * 2 + 1] = binop(table[i], table[i * 2 + 1])
-        table[i] = unity
+        if table[i] != unity:
+            table[i * 2] = table[i]
+            table[i * 2 + 1] = table[i]
+            table[i] = unity
 
 
+@profile
 def force_range_update(value_table, action_table, left, right, action, action_force, action_composite, action_unity):
     """
     action_force: action, value, cell_size => new_value
@@ -49,14 +55,14 @@ def force_range_update(value_table, action_table, left, right, action, action_fo
     right += NONLEAF_SIZE
     while left < right:
         if left & 1:
-            action_table[left] = action_composite(action, action_table[left])
+            action_table[left] = action
             force_point(
                 value_table, action_table,
                 left, action_force, action_composite, action_unity)
             left += 1
         if right & 1:
             right -= 1
-            action_table[right] = action_composite(action, action_table[right])
+            action_table[right] = action
             force_point(
                 value_table, action_table,
                 right, action_force, action_composite, action_unity)
@@ -64,6 +70,7 @@ def force_range_update(value_table, action_table, left, right, action, action_fo
         right //= 2
 
 
+@profile
 def range_reduce(table, left, right, binop, unity):
     ret_left = unity
     ret_right = unity
@@ -82,46 +89,7 @@ def range_reduce(table, left, right, binop, unity):
     return binop(ret_left, ret_right)
 
 
-def debugprint(xs, minsize=0, maxsize=None):
-    global DEPTH
-    strs = [str(x) for x in xs]
-    if maxsize != None:
-        for i in range(NONLEAF_SIZE, SEGTREE_SIZE):
-            strs[i] = strs[i][:maxsize]
-    s = max(len(s) for s in strs[NONLEAF_SIZE:])
-    if s > minsize:
-        minsize = s
-
-    result = ["|"] * DEPTH
-    level = 0
-    next_level = 2
-    for i in range(1, SEGTREE_SIZE):
-        if i == next_level:
-            level += 1
-            next_level *= 2
-        width = ((minsize + 1) << (DEPTH - 1 - level)) - 1
-        result[level] += strs[i].center(width) + "|"
-    print(*result, sep="\n", file=sys.stderr)
-
-
-def full_up(table, binop):
-    for i in range(NONLEAF_SIZE - 1, 0, -1):
-        table[i] = binop(
-            table[2 * i],
-            table[2 * i + 1])
-
-
-def show_forced(action_table, value_table, N, action_force, action_composite, action_unity):
-    table = action_table[:]
-    ret = [0] * N
-    for i in range(N):
-        pos = i + NONLEAF_SIZE
-        down_propagate(table, pos, action_composite, action_unity)
-        ret[i] = action_force(table[pos], value_table[pos], 1)
-
-    return ret
-
-
+@profile
 def up_prop_force(value_table, action_table, pos, binop, action_force, action_composite, action_unity):
     """
     force_children + up_propagation
@@ -140,6 +108,7 @@ def up_prop_force(value_table, action_table, pos, binop, action_force, action_co
         )
 
 
+@profile
 def lazy_range_update(
         action_table, value_table, start, end,
         action, action_composite, action_force, action_unity, value_binop):
@@ -162,6 +131,7 @@ def lazy_range_update(
         R, value_binop, action_force, action_composite, action_unity)
 
 
+@profile
 def lazy_range_reduce(
     action_table, value_table, start, end,
     action_composite, action_force, action_unity,
@@ -194,15 +164,8 @@ def main():
     action_unity = -1
     action_table = [action_unity] * SEGTREE_SIZE
 
-    def action_force(action, value, size):
-        if action == action_unity:
-            return value
-        return action
-
-    def action_composite(new_action, old_action):
-        if new_action != action_unity:
-            return new_action
-        return old_action
+    action_force = None
+    action_composite = None
 
     for _ in range(Q):
         q, *args = map(int, input().split())

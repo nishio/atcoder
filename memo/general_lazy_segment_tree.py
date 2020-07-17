@@ -22,21 +22,21 @@ def force_point(value_table, action_table, pos, action_force, action_composite, 
     size = (1 << (DEPTH - pos.bit_length()))
     # end get_size
     value_table[pos] = action_force(action, value_table[pos], size)
-    action_table[pos] = action_unity
     if pos < NONLEAF_SIZE:
         action_table[pos * 2] = action_composite(
             action, action_table[pos * 2])
         action_table[pos * 2 + 1] = action_composite(
             action, action_table[pos * 2 + 1])
+    action_table[pos] = action_unity
 
 
-def down_propagate(table, pos, binop, unity):
+def down_propagate(table, pos, action_composse, action_unity):
     max_level = pos.bit_length() - 1
     for level in range(max_level):
         i = pos >> (max_level - level)
-        table[i * 2] = binop(table[i], table[i * 2])
-        table[i * 2 + 1] = binop(table[i], table[i * 2 + 1])
-        table[i] = unity
+        table[i * 2] = action_composse(table[i], table[i * 2])
+        table[i * 2 + 1] = action_composse(table[i], table[i * 2 + 1])
+        table[i] = action_unity
 
 
 def force_range_update(value_table, action_table, left, right, action, action_force, action_composite, action_unity):
