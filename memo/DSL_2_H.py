@@ -164,6 +164,11 @@ def full_up(table, binop):
             table[2 * i + 1])
 
 
+def set_items(table, xs):
+    for i, x in enumerate(xs, NONLEAF_SIZE):
+        table[i] = x
+
+
 def main():
     # parse input
     N, Q = map(int, input().split())
@@ -171,8 +176,7 @@ def main():
 
     value_unity = 10 ** 9
     value_table = [0] * SEGTREE_SIZE
-    for i in range(N + NONLEAF_SIZE, SEGTREE_SIZE):
-        value_table[i] = value_unity
+    set_items(value_table, [0] * N)
     full_up(value_table, min)
     value_binop = min
     action_unity = 0

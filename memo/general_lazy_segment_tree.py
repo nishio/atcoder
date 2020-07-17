@@ -271,16 +271,21 @@ def mainG():
                 composite, force, action_unity, value_binop, value_unity))
 
 
+def set_items(table, xs):
+    for i, x in enumerate(xs, NONLEAF_SIZE):
+        table[i] = x
+
+
 def mainH():
     # parse input
     N, Q = map(int, input().split())
     set_width(N)
 
     value_unity = 10 ** 9
-    value_table = [0] * SEGTREE_SIZE
-    for i in range(N + NONLEAF_SIZE, SEGTREE_SIZE):
-        value_table[i] = value_unity
+    value_table = [value_unity] * SEGTREE_SIZE
+    set_items(value_table, [0] * N)
     full_up(value_table, min)
+
     value_binop = min
     action_unity = 0
     action_table = [action_unity] * SEGTREE_SIZE
@@ -332,7 +337,6 @@ def mainI():
 
     for _ in range(Q):
         q, *args = map(int, input().split())
-        # debug(": q,", q, args)
         if q == 0:
             # update
             s, t, value = args
@@ -480,7 +484,7 @@ def _test():
     doctest.testmod()
     g = globals()
     for k in sorted(g):
-        if k.startswith("TEST_T1I"):
+        if k.startswith("TEST_"):
             doctest.run_docstring_examples(g[k], g)
 
 
