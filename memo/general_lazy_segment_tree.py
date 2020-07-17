@@ -159,6 +159,28 @@ def show_forced(action_table, value_table, N, force, composite, action_unity):
     return ret
 
 
+def lazy_range_update(action_table, value_table, start, end,
+                      action, action_composite, action_force, action_unity, value_binop):
+    "update [start, end)"
+    down_propagate(action_table, up(start), action_composite, action_unity)
+    down_propagate(action_table, up(end), action_composite, action_unity)
+    range_update(
+        action_table, start, end,
+        lambda x: action_composite(action, x))
+
+    force_range_update(
+        value_table, action_table,
+        start, end, action_force, action_composite, action_unity)
+    force_children(
+        value_table, action_table,
+        up(start), action_force, action_composite, action_unity)
+    force_children(
+        value_table, action_table,
+        up(end), action_force, action_composite, action_unity)
+    up_propagate(value_table, up(start), value_binop)
+    up_propagate(value_table, up(end), value_binop)
+
+
 def mainF():
     N, Q = map(int, input().split())
     set_width(N)
@@ -183,21 +205,10 @@ def mainF():
         if q == 0:
             # update
             s, t, value = args
-            down_propagate(action_table, up(s), composite, action_unity)
-            down_propagate(action_table, up(t + 1), composite, action_unity)
-            range_update(action_table, s, t + 1, lambda x: value)
-
-            force_range_update(
-                value_table, action_table,
-                s, t + 1, force, composite, action_unity)
-            force_children(
-                value_table, action_table,
-                up(s), force, composite, action_unity)
-            force_children(
-                value_table, action_table,
-                up(t + 1), force, composite, action_unity)
-            up_propagate(value_table, up(s), min)
-            up_propagate(value_table, up(t + 1), min)
+            t += 1
+            lazy_range_update(
+                action_table, value_table, s, t, value,
+                composite, force, action_unity, min)
         else:
             # find
             s, t = args
@@ -239,22 +250,9 @@ def mainG():
             # add
             s, t, value = args
             s -= 1
-            t -= 1
-            down_propagate(action_table, up(s), composite, action_unity)
-            down_propagate(action_table, up(t + 1), composite, action_unity)
-            range_update(action_table, s, t + 1, lambda x: x + value)
-
-            force_range_update(
-                value_table, action_table,
-                s, t + 1, force, composite, action_unity)
-            force_children(
-                value_table, action_table,
-                up(s), force, composite, action_unity)
-            force_children(
-                value_table, action_table,
-                up(t + 1), force, composite, action_unity)
-            up_propagate(value_table, up(s), value_binop)
-            up_propagate(value_table, up(t + 1), value_binop)
+            lazy_range_update(
+                action_table, value_table, s, t, value,
+                composite, force, action_unity, value_binop)
         else:
             # getSum
             s, t = args
@@ -299,21 +297,10 @@ def mainH():
         if q == 0:
             # add
             s, t, value = args
-            down_propagate(action_table, up(s), composite, action_unity)
-            down_propagate(action_table, up(t + 1), composite, action_unity)
-            range_update(action_table, s, t + 1, lambda x: x + value)
-
-            force_range_update(
-                value_table, action_table,
-                s, t + 1, force, composite, action_unity)
-            force_children(
-                value_table, action_table,
-                up(s), force, composite, action_unity)
-            force_children(
-                value_table, action_table,
-                up(t + 1), force, composite, action_unity)
-            up_propagate(value_table, up(s), value_binop)
-            up_propagate(value_table, up(t + 1), value_binop)
+            t += 1
+            lazy_range_update(
+                action_table, value_table, s, t, value,
+                composite, force, action_unity, value_binop)
         else:
             # getSum
             s, t = args
@@ -361,21 +348,10 @@ def mainI():
         if q == 0:
             # update
             s, t, value = args
-            down_propagate(action_table, up(s), composite, action_unity)
-            down_propagate(action_table, up(t + 1), composite, action_unity)
-            range_update(action_table, s, t + 1, lambda x: value)
-
-            force_range_update(
-                value_table, action_table,
-                s, t + 1, force, composite, action_unity)
-            force_children(
-                value_table, action_table,
-                up(s), force, composite, action_unity)
-            force_children(
-                value_table, action_table,
-                up(t + 1), force, composite, action_unity)
-            up_propagate(value_table, up(s), value_binop)
-            up_propagate(value_table, up(t + 1), value_binop)
+            t += 1
+            lazy_range_update(
+                action_table, value_table, s, t, value,
+                composite, force, action_unity, value_binop)
         else:
             # getSum
             s, t = args
