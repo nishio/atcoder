@@ -16,23 +16,17 @@ def set_width(width):
     set_depth((width - 1).bit_length() + 1)
 
 
-def get_size(pos):
-    ret = pos.bit_length()
-    return (1 << (DEPTH - ret))
-
-
-def up(pos):
-    pos += NONLEAF_SIZE
-    return pos // (pos & -pos)
-
-
-def force_point(value_table, action_table, pos, force, composite, unity_action):
+def force_point(value_table, action_table, pos, action_force, action_composite, action_unity):
     action = action_table[pos]
-    value_table[pos] = force(action, value_table[pos], get_size(pos))
-    action_table[pos] = unity_action
+    # get_size
+    size = (1 << (DEPTH - pos.bit_length()))
+    # end get_size
+    value_table[pos] = action_force(action, value_table[pos], size)
+    action_table[pos] = action_unity
     if pos < NONLEAF_SIZE:
-        action_table[pos * 2] = composite(action, action_table[pos * 2])
-        action_table[pos * 2 + 1] = composite(
+        action_table[pos * 2] = action_composite(
+            action, action_table[pos * 2])
+        action_table[pos * 2 + 1] = action_composite(
             action, action_table[pos * 2 + 1])
 
 
@@ -45,26 +39,26 @@ def down_propagate(table, pos, binop, unity):
         table[i] = unity
 
 
-def force_range_update(value_table, action_table, left, right, action, force, composite, unity_action):
+def force_range_update(value_table, action_table, left, right, action, action_force, action_composite, action_unity):
     """
-    force: action, value, cell_size => new_value
-    composite: new_action, old_action => composite_action
+    action_force: action, value, cell_size => new_value
+    action_composite: new_action, old_action => composite_action
     """
     left += NONLEAF_SIZE
     right += NONLEAF_SIZE
     while left < right:
         if left & 1:
-            action_table[left] = composite(action, action_table[left])
+            action_table[left] = action_composite(action, action_table[left])
             force_point(
                 value_table, action_table,
-                left, force, composite, unity_action)
+                left, action_force, action_composite, action_unity)
             left += 1
         if right & 1:
             right -= 1
-            action_table[right] = composite(action, action_table[right])
+            action_table[right] = action_composite(action, action_table[right])
             force_point(
                 value_table, action_table,
-                right, force, composite, unity_action)
+                right, action_force, action_composite, action_unity)
         left //= 2
         right //= 2
 
@@ -116,18 +110,18 @@ def full_up(table, binop):
             table[2 * i + 1])
 
 
-def show_forced(action_table, value_table, N, force, composite, action_unity):
+def show_forced(action_table, value_table, N, action_force, action_composite, action_unity):
     table = action_table[:]
     ret = [0] * N
     for i in range(N):
         pos = i + NONLEAF_SIZE
-        down_propagate(table, pos, composite, action_unity)
-        ret[i] = force(table[pos], value_table[pos], 1)
+        down_propagate(table, pos, action_composite, action_unity)
+        ret[i] = action_force(table[pos], value_table[pos], 1)
 
     return ret
 
 
-def up_prop_force(value_table, action_table, pos, binop, force, composite, unity_action):
+def up_prop_force(value_table, action_table, pos, binop, action_force, action_composite, action_unity):
     """
     force_children + up_propagation
     """
@@ -135,10 +129,10 @@ def up_prop_force(value_table, action_table, pos, binop, force, composite, unity
         pos >>= 1
         force_point(
             value_table, action_table,
-            pos * 2, force, composite, unity_action)
+            pos * 2, action_force, action_composite, action_unity)
         force_point(
             value_table, action_table,
-            pos * 2 + 1, force, composite, unity_action)
+            pos * 2 + 1, action_force, action_composite, action_unity)
         value_table[pos] = binop(
             value_table[pos * 2],
             value_table[pos * 2 + 1]
@@ -148,17 +142,22 @@ def up_prop_force(value_table, action_table, pos, binop, force, composite, unity
 def lazy_range_update(action_table, value_table, start, end,
                       action, action_composite, action_force, action_unity, value_binop):
     "update [start, end)"
-    down_propagate(action_table, up(start), action_composite, action_unity)
-    down_propagate(action_table, up(end), action_composite, action_unity)
+    pos = start + NONLEAF_SIZE
+    L = pos // (pos & -pos)
+    pos = end + NONLEAF_SIZE
+    R = pos // (pos & -pos)
+
+    down_propagate(action_table, L, action_composite, action_unity)
+    down_propagate(action_table, R, action_composite, action_unity)
     force_range_update(
         value_table, action_table,
         start, end, action, action_force, action_composite, action_unity)
     up_prop_force(
         value_table, action_table,
-        up(start), value_binop, action_force, action_composite, action_unity)
+        L, value_binop, action_force, action_composite, action_unity)
     up_prop_force(
         value_table, action_table,
-        up(end), value_binop,  action_force, action_composite, action_unity)
+        R, value_binop, action_force, action_composite, action_unity)
 
 
 def lazy_range_reduce(
@@ -166,14 +165,19 @@ def lazy_range_reduce(
     action_composite, action_force, action_unity,
     value_binop, value_unity
 ):
-    down_propagate(action_table, up(start), action_composite, action_unity)
-    down_propagate(action_table, up(end), action_composite, action_unity)
+    pos = start + NONLEAF_SIZE
+    L = pos // (pos & -pos)
+    pos = end + NONLEAF_SIZE
+    R = pos // (pos & -pos)
+
+    down_propagate(action_table, L, action_composite, action_unity)
+    down_propagate(action_table, R, action_composite, action_unity)
     up_prop_force(
         value_table, action_table,
-        up(start), value_binop, action_force, action_composite, action_unity)
+        L, value_binop, action_force, action_composite, action_unity)
     up_prop_force(
         value_table, action_table,
-        up(end), value_binop,  action_force, action_composite, action_unity)
+        R, value_binop,  action_force, action_composite, action_unity)
 
     return range_reduce(value_table, start, end, value_binop, value_unity)
 
@@ -187,12 +191,12 @@ def mainF():
     action_unity = -1
     action_table = [action_unity] * SEGTREE_SIZE
 
-    def force(action, value, size):
+    def action_force(action, value, size):
         if action == action_unity:
             return value
         return action
 
-    def composite(new_action, old_action):
+    def action_composite(new_action, old_action):
         if new_action != action_unity:
             return new_action
         return old_action
@@ -205,13 +209,13 @@ def mainF():
             t += 1
             lazy_range_update(
                 action_table, value_table, s, t, value,
-                composite, force, action_unity, min)
+                action_composite, action_force, action_unity, min)
         else:
             # find
             s, t = args
             print(lazy_range_reduce(
                 action_table, value_table, s, t + 1,
-                composite, force, action_unity, min, value_unity))
+                action_composite, action_force, action_unity, min, value_unity))
 
 
 def mainG():
@@ -226,10 +230,10 @@ def mainG():
     action_unity = 0
     action_table = [action_unity] * SEGTREE_SIZE
 
-    def force(action, value, size):
+    def action_force(action, value, size):
         return action * size + value
 
-    def composite(new_action, old_action):
+    def action_composite(new_action, old_action):
         return new_action + old_action
 
     for _ in range(Q):
@@ -240,13 +244,13 @@ def mainG():
             s -= 1
             lazy_range_update(
                 action_table, value_table, s, t, value,
-                composite, force, action_unity, value_binop)
+                action_composite, action_force, action_unity, value_binop)
         else:
             # getSum
             s, t = args
             print(lazy_range_reduce(
                 action_table, value_table, s - 1, t,
-                composite, force, action_unity, value_binop, value_unity))
+                action_composite, action_force, action_unity, value_binop, value_unity))
 
 
 def set_items(table, xs):
@@ -268,10 +272,10 @@ def mainH():
     action_unity = 0
     action_table = [action_unity] * SEGTREE_SIZE
 
-    def force(action, value, size):
+    def action_force(action, value, size):
         return action + value
 
-    def composite(new_action, old_action):
+    def action_composite(new_action, old_action):
         return new_action + old_action
 
     for _ in range(Q):
@@ -282,13 +286,13 @@ def mainH():
             t += 1
             lazy_range_update(
                 action_table, value_table, s, t, value,
-                composite, force, action_unity, value_binop)
+                action_composite, action_force, action_unity, value_binop)
         else:
             # getSum
             s, t = args
             print(lazy_range_reduce(
                 action_table, value_table, s, t + 1,
-                composite, force, action_unity, value_binop, value_unity))
+                action_composite, action_force, action_unity, value_binop, value_unity))
 
 
 def mainI():
@@ -303,12 +307,12 @@ def mainI():
     action_unity = None
     action_table = [action_unity] * SEGTREE_SIZE
 
-    def force(action, value, size):
+    def action_force(action, value, size):
         if action == action_unity:
             return value
         return action * size
 
-    def composite(new_action, old_action):
+    def action_composite(new_action, old_action):
         if new_action != action_unity:
             return new_action
         return old_action
@@ -321,13 +325,13 @@ def mainI():
             t += 1
             lazy_range_update(
                 action_table, value_table, s, t, value,
-                composite, force, action_unity, value_binop)
+                action_composite, action_force, action_unity, value_binop)
         else:
             # getSum
             s, t = args
             print(lazy_range_reduce(
                 action_table, value_table, s, t + 1,
-                composite, force, action_unity, value_binop, value_unity))
+                action_composite, action_force, action_unity, value_binop, value_unity))
 
 
 T1F = """
