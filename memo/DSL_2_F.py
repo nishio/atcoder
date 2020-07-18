@@ -55,17 +55,21 @@ def force_range_update(value_table, action_table, left, right, action, action_fo
     right += NONLEAF_SIZE
     while left < right:
         if left & 1:
-            action_table[left] = action
-            force_point(
-                value_table, action_table,
-                left, action_force, action_composite, action_unity)
+            value_table[left] = action
+            if left < NONLEAF_SIZE:
+                action_table[left * 2] = action
+                action_table[left * 2 + 1] = action
+            action_table[left] = action_unity
             left += 1
         if right & 1:
             right -= 1
-            action_table[right] = action
-            force_point(
-                value_table, action_table,
-                right, action_force, action_composite, action_unity)
+
+            value_table[right] = action
+            if right < NONLEAF_SIZE:
+                action_table[right * 2] = action
+                action_table[right * 2 + 1] = action
+            action_table[right] = action_unity
+
         left //= 2
         right //= 2
 
@@ -99,6 +103,7 @@ def up_prop_force(value_table, action_table, pos, binop, action_force, action_co
         force_point(
             value_table, action_table,
             pos * 2, action_force, action_composite, action_unity)
+
         force_point(
             value_table, action_table,
             pos * 2 + 1, action_force, action_composite, action_unity)
