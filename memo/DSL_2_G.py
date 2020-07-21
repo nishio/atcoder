@@ -51,15 +51,19 @@ def force_down_propagate(
         i = pos >> (max_level - level)
         action = action_table[i]
         if action != action_unity:
-            action_table[i * 2] = action_composite(
-                action, action_table[i * 2])
-            action_table[i * 2 + 1] = action_composite(
-                action, action_table[i * 2 + 1])
+            # action_table[i * 2] = action_composite(
+            #     action, action_table[i * 2])
+            # action_table[i * 2 + 1] = action_composite(
+            #     action, action_table[i * 2 + 1])
+            action_table[i * 2] += action
+            action_table[i * 2 + 1] += action
             action_table[i] = action_unity
-            value_table[i * 2] = action_force(
-                action, value_table[i * 2], size)
-            value_table[i * 2 + 1] = action_force(
-                action, value_table[i * 2 + 1], size)
+            # value_table[i * 2] = action_force(
+            #     action, value_table[i * 2], size)
+            # value_table[i * 2 + 1] = action_force(
+            #     action, value_table[i * 2 + 1], size)
+            value_table[i * 2] += action * size
+            value_table[i * 2 + 1] += action * size
 
 
 def force_range_update(
