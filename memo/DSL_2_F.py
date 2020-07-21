@@ -22,7 +22,6 @@ def set_width(width):
     set_depth((width - 1).bit_length() + 1)
 
 
-@profile
 def force_point(value_table, action_table, pos, action_force, action_composite, action_unity):
     action = action_table[pos]
     if action != action_unity:
@@ -34,18 +33,26 @@ def force_point(value_table, action_table, pos, action_force, action_composite, 
     action_table[pos] = action_unity
 
 
-def down_propagate(action_table, value_table, pos, binop, unity):
+def force_down_propagate(
+    action_table, value_table, pos,
+    action_composite, action_force, action_unity
+):
     max_level = pos.bit_length() - 1
 
     for level in range(max_level):
         i = pos >> (max_level - level)
+        size = get_size(i)
         action = action_table[i]
-        if action != unity:
-            action_table[i * 2] = action
-            action_table[i * 2 + 1] = action
-            action_table[i] = unity
-            value_table[i * 2] = action
-            value_table[i * 2 + 1] = action
+        if action != action_unity:
+            action_table[i * 2] = action_composite(
+                action, action_table[i * 2])
+            action_table[i * 2 + 1] = action_composite(
+                action, action_table[i * 2 + 1])
+            action_table[i] = action_unity
+            value_table[i * 2] = action_force(
+                action, value_table[i * 2], size)
+            value_table[i * 2 + 1] = action_force(
+                action, value_table[i * 2 + 1], size)
 
 
 def down_propagate_target(pos):
@@ -56,7 +63,11 @@ def down_propagate_target(pos):
         yield i
 
 
-@profile
+def get_size(pos):
+    ret = pos.bit_length()
+    return (1 << (DEPTH - ret))
+
+
 def force_range_update(value_table, action_table, left, right, action, action_force, action_composite, action_unity):
     """
     action_force: action, value, cell_size => new_value
@@ -126,56 +137,43 @@ def up_propagate(table, pos, binop):
         )
 
 
-@profile
+def up(pos):
+    pos += SEGTREE_SIZE // 2
+    return pos // (pos & -pos)
+
+
 def lazy_range_update(
         action_table, value_table, start, end,
         action, action_composite, action_force, action_unity, value_binop):
     "update [start, end)"
-    pos = start + NONLEAF_SIZE
-    L = pos // (pos & -pos)
-    pos = end + NONLEAF_SIZE
-    R = pos // (pos & -pos)
-
-    down_propagate(action_table, value_table, L,
-                   action_composite, action_unity)
-    down_propagate(action_table, value_table, R,
-                   action_composite, action_unity)
+    L = up(start)
+    R = up(end)
+    force_down_propagate(
+        action_table, value_table, L,
+        action_composite, action_force, action_unity)
+    force_down_propagate(
+        action_table, value_table, R,
+        action_composite, action_force, action_unity)
     force_range_update(
-        value_table, action_table,
-        start, end, action, action_force, action_composite, action_unity)
-    # up_prop_force(
-    #     value_table, action_table,
-    #     L, value_binop, action_force, action_composite, action_unity)
-    # up_prop_force(
-    #     value_table, action_table,
-    #     R, value_binop, action_force, action_composite, action_unity)
+        value_table, action_table, start, end,
+        action, action_force, action_composite, action_unity)
     up_propagate(value_table, L, value_binop)
     up_propagate(value_table, R, value_binop)
 
 
-@profile
 def lazy_range_reduce(
     action_table, value_table, start, end,
     action_composite, action_force, action_unity,
     value_binop, value_unity
 ):
     "reduce [start, end)"
-    pos = start + NONLEAF_SIZE
-    L = pos // (pos & -pos)
-    pos = end + NONLEAF_SIZE
-    R = pos // (pos & -pos)
 
-    down_propagate(action_table, value_table, L,
-                   action_composite, action_unity)
-    down_propagate(action_table, value_table, R,
-                   action_composite, action_unity)
-
-    # up_prop_force(
-    #     value_table, action_table,
-    #     L, value_binop, action_force, action_composite, action_unity)
-    # up_prop_force(
-    #     value_table, action_table,
-    #     R, value_binop,  action_force, action_composite, action_unity)
+    force_down_propagate(
+        action_table, value_table, up(start),
+        action_composite, action_force,  action_unity)
+    force_down_propagate(
+        action_table, value_table, up(end),
+        action_composite, action_force, action_unity)
 
     return range_reduce(value_table, start, end, value_binop, value_unity)
 
@@ -211,8 +209,11 @@ def main():
     action_unity = -1
     action_table = [action_unity] * SEGTREE_SIZE
 
-    action_force = None
-    action_composite = None
+    def action_force(action, old_value, cell_size):
+        return action
+
+    def action_composite(new_action, old_action):
+        return new_action
 
     for _ in range(Q):
         q, *args = map(int, input().split())
