@@ -16,3 +16,5 @@ mprofile*
 tmp
 tmp.py
 __pycache__
+htmlcov
+.coverage
