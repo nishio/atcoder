@@ -486,54 +486,6 @@ def get_size(pos):
     return (1 << (DEPTH - ret))
 
 
-def force_point(value_table, action_table, pos, force, composite, unity_action):
-    action = action_table[pos]
-    value_table[pos] = force(action, value_table[pos], get_size(pos))
-    action_table[pos] = unity_action
-    if pos < NONLEAF_SIZE:
-        action_table[pos * 2] = composite(action, action_table[pos * 2])
-        action_table[pos * 2 + 1] = composite(
-            action, action_table[pos * 2 + 1])
-
-
-def force_children(value_table, action_table, pos, force, composite, unity_action):
-    while pos > 1:
-        pos >>= 1
-        force_point(
-            value_table, action_table,
-            pos * 2, force, composite, unity_action)
-        force_point(
-            value_table, action_table,
-            pos * 2 + 1, force, composite, unity_action)
-
-
-def force_range_update(value_table, action_table, left, right, force, composite, unity_action):
-    """
-    force: action, value, cell_size => new_value
-    composite: new_action, old_action => composite_action
-    """
-    left += SEGTREE_SIZE // 2
-    right += SEGTREE_SIZE // 2
-    while left < right:
-        if left & 1:
-            force_point(
-                value_table, action_table,
-                left, force, composite, unity_action)
-            left += 1
-        if right & 1:
-            right -= 1
-            force_point(
-                value_table, action_table,
-                right, force, composite, unity_action)
-        left //= 2
-        right //= 2
-
-
-def force_point_2(value_table, action_table, pos, force, composite, unity_action):
-    action = action_table[pos]
-    value_table[pos] = force(action, value_table[pos], get_size(pos))
-
-
 class PowAction:
     def __init__(self, value):
         self.value = value
@@ -542,82 +494,9 @@ class PowAction:
         return f"^{self.value}"
 
 
-def pow_composite(a1, a2):
-    return PowAction(a1.value * a2.value)
-
-
-def pow_force(action, value, size):
-    if action.value == 1:
-        return value
-    return f"({value}){action}"
-
-
 def up(pos):
     pos += SEGTREE_SIZE // 2
     return pos // (pos & -pos)
-
-
-class AddAction:
-    def __init__(self, value):
-        self.value = value
-
-    def __repr__(self):
-        return f"+{self.value}"
-
-    def __call__(self, v):
-        assert isinstance(v, AddAction)
-        return AddAction(v.value + self.value)
-
-    def force(self, v, size):
-        assert isinstance(v, int)
-        return v + self.value * size
-
-
-def add_composite(a1, a2):
-    return AddAction(a1.value + a2.value)
-
-
-def add_force(action, value, size):
-    return value + action.value * size
-
-
-def lazy_range_update(value_table, action_table, left, right, binop, action, action_force, action_composite, action_unity):
-    down_propagate(action_table, up(left), lambda x, y: x(y), action_unity)
-    down_propagate(action_table, up(right), lambda x, y: x(y), action_unity)
-    range_update(action_table, left, right,
-                 lambda x: action_composite(action, x))
-    force_range_update(value_table, action_table, left, right,
-                       action_force, action_composite, action_unity)
-    force_children(value_table, action_table, up(left),
-                   action_force, action_composite, action_unity)
-    force_children(value_table, action_table, up(right),
-                   action_force, action_composite, action_unity)
-    up_propagate(value_table, up(left), binop)
-    up_propagate(value_table, up(right), binop)
-
-
-# def lazy_range_update_combined(table, left, right, action):
-#     down_propagate(table, up(left), lambda x, y: x(y), ****)
-#     down_propagate(table, up(right), lambda x, y: x(y), unity)
-#     range_update(table, left, right, action)
-#     left += SEGTREE_SIZE // 2
-#     right += SEGTREE_SIZE // 2
-#     while left < right:
-#         if left & 1:
-#             table[left].force()
-#             left += 1
-#         if right & 1:
-#             right -= 1
-#             table[right].force()
-#         left //= 2
-#         right //= 2
-
-#     table[up(left)].force()
-#     table[up(left) ^ 1].force()
-#     table[up(right)].force()
-#     table[up(right) ^ 1].force()
-#     up_propagate(table, up(left), add)
-#     up_propagate(table, up(right), add)
 
 
 class CombinedTable:
@@ -634,36 +513,12 @@ class CombinedTable:
         self.action[index] = action
 
 
-class CombinedCell:
-    def __init__(self):
-        self.value = 0
-        self.action = []
-
-    def __repr__(self):
-        ret = str(self.value)
-        if self.action:
-            ret += "/" + "".join(repr(x) for x in self.action)
-        return ret
-
-    def force(self):
-        from functools import reduce
-        self.value = reduce(self.action, self.value)
-        self.action = []
-
-
 def combined_action(new_action, action_composite, action_force):
     def f(args):
         action, value = args
         return (
             action_composite(new_action, action),
             action_force(new_action, value))
-    return f
-
-
-def addAction(action):
-    def f(self):
-        self.action.append(action)
-        return self
     return f
 
 
