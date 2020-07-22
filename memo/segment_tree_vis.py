@@ -163,171 +163,10 @@ Segment Tree Visualizer
 | 0 | 1 | 0 | 3 | 0 | 2 | 2 | 0 |
 |0|1|0|2|3|3|0|0|3|3|1|0|0|0|2|0|
 
-# Lazy Propagation
-
->>> set_depth(4)
->>> value_table = [""] * SEGTREE_SIZE
->>> set_items(value_table, [chr(i + ord("a")) for i in range(8)])
->>> full_up(value_table, lambda x, y: f"{x}{y}")
->>> debugprint(value_table)
-|    abcdefgh   |
-|  abcd |  efgh |
-| ab| cd| ef| gh|
-|a|b|c|d|e|f|g|h|
-
->>> action_table = [PowAction(1)] * SEGTREE_SIZE
->>> range_update(action_table, 0, 6, lambda x: pow_composite(x, PowAction(2)))
->>> debugprint(action_table)
-|           ^1          |
-|     ^2    |     ^1    |
-|  ^1 |  ^1 |  ^2 |  ^1 |
-|^1|^1|^1|^1|^1|^1|^1|^1|
-
->>> force_range_update(value_table, action_table, 0, 6, pow_force, pow_composite, PowAction(1))
->>> debugprint(value_table, minsize=3)
-|            abcdefgh           |
-|    (abcd)^2   |      efgh     |
-|   ab  |   cd  | (ef)^2|   gh  |
-| a | b | c | d | e | f | g | h |
-
->>> debugprint(action_table)
-|           ^1          |
-|     ^1    |     ^1    |
-|  ^2 |  ^2 |  ^1 |  ^1 |
-|^1|^1|^1|^1|^2|^2|^1|^1|
-
->>> up_propagate(value_table, up(0), lambda x, y: f"{x}{y}")
->>> up_propagate(value_table, up(6), lambda x, y: f"{x}{y}")
->>> debugprint(value_table, minsize=4)
-|            (abcd)^2(ef)^2gh           |
-|      (abcd)^2     |      (ef)^2gh     |
-|    ab   |    cd   |  (ef)^2 |    gh   |
-| a  | b  | c  | d  | e  | f  | g  | h  |
-
->>> down_propagate(action_table, up(1), pow_composite, PowAction(1))
->>> down_propagate(action_table, up(5), pow_composite, PowAction(1))
->>> debugprint(action_table)
-|           ^1          |
-|     ^1    |     ^1    |
-|  ^1 |  ^2 |  ^1 |  ^1 |
-|^2|^2|^1|^1|^2|^2|^1|^1|
-
->>> range_update(action_table, 1, 5, lambda x: pow_composite(x, PowAction(3)))
->>> debugprint(action_table)
-|           ^1          |
-|     ^1    |     ^1    |
-|  ^1 |  ^6 |  ^1 |  ^1 |
-|^2|^6|^1|^1|^6|^2|^1|^1|
-
->>> force_range_update(value_table, action_table, 1, 5, pow_force, pow_composite, PowAction(1))
->>> debugprint(value_table, minsize=5)
-|                (abcd)^2(ef)^2gh               |
-|        (abcd)^2       |        (ef)^2gh       |
-|     ab    |   (cd)^6  |   (ef)^2  |     gh    |
-|  a  |(b)^6|  c  |  d  |(e)^6|  f  |  g  |  h  |
-
->>> debugprint(action_table)
-|           ^1          |
-|     ^1    |     ^1    |
-|  ^1 |  ^1 |  ^1 |  ^1 |
-|^2|^1|^6|^6|^1|^2|^1|^1|
-
->>> force_children(value_table, action_table, up(1), pow_force, pow_composite, PowAction(1))
->>> force_children(value_table, action_table, up(5), pow_force, pow_composite, PowAction(1))
->>> debugprint(action_table)
-|           ^1          |
-|     ^1    |     ^1    |
-|  ^1 |  ^1 |  ^1 |  ^1 |
-|^1|^1|^6|^6|^1|^1|^1|^1|
-
->>> debugprint(value_table, minsize=5)
-|                (abcd)^2(ef)^2gh               |
-|        (abcd)^2       |        (ef)^2gh       |
-|     ab    |   (cd)^6  |   (ef)^2  |     gh    |
-|(a)^2|(b)^6|  c  |  d  |(e)^6|(f)^2|  g  |  h  |
-
->>> up_propagate(value_table, up(1), lambda x, y: f"{x}{y}")
->>> up_propagate(value_table, up(5), lambda x, y: f"{x}{y}")
->>> debugprint(value_table, minsize=5)
-|          (a)^2(b)^6(cd)^6(e)^6(f)^2gh         |
-|    (a)^2(b)^6(cd)^6   |      (e)^6(f)^2gh     |
-| (a)^2(b)^6|   (cd)^6  | (e)^6(f)^2|     gh    |
-|(a)^2|(b)^6|  c  |  d  |(e)^6|(f)^2|  g  |  h  |
-
-# range add, renge sum
-
->>> unity = AddAction(0)
->>> value_table = [0] * SEGTREE_SIZE
->>> action_table = [unity] * SEGTREE_SIZE
->>> range_update(action_table, 0, 6, lambda x: add_composite(AddAction(1), x))
->>> force_range_update(value_table, action_table, 0, 6, add_force, add_composite, unity)
->>> up_propagate(value_table, up(0), add)
->>> up_propagate(value_table, up(6), add)
->>> debugprint(value_table)
-|       6       |
-|   4   |   2   |
-| 0 | 0 | 2 | 0 |
-|0|0|0|0|0|0|0|0|
->>> debugprint(action_table)
-|           +0          |
-|     +0    |     +0    |
-|  +1 |  +1 |  +0 |  +0 |
-|+0|+0|+0|+0|+1|+1|+0|+0|
-
->>> down_propagate(action_table, up(1), lambda x, y: x(y), unity)
->>> down_propagate(action_table, up(5), lambda x, y: x(y), unity)
->>> range_update(action_table, 1, 5, AddAction(2))
->>> force_range_update(value_table, action_table, 1, 5, add_force, add_composite, unity)
->>> force_children(value_table, action_table, up(1), add_force, add_composite, unity)
->>> force_children(value_table, action_table, up(5), add_force, add_composite, unity)
->>> up_propagate(value_table, up(1), add)
->>> up_propagate(value_table, up(5), add)
->>> debugprint(value_table)
-|       14      |
-|   10  |   4   |
-| 4 | 6 | 4 | 0 |
-|1|3|0|0|3|1|0|0|
-
->>> force_range_update(value_table, action_table, 3, 6, add_force, add_composite, unity)
->>> debugprint(value_table)
-|       14      |
-|   10  |   4   |
-| 4 | 6 | 4 | 0 |
-|1|3|0|3|3|1|0|0|
->>> range_reduce(value_table, 3, 6, add, 0)
-7
-
->>> lazy_range_update(value_table, action_table, 1, 7, add, AddAction(5), add_force, add_composite, unity)
->>> debugprint(value_table)
-|       44      |
-|   25  |   19  |
-| 9 | 16| 14| 5 |
-|1|8|0|3|3|1|5|0|
->>> debugprint(action_table)
-|           +0          |
-|     +0    |     +0    |
-|  +0 |  +0 |  +0 |  +0 |
-|+0|+0|+8|+5|+5|+5|+0|+0|
-
-# Combined table
-
->>> unity = AddAction(0)
->>> table = [CombinedCell() for i in range(SEGTREE_SIZE)]
->>> range_update(table, 0, 6, addAction(AddAction(1)))
->>> debugprint(table, minsize=2)
-|           0           |
-|    0/+1   |     0     |
-|  0  |  0  | 0/+1|  0  |
-|0 |0 |0 |0 |0 |0 |0 |0 |
-
->>> table = [CombinedCell() for i in range(SEGTREE_SIZE)]
-
-# >>> lazy_range_update_combined(table, 0, 6, addAction(AddAction(1)))
-# >>> debugprint(table)
-
-
 # dual segment tree and down propagation
+
 >>> set_depth(5)
+>>> table = [0] * SEGTREE_SIZE
 >>> range_update(table, 3, 10, lambda x: "f")
 >>> range_update(table, 5, 15, lambda x: "g")
 >>> debugprint(table)
@@ -357,6 +196,7 @@ Segment Tree Visualizer
 |0|0|0|f|f|g|0|0|0|0|0|0|0|0|g|0|
 
 # down propagation targets
+
 >>> table = [0] * SEGTREE_SIZE
 >>> down_propagate(table, up(5), lambda x,y: "+", "*")
 >>> debugprint(table)
@@ -366,7 +206,8 @@ Segment Tree Visualizer
 | 0 | 0 | * | + | 0 | 0 | 0 | 0 |
 |0|0|0|0|+|+|0|0|0|0|0|0|0|0|0|0|
 
-# lazy segtree
+# lazy segment tree
+
 >>> set_depth(4)
 >>> value_table = [""] * SEGTREE_SIZE
 >>> set_items(value_table, [chr(i + ord("a")) for i in range(8)])
@@ -415,7 +256,65 @@ Segment Tree Visualizer
 >>> up_propagate(value_table, up(L), lambda x, y: f"{x}{y}")
 >>> up_propagate(value_table, up(R), lambda x, y: f"{x}{y}")
 >>> debugprint(value_table, 3)
+|        (abcd)^2(ef)^2gh       |
+|    (abcd)^2   |    (ef)^2gh   |
+|   ab  |   cd  | (ef)^2|   gh  |
+| a | b | c | d | e | f | g | h |
 
+>>> L = 1
+>>> R = 5
+>>> down_propagate_force(
+...    combined_table, up(L),
+...    action_composite, action_force, action_unity)
+>>> down_propagate_force(
+...    combined_table, up(R),
+...    action_composite, action_force, action_unity)
+
+>>> debugprint(action_table)
+|           ^1          |
+|     ^1    |     ^1    |
+|  ^1 |  ^2 |  ^1 |  ^1 |
+|^2|^2|^1|^1|^2|^2|^1|^1|
+
+>>> debugprint(value_table)
+|        (abcd)^2(ef)^2gh       |
+|    (abcd)^2   |    (ef)^2gh   |
+| (ab)^2| (cd)^2| (ef)^2|   gh  |
+|a^2|b^2| c | d |e^2|f^2| g | h |
+
+>>> range_update(combined_table, L, R, combined_action(
+...     PowAction(3), action_composite, action_force))
+>>> debugprint(action_table, 3)
+|               ^1              |
+|       ^1      |       ^1      |
+|   ^1  |   ^6  |   ^1  |   ^1  |
+| ^2| ^6| ^1| ^1| ^6| ^2| ^1| ^1|
+
+>>> debugprint(value_table, 3)
+|                        (abcd)^2(ef)^2gh                       |
+|            (abcd)^2           |            (ef)^2gh           |
+|     (ab)^2    |   ((cd)^2)^3  |     (ef)^2    |       gh      |
+|  a^2  |(b^2)^3|   c   |   d   |(e^2)^3|  f^2  |   g   |   h   |
+
+>>> up_propagate(value_table, up(L), lambda x, y: f"{x}{y}")
+>>> up_propagate(value_table, up(R), lambda x, y: f"{x}{y}")
+>>> debugprint(value_table, 3)
+|                a^2(b^2)^3((cd)^2)^3(e^2)^3f^2gh               |
+|      a^2(b^2)^3((cd)^2)^3     |          (e^2)^3f^2gh         |
+|   a^2(b^2)^3  |   ((cd)^2)^3  |   (e^2)^3f^2  |       gh      |
+|  a^2  |(b^2)^3|   c   |   d   |(e^2)^3|  f^2  |   g   |   h   |
+
+>>> L = 3
+>>> R = 5
+>>> down_propagate_force(
+...     combined_table, up(L),
+...     action_composite, action_force, action_unity)
+>>> down_propagate_force(
+...     combined_table, up(R),
+...     action_composite, action_force, action_unity)
+>>> value_unity = ""
+>>> print(range_reduce(value_table, L, R, lambda x, y: f"{x}{y}", value_unity))
+d^6(e^2)^3
 """
 
 import sys
@@ -768,61 +667,6 @@ def addAction(action):
     return f
 
 
-def _test():
-    import doctest
-    doctest.testmod()
-
-
-if sys.argv[-1] == "-t":
-    print("testing")
-    _test()
-    # sys.exit()
-
-set_depth(4)
-value_table = [""] * SEGTREE_SIZE
-set_items(value_table, [chr(i + ord("a")) for i in range(8)])
-full_up(value_table, lambda x, y: f"{x}{y}")
-debugprint(value_table)
-
-action_unity = PowAction(1)
-action_table = [action_unity] * SEGTREE_SIZE
-
-
-def action_composite(new_action, old_action):
-    return PowAction(new_action.value * old_action.value)
-
-
-L = 0
-R = 6
-
-combined_table = CombinedTable(action_table, value_table)
-
-
-def action_force(action, value):
-    if action.value == 1:
-        new_value = value
-    else:
-        if len(value) > 1:
-            value = f"({value})"
-        new_value = f"{value}{action}"
-    return new_value
-
-
-range_update(combined_table, L, R, combined_action(
-    PowAction(2), action_composite, action_force))
-debugprint(action_table, 3)
-debugprint(value_table, 3)
-
-
-up_propagate(value_table, up(L), lambda x, y: f"{x}{y}")
-up_propagate(value_table, up(R), lambda x, y: f"{x}{y}")
-debugprint(value_table, 3)
-
-
-L = 1
-R = 5
-
-
 def down_propagate_force(table, pos, action_composite, action_force, action_unity):
     max_level = pos.bit_length() - 1
     for level in range(max_level):
@@ -840,33 +684,12 @@ def down_propagate_force(table, pos, action_composite, action_force, action_unit
         table[i] = (action_unity, value)
 
 
-down_propagate_force(
-    combined_table, up(L),
-    action_composite, action_force, action_unity)
-down_propagate_force(
-    combined_table, up(R),
-    action_composite, action_force, action_unity)
-
-debugprint(action_table)
-debugprint(value_table)
-
-range_update(combined_table, L, R, combined_action(
-    PowAction(3), action_composite, action_force))
-debugprint(action_table, 3)
-debugprint(value_table, 3)
+def _test():
+    import doctest
+    doctest.testmod()
 
 
-up_propagate(value_table, up(L), lambda x, y: f"{x}{y}")
-up_propagate(value_table, up(R), lambda x, y: f"{x}{y}")
-debugprint(value_table, 3)
-
-L = 3
-R = 5
-down_propagate_force(
-    combined_table, up(L),
-    action_composite, action_force, action_unity)
-down_propagate_force(
-    combined_table, up(R),
-    action_composite, action_force, action_unity)
-value_unity = ""
-print(range_reduce(value_table, L, R, lambda x, y: f"{x}{y}", value_unity))
+if sys.argv[-1] == "-t":
+    print("testing")
+    _test()
+    # sys.exit()
