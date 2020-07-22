@@ -312,6 +312,11 @@ Segment Tree Visualizer
 >>> down_propagate_force(
 ...     combined_table, up(R),
 ...     action_composite, action_force, action_unity)
+>>> debugprint(value_table)
+|                a^2(b^2)^3((cd)^2)^3(e^2)^3f^2gh               |
+|      a^2(b^2)^3((cd)^2)^3     |          (e^2)^3f^2gh         |
+|   a^2(b^2)^3  |   ((cd)^2)^3  |   (e^2)^3f^2  |       gh      |
+|  a^2  |(b^2)^3|  c^6  |  d^6  |(e^2)^3|  f^2  |   g   |   h   |
 >>> value_unity = ""
 >>> print(range_reduce(value_table, L, R, lambda x, y: f"{x}{y}", value_unity))
 d^6(e^2)^3
