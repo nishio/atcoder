@@ -17,6 +17,13 @@ def get_size(pos):
     return (1 << (DEPTH - ret))
 
 
+def full_up(table, binop):
+    for i in range(NONLEAF_SIZE - 1, 0, -1):
+        table[i] = binop(
+            table[2 * i],
+            table[2 * i + 1])
+
+
 def up(pos):
     pos += SEGTREE_SIZE // 2
     return pos // (pos & -pos)
