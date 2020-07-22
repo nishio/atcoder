@@ -89,7 +89,6 @@ def force_range_update(value_table, action_table, left, right, action, action_fo
         right //= 2
 
 
-@profile
 def range_reduce(table, left, right, binop, unity):
     ret_left = unity
     ret_right = unity

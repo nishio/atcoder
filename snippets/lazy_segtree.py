@@ -1,13 +1,4 @@
-#!/usr/bin/env python3
 import sys
-sys.setrecursionlimit(10**6)
-input = sys.stdin.buffer.readline
-INF = 10 ** 9 + 1  # sys.maxsize # float("inf")
-MOD = 10 ** 9 + 7
-
-
-def debug(*x):
-    print(*x, file=sys.stderr)
 
 
 def set_depth(depth):
@@ -51,11 +42,15 @@ def force_down_propagate(
         i = pos >> (max_level - level)
         action = action_table[i]
         if action != action_unity:
-            action_table[i * 2] = action
-            action_table[i * 2 + 1] = action
+            action_table[i * 2] = action_composite(
+                action, action_table[i * 2])
+            action_table[i * 2 + 1] = action_composite(
+                action, action_table[i * 2 + 1])
             action_table[i] = action_unity
-            value_table[i * 2] = action * size
-            value_table[i * 2 + 1] = action * size
+            value_table[i * 2] = action_force(
+                action, value_table[i * 2], size)
+            value_table[i * 2 + 1] = action_force(
+                action, value_table[i * 2 + 1], size)
 
 
 def force_range_update(
@@ -166,10 +161,9 @@ def debugprint(xs, minsize=0, maxsize=None):
     print(*result, sep="\n", file=sys.stderr)
 
 
-def main():
-    # parse input
+def usage():
     from operator import add
-    N, Q = map(int, input().split())
+    N = 100
     set_width(N)
 
     value_unity = 0
@@ -178,83 +172,22 @@ def main():
     action_unity = None
     action_table = [action_unity] * SEGTREE_SIZE
 
-    def force(action, value, size):
+    def action_force(action, value, size):
         if action == action_unity:
             return value
         return action * size
 
-    def composite(new_action, old_action):
+    def action_composite(new_action, old_action):
         if new_action != action_unity:
             return new_action
         return old_action
 
-    for _time in range(Q):
-        q, *args = map(int, input().split())
-        # debug(": q,", q, args)
-        if q == 0:
-            # update
-            s, t, value = args
-            lazy_range_update(
-                action_table, value_table, s, t + 1,
-                value, composite, force, action_unity, value_binop
-            )
-        else:
-            # getSum
-            s, t = args
-            print(lazy_range_reduce(
-                action_table, value_table, s, t + 1,
-                composite, force, action_unity, value_binop, value_unity))
-
-
-# tests
-T1 = """
-6 7
-0 1 3 1
-0 2 4 -2
-1 0 5
-1 0 1
-0 3 5 3
-1 3 4
-1 0 5
-"""
-TEST_T1 = """
->>> as_input(T1)
->>> main()
--5
-1
-6
-8
-"""
-
-
-def _test():
-    import doctest
-    doctest.testmod()
-    g = globals()
-    for k in sorted(g):
-        if k.startswith("TEST_"):
-            doctest.run_docstring_examples(g[k], g)
-
-
-def as_input(s):
-    "use in test, use given string as input file"
-    import io
-    global read, input
-    f = io.StringIO(s.strip())
-
-    def input():
-        return bytes(f.readline(), "ascii")
-
-    def read():
-        return bytes(f.read(), "ascii")
-
-
-input = sys.stdin.buffer.readline
-read = sys.stdin.buffer.read
-
-if sys.argv[-1] == "-t":
-    print("testing")
-    _test()
-    sys.exit()
-
-main()
+    start = 12
+    end = 34
+    action = 42
+    lazy_range_update(
+        action_table, value_table, start, end,
+        action, action_composite, action_force, action_unity, value_binop)
+    print(lazy_range_reduce(
+        action_table, value_table, start, end,
+        action_composite, action_force, action_unity, value_binop, value_unity))

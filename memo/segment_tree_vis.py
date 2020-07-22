@@ -322,8 +322,8 @@ Segment Tree Visualizer
 
 >>> table = [CombinedCell() for i in range(SEGTREE_SIZE)]
 
-#>>> lazy_range_update_combined(table, 0, 6, addAction(AddAction(1)))
-#>>> debugprint(table)
+# >>> lazy_range_update_combined(table, 0, 6, addAction(AddAction(1)))
+# >>> debugprint(table)
 
 
 # dual segment tree and down propagation
@@ -365,6 +365,57 @@ Segment Tree Visualizer
 |   +   |   *   |   0   |   0   |
 | 0 | 0 | * | + | 0 | 0 | 0 | 0 |
 |0|0|0|0|+|+|0|0|0|0|0|0|0|0|0|0|
+
+# lazy segtree
+>>> set_depth(4)
+>>> value_table = [""] * SEGTREE_SIZE
+>>> set_items(value_table, [chr(i + ord("a")) for i in range(8)])
+>>> full_up(value_table, lambda x, y: f"{x}{y}")
+>>> debugprint(value_table)
+|    abcdefgh   |
+|  abcd |  efgh |
+| ab| cd| ef| gh|
+|a|b|c|d|e|f|g|h|
+
+>>> action_unity = PowAction(1)
+>>> action_table = [action_unity] * SEGTREE_SIZE
+>>> debugprint(action_table)
+|           ^1          |
+|     ^1    |     ^1    |
+|  ^1 |  ^1 |  ^1 |  ^1 |
+|^1|^1|^1|^1|^1|^1|^1|^1|
+
+>>> L = 0
+>>> R = 6
+>>> def action_composite(new_action, old_action):
+...    return PowAction(new_action.value * old_action.value)
+
+>>> def action_force(action, value):
+...     if action.value == 1:
+...         new_value = value
+...     else:
+...         if len(value) > 1:
+...             value = f"({value})"
+...         new_value = f"{value}{action}"
+...     return new_value
+
+>>> combined_table = CombinedTable(action_table, value_table)
+>>> range_update(combined_table, L, R, combined_action(PowAction(2), action_composite, action_force))
+>>> debugprint(action_table, 3)
+|               ^1              |
+|       ^2      |       ^1      |
+|   ^1  |   ^1  |   ^2  |   ^1  |
+| ^1| ^1| ^1| ^1| ^1| ^1| ^1| ^1|
+>>> debugprint(value_table, 3)
+|            abcdefgh           |
+|    (abcd)^2   |      efgh     |
+|   ab  |   cd  | (ef)^2|   gh  |
+| a | b | c | d | e | f | g | h |
+
+>>> up_propagate(value_table, up(L), lambda x, y: f"{x}{y}")
+>>> up_propagate(value_table, up(R), lambda x, y: f"{x}{y}")
+>>> debugprint(value_table, 3)
+
 """
 
 import sys
@@ -579,6 +630,11 @@ def force_range_update(value_table, action_table, left, right, force, composite,
         right //= 2
 
 
+def force_point_2(value_table, action_table, pos, force, composite, unity_action):
+    action = action_table[pos]
+    value_table[pos] = force(action, value_table[pos], get_size(pos))
+
+
 class PowAction:
     def __init__(self, value):
         self.value = value
@@ -665,6 +721,20 @@ def lazy_range_update(value_table, action_table, left, right, binop, action, act
 #     up_propagate(table, up(right), add)
 
 
+class CombinedTable:
+    def __init__(self, value, action):
+        self.value = value
+        self.action = action
+
+    def __getitem__(self, index):
+        return (self.value[index], self.action[index])
+
+    def __setitem__(self, index, arg):
+        value, action = arg
+        self.value[index] = value
+        self.action[index] = action
+
+
 class CombinedCell:
     def __init__(self):
         self.value = 0
@@ -682,15 +752,20 @@ class CombinedCell:
         self.action = []
 
 
+def combined_action(new_action, action_composite, action_force):
+    def f(args):
+        action, value = args
+        return (
+            action_composite(new_action, action),
+            action_force(new_action, value))
+    return f
+
+
 def addAction(action):
     def f(self):
         self.action.append(action)
         return self
     return f
-
-
-def main():
-    pass
 
 
 def _test():
@@ -703,4 +778,95 @@ if sys.argv[-1] == "-t":
     _test()
     # sys.exit()
 
-main()
+set_depth(4)
+value_table = [""] * SEGTREE_SIZE
+set_items(value_table, [chr(i + ord("a")) for i in range(8)])
+full_up(value_table, lambda x, y: f"{x}{y}")
+debugprint(value_table)
+
+action_unity = PowAction(1)
+action_table = [action_unity] * SEGTREE_SIZE
+
+
+def action_composite(new_action, old_action):
+    return PowAction(new_action.value * old_action.value)
+
+
+L = 0
+R = 6
+
+combined_table = CombinedTable(action_table, value_table)
+
+
+def action_force(action, value):
+    if action.value == 1:
+        new_value = value
+    else:
+        if len(value) > 1:
+            value = f"({value})"
+        new_value = f"{value}{action}"
+    return new_value
+
+
+range_update(combined_table, L, R, combined_action(
+    PowAction(2), action_composite, action_force))
+debugprint(action_table, 3)
+debugprint(value_table, 3)
+
+
+up_propagate(value_table, up(L), lambda x, y: f"{x}{y}")
+up_propagate(value_table, up(R), lambda x, y: f"{x}{y}")
+debugprint(value_table, 3)
+
+
+L = 1
+R = 5
+
+
+def down_propagate_force(table, pos, action_composite, action_force, action_unity):
+    max_level = pos.bit_length() - 1
+    for level in range(max_level):
+        i = pos >> (max_level - level)
+
+        action, value = table[i]
+        a, v = table[i * 2]
+        table[i * 2] = (
+            action_composite(action, a),
+            action_force(action, v))
+        a, v = table[i * 2 + 1]
+        table[i * 2 + 1] = (
+            action_composite(action, a),
+            action_force(action, v))
+        table[i] = (action_unity, value)
+
+
+down_propagate_force(
+    combined_table, up(L),
+    action_composite, action_force, action_unity)
+down_propagate_force(
+    combined_table, up(R),
+    action_composite, action_force, action_unity)
+
+debugprint(action_table)
+debugprint(value_table)
+
+range_update(combined_table, L, R, combined_action(
+    PowAction(3), action_composite, action_force))
+debugprint(action_table, 3)
+debugprint(value_table, 3)
+
+
+up_propagate(value_table, up(L), lambda x, y: f"{x}{y}")
+up_propagate(value_table, up(R), lambda x, y: f"{x}{y}")
+debugprint(value_table, 3)
+
+L = 3
+R = 5
+down_propagate_force(
+    combined_table, up(L),
+    action_composite, action_force, action_unity)
+down_propagate_force(
+    combined_table, up(R),
+    action_composite, action_force, action_unity)
+value_unity = ""
+print(range_reduce(value_table, L, R, lambda x, y: f"{x}{y}", value_unity))
