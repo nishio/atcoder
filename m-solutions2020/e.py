@@ -22,33 +22,47 @@ def solve(N, data):
     # debug(": dist", dist)
 
     start = 0
-    distmemo = [None] * ((1 << NUM_LINES) + 10)
-    scorememo = [INF] * (N + 10)
+    # distmemo = [None] * ((1 << NUM_LINES) + 10)
+    distmemo = np.zeros((1 << NUM_LINES, N), dtype=np.int64)
+    scorememo = [INF] * (N + 1)
     distmemo[start] = dist
     scorememo[start] = (dist * ps).sum()
     # debug(": (dist * ps).sum()", (dist * ps).sum())
 
     def f(cursor, parent, numbits):
-        if cursor == NUM_LINES:
-            return
-        if numbits == N:
+        if cursor == N:
             return
 
+        # add no lines
         f(cursor + 1, parent, numbits)
 
-        new_parent = parent + (1 << cursor)
-        numbits += 1
-        isY, line = candidate[cursor]
-        parent_dist = distmemo[parent]
-        if isY:
-            dist = np.minimum(parent_dist, np.abs(ys - line))
-        else:
-            dist = np.minimum(parent_dist, np.abs(xs - line))
-        distmemo[new_parent] = dist
-        # debug(": ", f"{new_parent:05b}", dist)
-        score = (dist * ps).sum()
-        scorememo[numbits] = min(scorememo[numbits], score)
-        f(cursor + 1, new_parent, numbits)
+        # add vertical (x) line
+        x = xs[cursor]
+        lineid = candidate.index((0, x))
+        new_parent = parent | (1 << lineid)
+        if parent != new_parent:
+            parent_dist = distmemo[parent]
+            dist = np.minimum(parent_dist, np.abs(xs - x))
+            distmemo[new_parent] = dist
+            # debug(": ", f"{new_parent:05b}", dist)
+            score = (dist * ps).sum()
+            n = numbits + 1
+            scorememo[n] = min(scorememo[n], score)
+            f(cursor + 1, new_parent, n)
+
+        # add vertical (x) line
+        y = ys[cursor]
+        lineid = candidate.index((1, y))
+        new_parent = parent | (1 << lineid)
+        if parent != new_parent:
+            parent_dist = distmemo[parent]
+            dist = np.minimum(parent_dist, np.abs(ys - y))
+            distmemo[new_parent] = dist
+            # debug(": ", f"{new_parent:05b}", dist)
+            score = (dist * ps).sum()
+            n = numbits + 1
+            scorememo[n] = min(scorememo[n], score)
+            f(cursor + 1, new_parent, n)
 
     f(0, start, 0)
     # debug(": scorememo", scorememo)
