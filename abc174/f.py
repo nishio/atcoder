@@ -9,58 +9,15 @@ def debug(*x):
     print(*x, file=sys.stderr)
 
 
-def solve(K):
-    visited = [False] * K
-    p = 7 % K
-    for i in range(K):
-        if p == 0:
-            return i + 1
-        if visited[p]:
-            return - 1
-        visited[p] = True
-        p = (p * 10 + 7) % K
-
-
-def solve(K):
-    p = 7 % K
-    for i in range(K):
-        if p == 0:
-            return i + 1
-        p = (p * 10 + 7) % K
-    return - 1
+def solve(SOLVE_PARAMS):
+    pass
 
 
 def main():
     # parse input
-    K = int(input())
-    print(solve(K))
-
+    print(solve(SOLVE_PARAMS))
 
 # tests
-T1 = """
-101
-"""
-TEST_T1 = """
->>> as_input(T1)
->>> main()
-4
-"""
-T2 = """
-2
-"""
-TEST_T2 = """
->>> as_input(T2)
->>> main()
--1
-"""
-T3 = """
-999983
-"""
-TEST_T3 = """
->>> as_input(T3)
->>> main()
-999982
-"""
 
 
 def _test():
