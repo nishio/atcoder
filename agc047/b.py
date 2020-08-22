@@ -12,7 +12,7 @@ def debug(*x):
 def solve(N, SS):
     from collections import defaultdict
     SS.sort(key=lambda s: -len(s))
-    debug(": SS", SS)
+    # debug(": SS", SS)
     ret = 0
     table = defaultdict(lambda: defaultdict(set))
     shortest = INF
@@ -92,6 +92,45 @@ TEST_T2 = """
 >>> as_input(T2)
 >>> main()
 5
+"""
+
+T3 = """
+3
+aaa
+aa
+a
+"""
+TEST_T3 = """
+>>> as_input(T3)
+>>> main()
+3
+"""
+
+T4 = """
+4
+abc
+a
+b
+c
+"""
+TEST_T4 = """
+>>> as_input(T4)
+>>> main()
+3
+"""
+
+T5 = """
+5
+abc
+bac
+a
+b
+c
+"""
+TEST_T5 = """
+>>> as_input(T5)
+>>> main()
+6
 """
 
 
