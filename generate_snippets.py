@@ -125,6 +125,7 @@ push("main", open(os.path.join(DIR, "snippets/main.py")).read())
 push("numbamain", open(os.path.join(DIR, "snippets/numbamain.py")).read())
 push("debug_indent", open(os.path.join(DIR, "snippets/debug_indent.py")).read())
 push("lazy_segtree", open(os.path.join(DIR, "snippets/lazy_segtree.py")).read())
+push("readmap", open(os.path.join(DIR, "snippets/readMap.py")).read())
 
 path = os.path.join(DIR, ".vscode/snippet.code-snippets")
 json.dump(snippets, open(path, "w"), indent=2)
