@@ -12,8 +12,6 @@ def debug(*x):
 
 def solve(H, W, Ch, Cw, Dh, Dw, data):
     # data = list(data.reshape(-1))
-    HEIGHT = H + 4
-    WIDTH = W + 4
     N = HEIGHT * WIDTH
     visited = [0] * N
     distance = [0] * N
@@ -36,7 +34,6 @@ def solve(H, W, Ch, Cw, Dh, Dw, data):
             distance[p] = currentDistance
             for dx in [-2, -1, 0, +1, +2]:
                 for dy in [-WIDTH * 2, -WIDTH, 0, WIDTH, WIDTH * 2]:
-                    # jump[p + dx + dy] = currentDistance + 1
                     nextJump.add(p + dx + dy)
             visited[p] = 1
             for d in [-1, +1, -WIDTH, +WIDTH]:
@@ -44,14 +41,6 @@ def solve(H, W, Ch, Cw, Dh, Dw, data):
                     q.append(p + d)
 
         # no continuous cell
-        # for i in range(HEIGHT * WIDTH):
-        #     if not data[i]:
-        #         continue
-        #     if visited[i]:
-        #         continue
-        #     # not visited vacant cell
-        #     if jump[i] > 0:
-        #         q.append(i)
         for p in nextJump:
             if not data[p]:
                 continue
@@ -64,8 +53,20 @@ def solve(H, W, Ch, Cw, Dh, Dw, data):
         if not q:
             return -1
 
-    # print(distance)
-    # print(visited.reshape((H+4, -1)))
+
+def readMap(H, W):
+    global SENTINEL, HEIGHT, WIDTH
+    SENTINEL = 2
+    HEIGHT = H + SENTINEL * 2
+    WIDTH = W + SENTINEL * 2
+    data = [0] * (HEIGHT * WIDTH)
+    ok = ord(".")
+    for i in range(H):
+        S = input().strip()
+        y = (i + SENTINEL) * WIDTH
+        for j in range(W):
+            data[y + (j + SENTINEL)] = 1 if S[j] == ok else 0
+    return data
 
 
 def main():
@@ -73,20 +74,7 @@ def main():
     H, W = map(int, input().split())
     Ch, Cw = map(int, input().split())
     Dh, Dw = map(int, input().split())
-    D = [0] * ((H + 4) * (W + 4))
-    for i in range(H):
-        S = input().strip()
-        for j in range(W):
-            D[(i + 2) * (W + 4) + (j + 2)] = 1 if S[j] == ord(b".") else 0
-    # print(D)
-    # for i in range(H + 4):
-    #     print(D[i * (H + 4): i * (H + 4) + (W + 4)])
-    # data = np.array(list(read().strip()) + [0])
-    # data = np.equal(data, 46).reshape((H, W + 1))
-    # D = np.zeros((H + 4, W + 4), dtype=np.int8)
-    # D[2:2+H, 2:2+W+1] = data
-    # print(data)
-    # print(D)
+    D = readMap(H, W)
     print(solve(H, W, Ch, Cw, Dh, Dw, D))
 
 
