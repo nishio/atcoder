@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 import sys
+from collections import defaultdict
+
 sys.setrecursionlimit(10**6)
 INF = 10 ** 9 + 1  # sys.maxsize # float("inf")
 MOD = 10 ** 9 + 7
@@ -7,55 +9,6 @@ MOD = 10 ** 9 + 7
 
 def debug(*x):
     print(*x, file=sys.stderr)
-
-
-def solve0(N, K, PS, CS):
-    PS = [x - 1 for x in PS]
-    debug(": PS", PS)
-    CS = [CS[PS[i]] for i in range(N)]
-    PSS = [PS]
-    CSS = [CS]
-    prevPS = PS
-    prevCS = CS
-    for i in range(30):
-        PS2 = [prevPS[prevPS[i]] for i in range(N)]
-        CS2 = [prevCS[i] + prevCS[prevPS[i]] for i in range(N)]
-        PSS.append(PS2)
-        CSS.append(CS2)
-        prevPS = PS2
-        prevCS = CS2
-
-    score = [0] * N
-    pos = list(range(N))
-    length = [0] * N
-    maxbit = K.bit_length() - 1
-    for i in range(maxbit, -1, -1):
-        # debug(": i", i)
-        # debug(": 2**i", 2**i)
-        # debug(": CSS[i]", CSS[i])
-        # debug(": PSS[i]", PSS[i])
-        # debug(": score", score)
-        # debug(": length", length)
-        for j in range(N):
-            # debug(": length[j] + 2 ** i <= K", length[j] + 2 ** i <= K)
-            # debug(": CSS[i][pos[j]]", CSS[i][pos[j]])
-            if length[j] + 2 ** i <= K and CSS[i][pos[j]] > 0:
-                # debug("add: j", j)
-                score[j] += CSS[i][pos[j]]
-                pos[j] = PSS[i][pos[j]]
-                length[j] += 2 ** i
-            # if CSS[i][j] > score[j]:
-            #     # debug("reset: j", j)
-            #     # debug(": CSS[i][i], score[j]", CSS[i][i], score[j])
-            #     pos[j] = PSS[i][j]
-            #     score[j] = CSS[i][j]
-            #     length[j] = 2 ** i
-
-    # debug("finish: score", score)
-    ret = max(score)
-    if ret == 0:
-        ret = max(CS)
-    return ret
 
 
 def solve(N, K, PS, CS):
@@ -75,13 +28,9 @@ def solve(N, K, PS, CS):
         if loop:
             loops.append(loop)
             loopScore.append(c)
-    # debug(": loops", loops)
-    # debug(": loopScore", loopScore)
-    scores = [0] * N
-    pos = list(range(N))
-    from collections import defaultdict
 
-    ret = 0
+    pos = list(range(N))
+    ret = -INF
     for i, loop in enumerate(loops):
         if loopScore[i] > 0:
             baseScore = loopScore[i] * (K // len(loop))
@@ -89,7 +38,6 @@ def solve(N, K, PS, CS):
             if r == 0:
                 r = len(loop)
                 baseScore -= loopScore[i]
-                # debug("r==0: baseScore", baseScore)
             maxscore = 0
             scores = defaultdict(int)
             for i in range(r):
@@ -97,7 +45,6 @@ def solve(N, K, PS, CS):
                     scores[x] += CS[pos[x]]
                     pos[x] = PS[pos[x]]
                 maxscore = max(maxscore, max(scores.values()))
-                # debug("posi: maxscores", scores)
             ret = max(maxscore + baseScore, ret)
         else:
             r = len(loop)
@@ -107,12 +54,9 @@ def solve(N, K, PS, CS):
                 for x in loop:
                     scores[x] += CS[pos[x]]
                     pos[x] = PS[pos[x]]
-                # debug("neg: scores", scores)
                 maxscore = max(maxscore, max(scores.values()))
             ret = max(maxscore, ret)
 
-    if ret == 0:
-        ret = max(CS)
     return ret
 
 
@@ -210,7 +154,7 @@ T8 = """
 TEST_T8 = """
 >>> as_input(T8)
 >>> main()
-10001
+10500
 """
 
 
