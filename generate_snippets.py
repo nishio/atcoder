@@ -43,21 +43,6 @@ except:
     def profile(f): return f
 """)
 
-push("oldtest", '''
-T${1:} = """
-$2
-"""
-
-def test_T$1():
-    """
-    >>> as_input(T$1)
-    >>> main()
-    ${3:result}
-    """
-
-''')
-
-# indent-less test code
 push("test", '''
 T${1:} = """
 $2
@@ -82,9 +67,9 @@ from functools import lru_cache
 # ./$1.py < in/$2 > output && diff output out/$2
 # """)
 
-push("stest", """
-./$1.py < input > output && diff output expect
-""")
+# push("stest", """
+# ./$1.py < input > output && diff output expect
+# """)
 
 push("npreadints", """
 ${4:AB} = ${1:data}[:${2:2} * ${3:N}]
@@ -94,10 +79,10 @@ for i in range(${3:N}):
     A, B = ${4:AB}[i]
 """)
 
-push("typedlist", """
-${1:xs} = [${2:(0, 0)}]
-${1:xs}.pop()
-""")
+# push("typedlist", """
+# ${1:xs} = [${2:(0, 0)}]
+# ${1:xs}.pop()
+# """)
 
 push("constant_append", """
 ${1:xs} = np.zeros(1, dtype=np.int32)
