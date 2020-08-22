@@ -26,7 +26,7 @@ def _test():
     g = globals()
     for k in sorted(g):
         if k.startswith("TEST_"):
-            doctest.run_docstring_examples(g[k], g)
+            doctest.run_docstring_examples(g[k], g, name=k)
 
 
 def as_input(s):
