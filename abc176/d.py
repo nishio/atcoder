@@ -10,47 +10,44 @@ def debug(*x):
     print(*x, file=sys.stderr)
 
 
-def solve(H, W, Ch, Cw, Dh, Dw, data):
-    # data = list(data.reshape(-1))
+def solve(H, W, Ch, Cw, Dh, Dw, walkable):
     N = HEIGHT * WIDTH
     visited = [0] * N
-    distance = [0] * N
-    jump = [0] * N
 
     start = (Ch + 1) * WIDTH + (Cw + 1)
     goal = (Dh + 1) * WIDTH + (Dw + 1)
-    q = []
-    nextJump = set()
-    q.append(start)
+    toVisit = []
+    toVisit.append(start)
 
     currentDistance = 0
     while True:
-        while q:
-            p = q.pop()
+        nextJumpOrigin = []
+        while toVisit:
+            p = toVisit.pop()
             if p == goal:
                 return currentDistance
             if visited[p]:
                 continue
-            distance[p] = currentDistance
-            for dx in [-2, -1, 0, +1, +2]:
-                for dy in [-WIDTH * 2, -WIDTH, 0, WIDTH, WIDTH * 2]:
-                    nextJump.add(p + dx + dy)
+
             visited[p] = 1
+            nextJumpOrigin.append(p)
             for d in [-1, +1, -WIDTH, +WIDTH]:
-                if data[p + d] and not visited[p + d]:
-                    q.append(p + d)
+                if walkable[p + d] and not visited[p + d]:
+                    toVisit.append(p + d)
 
         # no continuous cell
-        for p in nextJump:
-            if not data[p]:
-                continue
-            if visited[p]:
-                continue
-            q.append(p)
+        for origin in nextJumpOrigin:
+            for dx in [-2, -1, 0, +1, +2]:
+                for dy in [-WIDTH * 2, -WIDTH, 0, WIDTH, WIDTH * 2]:
+                    p = origin + dx + dy
+                    if not walkable[p]:
+                        continue
+                    if visited[p]:
+                        continue
+                    toVisit.append(p)
 
         currentDistance += 1
-        nextJump = set()
-        if not q:
+        if not toVisit:
             return -1
 
 
