@@ -79,27 +79,36 @@ def solve(N, K, PS, CS):
     # debug(": loopScore", loopScore)
     scores = [0] * N
     pos = list(range(N))
+    from collections import defaultdict
 
     ret = 0
     for i, loop in enumerate(loops):
         if loopScore[i] > 0:
             baseScore = loopScore[i] * (K // len(loop))
             r = K % len(loop)
+            if r == 0:
+                r = len(loop)
+                baseScore -= loopScore[i]
+                # debug("r==0: baseScore", baseScore)
             maxscore = 0
+            scores = defaultdict(int)
             for i in range(r):
                 for x in loop:
                     scores[x] += CS[pos[x]]
                     pos[x] = PS[pos[x]]
-                    maxscore = max(maxscore, max(scores))
+                maxscore = max(maxscore, max(scores.values()))
+                # debug("posi: maxscores", scores)
             ret = max(maxscore + baseScore, ret)
         else:
             r = len(loop)
-            maxscore = 0
+            maxscore = -INF
+            scores = defaultdict(int)
             for i in range(r):
                 for x in loop:
                     scores[x] += CS[pos[x]]
                     pos[x] = PS[pos[x]]
-                    maxscore = max(maxscore, max(scores))
+                # debug("neg: scores", scores)
+                maxscore = max(maxscore, max(scores.values()))
             ret = max(maxscore, ret)
 
     if ret == 0:
@@ -160,6 +169,50 @@ TEST_T4 = """
 29507023469
 """
 
+T5 = """
+3 1000
+2 3 1
+1 0 2
+"""
+TEST_T5 = """
+>>> as_input(T5)
+>>> main()
+1001
+"""
+
+T6 = """
+3 1000
+2 3 1
+1 1 -3
+"""
+TEST_T6 = """
+>>> as_input(T6)
+>>> main()
+2
+"""
+
+T7 = """
+4 1000
+2 1 4 3
+1 1 -10000 10000
+"""
+TEST_T7 = """
+>>> as_input(T7)
+>>> main()
+10000
+"""
+
+T8 = """
+4 1000
+2 1 4 3
+1 1 -10000 10001
+"""
+TEST_T8 = """
+>>> as_input(T8)
+>>> main()
+10001
+"""
+
 
 def _test():
     import doctest
@@ -167,7 +220,7 @@ def _test():
     g = globals()
     for k in sorted(g):
         if k.startswith("TEST_"):
-            doctest.run_docstring_examples(g[k], g)
+            doctest.run_docstring_examples(g[k], g, name=k)
 
 
 def as_input(s):
