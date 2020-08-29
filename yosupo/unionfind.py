@@ -1,6 +1,7 @@
-N, Q = [int(x) for x in input().split()]
-parent = [-1] * N
-rank = [0] * N
+def init_unionfind(N):
+    global parent, rank
+    parent = [-1] * N
+    rank = [0] * N
 
 
 def find_root(x):
@@ -29,9 +30,13 @@ def is_connected(x, y):
     return (find_root(x) == find_root(y))
 
 
-for q in range(Q):
-    typ, u, v = [int(x) for x in input().split()]
-    if typ == 0:
-        unite(u, v)
-    else:
-        print(1 if is_connected(u, v) else 0)
+if __name__ == "__main__":
+    # verified: https://judge.yosupo.jp/problem/unionfind
+    N, Q = [int(x) for x in input().split()]
+    init_unionfind(N)
+    for q in range(Q):
+        typ, u, v = [int(x) for x in input().split()]
+        if typ == 0:
+            unite(u, v)
+        else:
+            print(1 if is_connected(u, v) else 0)
