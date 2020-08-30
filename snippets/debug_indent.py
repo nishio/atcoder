@@ -2,6 +2,7 @@ debug_indent = 0
 
 
 def debug(*x):
+    import sys
     global debug_indent
     x = list(x)
     indent = 0
