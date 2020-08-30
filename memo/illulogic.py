@@ -32,6 +32,7 @@ def bar(N, hints, is0=None, is1=None):
     #####x.##.
 
     """
+    cache = {}
     # possibility
     can0 = np.zeros(N + 1, dtype=np.int)
     can1 = np.zeros(N + 1, dtype=np.int)
@@ -45,10 +46,15 @@ def bar(N, hints, is0=None, is1=None):
 
     def foo(start, slack, hints):
         # debug(": start, slack, hints", start, slack, hints)
+        key = (start, len(hints))
+        if key in cache:
+            return cache[key]
         if not hints:
             if np.all(is1[start:] == 0):
                 can0[start:] = 1
+                cache[key] = True
                 return True
+            cache[key] = False
             return False
 
         ret = False
@@ -65,6 +71,7 @@ def bar(N, hints, is0=None, is1=None):
                     can0[start + i + hints[0]] = 1
                     ret = True
 
+        cache[key] = ret
         return ret
 
     foo(0, slack, hints)
