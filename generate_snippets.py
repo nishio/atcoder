@@ -43,6 +43,14 @@ except:
     def profile(f): return f
 """)
 
+push("perf", """
+start_time = perf_counter()
+$TM_SELECTED_TEXT
+debug(f"$1: {(perf_counter() - start_time):.2f}")
+""")
+
+push("impperf", "from time import perf_counter")
+
 push("test", '''
 T${1:} = """
 $2
@@ -55,7 +63,7 @@ ${3:result}
 ''')
 
 push("dp", """
-debug("$1: $2", $2)
+debug("$2$1", $1)
 """)
 
 push("cache", """

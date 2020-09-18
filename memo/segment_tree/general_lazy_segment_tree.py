@@ -121,12 +121,6 @@ def lazy_range_update(
         action_table, value_table, R,
         action_composite, action_force, action_unity)
 
-    # print("action", file=sys.stderr)
-    # debugprint(action_table)
-    # print("value", file=sys.stderr)
-    # debugprint(value_table)
-    # print(file=sys.stderr)
-
     force_range_update(
         value_table, action_table, start, end,
         action, action_force, action_composite, action_unity)
@@ -195,16 +189,16 @@ def mainF():
         q, *args = map(int, input().split())
         if q == 0:
             # update
-            s, t, value = args
-            t += 1
+            left, right, value = args
+            right += 1  # include right
             lazy_range_update(
-                action_table, value_table, s, t, value,
+                action_table, value_table, left, right, value,
                 action_composite, action_force, action_unity, min)
         else:
             # find
-            s, t = args
+            left, right = args
             print(lazy_range_reduce(
-                action_table, value_table, s, t + 1,
+                action_table, value_table, left, right + 1,
                 action_composite, action_force, action_unity, min, value_unity))
 
 
