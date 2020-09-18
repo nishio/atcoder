@@ -57,33 +57,11 @@ def force_down_propagate(
                 action, action_table[i * 2])
             action_table[i * 2 + 1] = action_composite(
                 action, action_table[i * 2 + 1])
-            # old_action = action_table[i * 2]
-            # if old_action == action_unity:
-            #     action_table[i * 2] = action
-            # else:
-            #     b1, c1 = old_action
-            #     b2, c2 = action
-            #     action_table[i * 2] = (b1 * b2, b2 * c1 + c2)
-
-            # old_action = action_table[i * 2 + 1]
-            # if old_action == action_unity:
-            #     action_table[i * 2 + 1] = action
-            # else:
-            #     b1, c1 = old_action
-            #     b2, c2 = action
-            #     action_table[i * 2 + 1] = (b1 * b2, b2 * c1 + c2)
-
             action_table[i] = action_unity
-
             value_table[i * 2] = action_force(
                 action, value_table[i * 2], size)
             value_table[i * 2 + 1] = action_force(
                 action, value_table[i * 2 + 1], size)
-            # b, c = action
-            # value = value_table[i * 2]
-            # value_table[i * 2] = (value * b + c * size) % MOD
-            # value = value_table[i * 2 + 1]
-            # value_table[i * 2 + 1] = (value * b + c * size) % MOD
 
 
 def force_range_update(
@@ -166,82 +144,97 @@ def lazy_range_reduce(
     return range_reduce(value_table, start, end, value_binop, value_unity)
 
 
+def debugprint(xs, minsize=0, maxsize=None):
+    global DEPTH
+    strs = [str(x) for x in xs]
+    if maxsize != None:
+        for i in range(NONLEAF_SIZE, SEGTREE_SIZE):
+            strs[i] = strs[i][:maxsize]
+    s = max(len(s) for s in strs[NONLEAF_SIZE:])
+    if s > minsize:
+        minsize = s
+
+    result = ["|"] * DEPTH
+    level = 0
+    next_level = 2
+    for i in range(1, SEGTREE_SIZE):
+        if i == next_level:
+            level += 1
+            next_level *= 2
+        width = ((minsize + 1) << (DEPTH - 1 - level)) - 1
+        result[level] += strs[i].center(width) + "|"
+    print(*result, sep="\n", file=sys.stderr)
+
+
 def debug(*x):
     print(*x, file=sys.stderr)
+
+
+def solve(SOLVE_PARAMS):
+    pass
 
 
 def main():
     # parse input
     N, Q = map(int, input().split())
     AS = list(map(int, input().split()))
-    set_width(N + 1)  # include N
+    set_width(N)  # include N
 
-    value_unity = 0
+    value_unity = (0, 0, 0)
     value_table = [value_unity] * SEGTREE_SIZE
-    value_table[NONLEAF_SIZE:NONLEAF_SIZE + len(AS)] = AS
+    value_table[NONLEAF_SIZE:NONLEAF_SIZE +
+                len(AS)] = [(0, 1, 0) if a else (1, 0, 0) for a in AS]
 
-    action_unity = None
+    def value_binop(a, b):
+        x1, y1, z1 = a
+        x2, y2, z2 = b
+        return (x1 + x2, y1 + y2, z1 + z2 + y1 * x2)
+    full_up(value_table, value_binop)
+
+    action_unity = False
     action_table = [action_unity] * SEGTREE_SIZE
 
     def action_force(action, value, size):
         if action == action_unity:
             return value
-        # b, c = action
-        b = action >> 32
-        c = action - (b << 32)
-        return (value * b + c * size) % MOD
+        x, y, z = value
+        return (y, x, x * y - z)
 
     def action_composite(new_action, old_action):
-        if new_action == action_unity:
-            return old_action
-        if old_action == action_unity:
-            return new_action
-        b1 = old_action >> 32
-        c1 = old_action - (b1 << 32)
-        # b1, c1 = old_action
-        # b2, c2 = new_action
-        b2 = new_action >> 32
-        c2 = new_action - (b2 << 32)
-        b = (b1 * b2) % MOD
-        c = (b2 * c1 + c2) % MOD
-        return (b << 32) + c
-
-    def value_binop(a, b):
-        return (a + b) % MOD
-    full_up(value_table, value_binop)
+        return new_action ^ old_action
 
     for _q in range(Q):
         q, *args = map(int, input().split())
-        if q == 0:
-            l, r, b, c = args
+        if q == 1:
+            l, r = args
+            l -= 1  # 1-origin, r inclusive
             lazy_range_update(
-                action_table, value_table, l, r, ((b << 32) + c),
+                action_table, value_table, l, r, True,
                 action_composite, action_force, action_unity, value_binop)
         else:
             l, r = args
+            l -= 1  # 1-origin, r inclusive
             print(lazy_range_reduce(
                 action_table, value_table, l, r,
-                action_composite, action_force, action_unity, value_binop, value_unity))
+                action_composite, action_force, action_unity, value_binop, value_unity)[2])
 
 
+# tests
 T1 = """
-5 7
-1 2 3 4 5
-1 0 5
-0 2 4 100 101
-1 0 3
-0 1 3 102 103
-1 2 5
-0 2 5 104 105
-1 0 5
+5 5
+0 1 0 0 1
+2 1 5
+1 3 4
+2 2 5
+1 1 3
+2 1 2
 """
 TEST_T1 = """
 >>> as_input(T1)
 >>> main()
-15
-404
-41511
-4317767
+2
+0
+1
 """
 
 
