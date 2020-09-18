@@ -167,6 +167,12 @@ def debugprint(xs, minsize=0, maxsize=None):
 
 
 def mainF():
+    """
+    Range update(set) Rande minimum
+
+    RMQ and RUQ
+    https://onlinejudge.u-aizu.ac.jp/courses/library/3/DSL/2/DSL_2_F
+    """
     N, Q = map(int, input().split())
     set_width(N)
 
@@ -203,6 +209,12 @@ def mainF():
 
 
 def mainG():
+    """
+    Range add, range sum
+
+    RSQ and RAQ
+    https://onlinejudge.u-aizu.ac.jp/courses/library/3/DSL/2/DSL_2_G
+    """
     from operator import add
     # parse input
     N, Q = map(int, input().split())
@@ -243,6 +255,12 @@ def set_items(table, xs):
 
 
 def mainH():
+    """
+    Rande add, range minimum
+
+    RMQ and RAQ
+    https://onlinejudge.u-aizu.ac.jp/courses/library/3/DSL/2/DSL_2_H
+    """
     # parse input
     N, Q = map(int, input().split())
     set_width(N)
@@ -280,6 +298,11 @@ def mainH():
 
 
 def mainI():
+    """
+    Rande update, rande sum
+    RSQ and RUQ
+    https://onlinejudge.u-aizu.ac.jp/courses/library/3/DSL/2/DSL_2_I
+    """
     # parse input
     from operator import add
     N, Q = map(int, input().split())
@@ -316,6 +339,115 @@ def mainI():
             print(lazy_range_reduce(
                 action_table, value_table, s, t + 1,
                 action_composite, action_force, action_unity, value_binop, value_unity))
+
+
+def mainACLPC_K():
+    """
+    Range Affine Range Sum
+    https://atcoder.jp/contests/practice2/tasks/practice2_k
+
+    Pack 2 values into an integer to avoid TLE
+    """
+    MOD = 998244353
+    N, Q = map(int, input().split())
+    AS = list(map(int, input().split()))
+    set_width(N + 1)  # include N
+
+    value_unity = 0
+    value_table = [value_unity] * SEGTREE_SIZE
+    value_table[NONLEAF_SIZE:NONLEAF_SIZE + len(AS)] = AS
+
+    action_unity = None
+    action_table = [action_unity] * SEGTREE_SIZE
+
+    def action_force(action, value, size):
+        if action == action_unity:
+            return value
+        # b, c = action
+        b = action >> 32
+        c = action - (b << 32)
+        return (value * b + c * size) % MOD
+
+    def action_composite(new_action, old_action):
+        if new_action == action_unity:
+            return old_action
+        if old_action == action_unity:
+            return new_action
+        b1 = old_action >> 32
+        c1 = old_action - (b1 << 32)
+        # b1, c1 = old_action
+        # b2, c2 = new_action
+        b2 = new_action >> 32
+        c2 = new_action - (b2 << 32)
+        b = (b1 * b2) % MOD
+        c = (b2 * c1 + c2) % MOD
+        return (b << 32) + c
+
+    def value_binop(a, b):
+        return (a + b) % MOD
+    full_up(value_table, value_binop)
+
+    for _q in range(Q):
+        q, *args = map(int, input().split())
+        if q == 0:
+            l, r, b, c = args
+            lazy_range_update(
+                action_table, value_table, l, r, ((b << 32) + c),
+                action_composite, action_force, action_unity, value_binop)
+        else:
+            l, r = args
+            print(lazy_range_reduce(
+                action_table, value_table, l, r,
+                action_composite, action_force, action_unity, value_binop, value_unity))
+
+
+def mainACLPC_L():
+    """
+    Range nagate of 0/1 sequence, range calculation of inversion
+
+    https://atcoder.jp/contests/practice2/tasks/practice2_l
+    """
+    N, Q = map(int, input().split())
+    AS = list(map(int, input().split()))
+    set_width(N)  # include N
+
+    value_unity = (0, 0, 0)
+    value_table = [value_unity] * SEGTREE_SIZE
+    value_table[NONLEAF_SIZE:NONLEAF_SIZE +
+                len(AS)] = [(0, 1, 0) if a else (1, 0, 0) for a in AS]
+
+    def value_binop(a, b):
+        x1, y1, z1 = a
+        x2, y2, z2 = b
+        return (x1 + x2, y1 + y2, z1 + z2 + y1 * x2)
+    full_up(value_table, value_binop)
+
+    action_unity = False
+    action_table = [action_unity] * SEGTREE_SIZE
+
+    def action_force(action, value, size):
+        if action == action_unity:
+            return value
+        x, y, z = value
+        return (y, x, x * y - z)
+
+    def action_composite(new_action, old_action):
+        return new_action ^ old_action
+
+    for _q in range(Q):
+        q, *args = map(int, input().split())
+        if q == 1:
+            l, r = args
+            l -= 1  # 1-origin, r inclusive
+            lazy_range_update(
+                action_table, value_table, l, r, True,
+                action_composite, action_force, action_unity, value_binop)
+        else:
+            l, r = args
+            l -= 1  # 1-origin, r inclusive
+            print(lazy_range_reduce(
+                action_table, value_table, l, r,
+                action_composite, action_force, action_unity, value_binop, value_unity)[2])
 
 
 T1F = """
@@ -442,6 +574,43 @@ TEST_T1I = """
 1
 6
 8
+"""
+
+TACLPC_K = """
+5 7
+1 2 3 4 5
+1 0 5
+0 2 4 100 101
+1 0 3
+0 1 3 102 103
+1 2 5
+0 2 5 104 105
+1 0 5
+"""
+TEST_TACLPC_K = """
+>>> as_input(TACLPC_K)
+>>> mainACLPC_K()
+15
+404
+41511
+4317767
+"""
+
+TACLPC_L = """
+5 5
+0 1 0 0 1
+2 1 5
+1 3 4
+2 2 5
+1 1 3
+2 1 2
+"""
+TEST_TACLPC_L = """
+>>> as_input(TACLPC_L)
+>>> mainACLPC_L()
+2
+0
+1
 """
 
 
