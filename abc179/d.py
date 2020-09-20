@@ -18,22 +18,13 @@ def solve(N, K, SS):
     for pos in range(1, N):
         ret = 0
         for left, right in SS:
-            # for i in range(left, right + 1):
-            #     j = pos - i
-            #     if j < 0:
-            #         continue
-            #     ret += count[j]
-            #     ret %= MOD
-            start = max(-1, pos - right - 1)
-            end = max(-1, pos - left)
-            # debug("end, start", end, start)
+            start = pos - right - 1
+            end = pos - left
             ret += (accum[end] - accum[start])
             ret %= MOD
-        # debug("pos, ret", pos, ret)
         count[pos] = ret
         accum[pos] = accum[pos - 1] + ret
 
-    # ret = f(N - 1)
     ret = count[N - 1]
     return ret % MOD
 

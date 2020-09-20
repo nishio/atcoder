@@ -84,8 +84,17 @@ def main():
     N, Q = map(int, input().split())
     depth = (2 * N).bit_length() + 1
     set_depth(depth)
-    action_unity = N - 2
+    action_unity = INF
     table = [action_unity] * SEGTREE_SIZE
+
+    def action_force(action, value, size):
+        return min(action, value)
+
+    def action_composite(new_action, old_action):
+        return min(new_action, old_action)
+
+    def value_binop(a, b):
+        return min(a, b)
 
     for time in range(Q):
         q, x = map(int, input().split())
@@ -105,6 +114,52 @@ def main():
 
 
 # tests
+T1 = """
+5 5
+1 3
+2 3
+1 4
+2 2
+1 2
+"""
+TEST_T1 = """
+>>> as_input(T1)
+>>> main()
+1
+"""
+
+T2 = """
+200000 0
+"""
+TEST_T2 = """
+>>> as_input(T2)
+>>> main()
+39999200004
+"""
+
+T3 = """
+176527 15
+1 81279
+2 22308
+2 133061
+1 80744
+2 44603
+1 170938
+2 139754
+2 15220
+1 172794
+1 159290
+2 156968
+1 56426
+2 77429
+1 97459
+2 71282
+"""
+TEST_T3 = """
+>>> as_input(T3)
+>>> main()
+31159505795
+"""
 
 
 def _test():
