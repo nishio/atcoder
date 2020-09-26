@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 import sys
-sys.setrecursionlimit(10**6)
-INF = 10 ** 9 + 1  # sys.maxsize # float("inf")
-MOD = 10 ** 9 + 7
+sys.setrecursionlimit(10 ** 6)
+INF = sys.maxsize  # float("inf")
+MOD = 10 ** 9 + 7  # 998_244_353
 
 
 def debug(*x):
@@ -14,7 +14,6 @@ def solve(SOLVE_PARAMS):
 
 
 def main():
-    # parse input
     print(solve(SOLVE_PARAMS))
 
 # tests
@@ -38,12 +37,11 @@ def as_input(s):
     g["read"] = lambda: bytes(f.read(), "ascii")
 
 
-input = sys.stdin.buffer.readline
-read = sys.stdin.buffer.read
-
-if sys.argv[-1] == "-t":
-    print("testing")
-    _test()
-    sys.exit()
-
-main()
+if __name__ == "__main__":
+    input = sys.stdin.buffer.readline
+    read = sys.stdin.buffer.read
+    if sys.argv[-1] == "-t":
+        print("testing")
+        _test()
+        sys.exit()
+    main()
