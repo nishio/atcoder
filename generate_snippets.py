@@ -147,7 +147,9 @@ push("numbamain", read_file("snippets/numbamain.py"))
 push("def_debug_indent", read_file("snippets/debug_indent.py"))
 push("lazy_segtree", read_file("snippets/lazy_segtree.py"))
 push("readmap", read_file("snippets/readMap.py"))
+
 push("unionfind", read_file("libs/unionfind.py"))
+push("segtree", read_file("libs/segtree.py"))
 
 
 def main():

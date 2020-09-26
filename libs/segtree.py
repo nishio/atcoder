@@ -1,33 +1,22 @@
-#!/usr/bin/env python3
-import sys
-sys.setrecursionlimit(10**6)
-INF = 10 ** 9 + 1  # sys.maxsize # float("inf")
-MOD = 10 ** 9 + 7
+"""
+Segment Tree
 
+Sample: ACL Beginner Contest D
+def solve(N, K, AS):
+    MAX_CAPACITY = 300_000
+    set_width(MAX_CAPACITY + 10)
 
-def debug(*x):
-    print(*x, file=sys.stderr)
-
-
-def solve_0_WA(N, K, AS):
-    candidates = [[0]]
+    count = [0] * SEGTREE_SIZE
+    point_set(count, AS[0], 1, max)
     for i in range(1, N):
         A = AS[i]
-        new_candidates = []
-        for c in candidates:
-            if abs(AS[c[-1]] - A) <= K:
-                new_candidates.append(c[:])
-                c.append(i)
-                new_candidates.append(c)
-                break
-            else:
-                new_candidates.append(c)
-        else:
-            new_candidates.append([i])
-        candidates = new_candidates
-        candidates.sort(key=len, reverse=True)
-        debug("candidates", candidates)
-    return len(candidates[0])
+        start = max(0, A - K)
+        end = min(A + K + 1, MAX_CAPACITY + 1)
+        best = range_reduce(count, start, end, max, -INF)
+        point_set(count, A, best + 1, max)
+    return range_reduce(count, 0, MAX_CAPACITY + 1, max, -INF)
+
+"""
 
 
 def set_depth(depth):
@@ -117,15 +106,17 @@ def full_up(table, binop):
             table[2 * i + 1])
 
 
-def solve_1(N, K, AS):
-    count = [0] * 300_000
-    count[AS[0]] = 1
-    for i in range(1, N):
-        A = AS[i]
-        start = max(0, A - K)
-        best = max(count[start:A + K + 1])
-        count[A] = best + 1
-    return max(count)
+def get_value(table, pos):
+    return table[NONLEAF_SIZE + pos]
+
+
+def get_values(table, N=NONLEAF_SIZE):
+    return table[NONLEAF_SIZE:NONLEAF_SIZE+N]
+
+# --- end of library ---
+
+
+INF = 10 ** 9 + 1
 
 
 def solve(N, K, AS):
@@ -204,26 +195,9 @@ TEST_T3 = """
 """
 
 
-def random_test(seed):
-    import random
-    random.seed(seed)
-    N = random.randint(1, 300_000)
-    K = random.randint(0, 300_000)
-    AS = [random.randint(0, 300_000) for i in range(N)]
-    solve(N, K, AS)
-
-
-def small_random_test(seed):
-    import random
-    random.seed(seed)
-    N = random.randint(1, 30)
-    K = random.randint(0, 30)
-    AS = [random.randint(0, 30) for i in range(N)]
-    # debug("N, K, AS", N, K, AS)
-    x = solve(N, K, AS)
-    y = solve_1(N, K, AS)
-    # debug("x, y", x, y)
-    assert x == y
+def debug(*x):
+    import sys
+    print(*x, file=sys.stderr)
 
 
 def _test():
@@ -233,9 +207,6 @@ def _test():
     for k in sorted(g):
         if k.startswith("TEST_"):
             doctest.run_docstring_examples(g[k], g, name=k)
-    for seed in range(1, 1000):
-        debug("seed", seed)
-        small_random_test(seed)
 
 
 def as_input(s):
@@ -247,12 +218,11 @@ def as_input(s):
     g["read"] = lambda: bytes(f.read(), "ascii")
 
 
-input = sys.stdin.buffer.readline
-read = sys.stdin.buffer.read
-
-if sys.argv[-1] == "-t":
-    print("testing")
-    _test()
-    sys.exit()
-
-main()
+if __name__ == "__main__":
+    import sys
+    input = sys.stdin.buffer.readline
+    read = sys.stdin.buffer.read
+    if sys.argv[-1] == "-t":
+        print("testing")
+        _test()
+        sys.exit()
