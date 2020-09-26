@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
-
+"""
+generate snippets for VSCode
+"""
 import os
 import json
 DIR = os.path.dirname(__file__)
