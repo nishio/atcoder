@@ -157,6 +157,9 @@ push("readmap", read_file("snippets/readMap.py"))
 push("unionfind", read_file("libs/unionfind.py"))
 push("segtree", read_file("libs/segtree.py"))
 push("lazy_segtree", read_file("libs/lazy_segtree.py"))
+push("dinic_maxflow", read_file("libs/dinic.py"))
+push("loop_detection", read_file("libs/loop_detection.py"))
+push("accum_dp", read_file("libs/accum_dp.py"))
 
 
 def main():

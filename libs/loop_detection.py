@@ -44,6 +44,8 @@ def loop_detection(xs, N, M, DEBUG=False):
         print(f"no loop")
     return sum(buffer)
 
+# --- end of library ---
+
 
 if __name__ == "__main__":
     import doctest

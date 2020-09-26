@@ -1,10 +1,10 @@
 """
-Lazy Segment Tree
+Generalized Lazy Segment Tree
 
 - Range update(set) Rande minimum
 - Range add, range sum
 - Rande add, range minimum
-- Rande update, rande sum
+- Rande update, Rande sum
 - Range Affine Range Sum
 - Range nagate of 0/1 sequence, range calculation of inversion(TENTOUSUU)
 """
@@ -459,7 +459,7 @@ TEST_T1H = """
 
 def mainI():
     """
-    Rande update, rande sum
+    Rande update, Rande sum
     RSQ and RUQ
     https://onlinejudge.u-aizu.ac.jp/courses/library/3/DSL/2/DSL_2_I
     """

@@ -1,3 +1,7 @@
+"""
+Dinic: MaxFlow
+"""
+
 from collections import defaultdict
 from collections import deque
 INF = 10 ** 10
@@ -69,6 +73,8 @@ def max_flow(start, goal):
             f = dfs(start, goal, INF)
     return flow
 
+# --- end of library ---
+
 
 def main():
     # Verified: https://onlinejudge.u-aizu.ac.jp/courses/library/5/GRL/6/GRL_6_A
@@ -79,4 +85,48 @@ def main():
     print(max_flow(0, V - 1))
 
 
-main()
+# tests
+T1 = """
+4 5
+0 1 2
+0 2 1
+1 2 1
+1 3 1
+2 3 2
+"""
+
+
+def test_T1():
+    """
+    >>> as_input(T1)
+    >>> main()
+    3
+    """
+# add tests above
+
+
+def _test():
+    import doctest
+    doctest.testmod()
+
+
+def as_input(s):
+    "use in test, use given string as input file"
+    import io
+    global read, input
+    f = io.StringIO(s.strip())
+
+    def input():
+        return bytes(f.readline(), "ascii")
+
+    def read():
+        return bytes(f.read(), "ascii")
+
+
+if __name__ == "__main__":
+    import sys
+    if sys.argv[-1] == "-t":
+        print("testing")
+        _test()
+        sys.exit()
+    main()
