@@ -113,14 +113,11 @@ def _test():
 def as_input(s):
     "use in test, use given string as input file"
     import io
-    global read, input
+    g = globals()
     f = io.StringIO(s.strip())
 
-    def input():
-        return bytes(f.readline(), "ascii")
-
-    def read():
-        return bytes(f.read(), "ascii")
+    g["input"] = lambda: bytes(f.readline(), "ascii")
+    g["read"] = lambda: bytes(f.read(), "ascii")
 
 
 if __name__ == "__main__":

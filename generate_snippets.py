@@ -141,6 +141,17 @@ else:
     print("No")
 """)
 
+push("as_input", """
+def as_input(s):
+    "use in test, use given string as input file"
+    import io
+    g = globals()
+    f = io.StringIO(s.strip())
+
+    g["input"] = lambda: bytes(f.readline(), "ascii")
+    g["read"] = lambda: bytes(f.read(), "ascii")
+""")
+
 
 def read_file(filename):
     data = open(os.path.join(DIR, filename)).read()
