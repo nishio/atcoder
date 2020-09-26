@@ -11,13 +11,16 @@ def push(prefix, desc, body=None):
         body = desc
         desc = prefix
     body = body.strip()
+    lines = body.splitlines()
+
     if desc in snippets:
         print(f"{desc} already exists")
         desc = desc + "'"
+
     snippets[desc] = dict(
         scope="python",
         prefix=prefix,
-        body=body.splitlines(),
+        body=lines,
         description=desc
     )
 
@@ -45,7 +48,7 @@ except:
 
 push("perf", """
 start_time = perf_counter()
-$TM_SELECTED_TEXT
+$CLIPBOARD
 debug(f"$1: {(perf_counter() - start_time):.2f}")
 """)
 
@@ -63,7 +66,7 @@ ${3:result}
 ''')
 
 push("dp", """
-debug("$2$1", $1)
+debug("$1", $1)
 """)
 
 push("cache", """
@@ -130,5 +133,10 @@ push("readmap", read_file("snippets/readMap.py"))
 push("unionfind", read_file("libs/unionfind.py"))
 
 
-path = os.path.join(DIR, ".vscode/snippet.code-snippets")
-json.dump(snippets, open(path, "w"), indent=2)
+def main():
+    path = os.path.join(DIR, ".vscode/snippet.code-snippets")
+    json.dump(snippets, open(path, "w"), indent=2)
+
+
+if __name__ == "__main__":
+    main()
