@@ -9,3 +9,5 @@ libs
 (test code)
 
 ```
+
+see ../generate_snippets.py
