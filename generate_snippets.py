@@ -114,11 +114,21 @@ push("impdeq", "from collections import deque")
 push("impheap", "from heapq import heappush, heappop")
 push("impnp", "import numpy as np")
 
-push("main", open(os.path.join(DIR, "snippets/main.py")).read())
-push("numbamain", open(os.path.join(DIR, "snippets/numbamain.py")).read())
-push("debug_indent", open(os.path.join(DIR, "snippets/debug_indent.py")).read())
-push("lazy_segtree", open(os.path.join(DIR, "snippets/lazy_segtree.py")).read())
-push("readmap", open(os.path.join(DIR, "snippets/readMap.py")).read())
+
+def read_file(filename):
+    data = open(os.path.join(DIR, filename)).read()
+    if "# --- end of library ---" in data:
+        data = data.split("# --- end of library ---")[0]
+    return data
+
+
+push("main", read_file("snippets/main.py"))
+push("numbamain", read_file("snippets/numbamain.py"))
+push("debug_indent", read_file("snippets/debug_indent.py"))
+push("lazy_segtree", read_file("snippets/lazy_segtree.py"))
+push("readmap", read_file("snippets/readMap.py"))
+push("unionfind", read_file("libs/unionfind.py"))
+
 
 path = os.path.join(DIR, ".vscode/snippet.code-snippets")
 json.dump(snippets, open(path, "w"), indent=2)
