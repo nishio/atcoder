@@ -8,11 +8,18 @@ snippets_for_global = {}
 
 
 def push(prefix, desc, body=None, for_global=False):
+    to_generate_desc = False
     if not body:
         body = desc
-        desc = prefix
+        to_generate_desc = True
     body = body.strip()
     lines = body.splitlines()
+
+    if to_generate_desc:
+        if lines[0] == '"""':
+            desc = lines[1]
+        else:
+            desc = lines[0]
 
     if desc in snippets:
         print(f"{desc} already exists")
@@ -44,22 +51,22 @@ push("readstrascii", "input().strip().decode('ascii')")
 
 push("readrest", "np.int64(read().split())")
 
-push("profile", """
+push("profile", "define @profile if not exist", """
 try:
     profile
 except:
     def profile(f): return f
-""")
+""", for_global=True)
 
-push("perf", """
+push("perf", "use perf_counter", """
 start_time = perf_counter()
 $CLIPBOARD
 debug(f"$1: {(perf_counter() - start_time):.2f}")
-""")
+""", for_global=True)
 
-push("impperf", "from time import perf_counter")
+push("impperf", "perf_counter", "from time import perf_counter", for_global=True)
 
-push("test", '''
+push("test", "define testcode", '''
 T${1:} = """
 $2
 """
@@ -68,11 +75,17 @@ TEST_T$1 = """
 >>> main()
 ${3:result}
 """
-''')
+''', for_global=True)
 
-push("dp", """
+push("dp", "debug print", """
 debug("$1", $1)
 """)
+
+push("bp", "conditional breakpoint", """
+if ${1:True}:
+    import pdb
+    pdb.set_trace()
+""", for_global=True)
 
 push("cache", """
 from functools import lru_cache
@@ -121,6 +134,48 @@ push("impdef", "from collections import defaultdict")
 push("impdeq", "from collections import deque")
 push("impheap", "from heapq import heappush, heappop")
 push("impnp", "import numpy as np")
+
+
+push("deftest", """
+def _test():
+    import doctest
+    doctest.testmod()
+    g = globals()
+    for k in sorted(g):
+        if k.startswith("TEST_"):
+            doctest.run_docstring_examples(g[k], g, name=k)
+""", for_global=True)
+
+push("defdebug", """
+def debug(*x):
+    import sys
+    print(*x, file=sys.stderr)
+""", for_global=True)
+
+push("defdebugindent", """
+debug_indent = 0
+def debug(*x):
+    import sys
+    global debug_indent
+    x = list(x)
+    indent = 0
+    if x[0].startswith("enter") or x[0][0] == ">":
+        indent = 1
+    if x[0].startswith("leave") or x[0][0] == "<":
+        debug_indent -= 1
+    x[0] = "  " * debug_indent + x[0]
+    print(*x, file=sys.stderr)
+    debug_indent += indent
+""", for_global=True)
+
+push("ifmain", """
+if __name__ == "__main__":
+    import sys
+    if sys.argv[-1] == "-t":
+        print("testing")
+        _test()
+        sys.exit()
+""", for_global=True)
 
 
 def read_file(filename):
