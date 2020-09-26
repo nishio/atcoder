@@ -134,6 +134,13 @@ if __name__ == "__main__":
     main()
 """, for_global=True)
 
+push("yesno", """
+if $1:
+    print("Yes")
+else:
+    print("No")
+""")
+
 
 def read_file(filename):
     data = open(os.path.join(DIR, filename)).read()
@@ -145,11 +152,11 @@ def read_file(filename):
 push("main", read_file("snippets/main.py"))
 push("numbamain", read_file("snippets/numbamain.py"))
 push("def_debug_indent", read_file("snippets/debug_indent.py"))
-push("lazy_segtree", read_file("snippets/lazy_segtree.py"))
 push("readmap", read_file("snippets/readMap.py"))
 
 push("unionfind", read_file("libs/unionfind.py"))
 push("segtree", read_file("libs/segtree.py"))
+push("lazy_segtree", read_file("libs/lazy_segtree.py"))
 
 
 def main():

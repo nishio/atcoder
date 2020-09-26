@@ -1,6 +1,3 @@
-import sys
-
-
 def set_depth(depth):
     global DEPTH, SEGTREE_SIZE, NONLEAF_SIZE
     DEPTH = depth
@@ -168,6 +165,16 @@ def debugprint(xs, minsize=0, maxsize=None):
     print(*result, sep="\n", file=sys.stderr)
 
 
+def init_from_values(values, value_binop, value_unity):
+    N = len(values)
+    set_width(N)
+
+    value_table = [value_unity] * SEGTREE_SIZE
+    value_table[NONLEAF_SIZE:NONLEAF_SIZE + len(values)] = values
+    full_up(value_table, value_binop)
+    return value_table
+
+
 def usage():
     from operator import add
     N = 100
@@ -198,3 +205,5 @@ def usage():
     print(lazy_range_reduce(
         action_table, value_table, start, end,
         action_composite, action_force, action_unity, value_binop, value_unity))
+
+# --- end of library ---
