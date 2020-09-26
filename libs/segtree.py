@@ -1,7 +1,8 @@
 """
 Segment Tree
 
-Sample: ACL Beginner Contest D
+Sample: Point Set Range Max
+
 def solve(N, K, AS):
     MAX_CAPACITY = 300_000
     set_width(MAX_CAPACITY + 10)
@@ -15,6 +16,28 @@ def solve(N, K, AS):
         best = range_reduce(count, start, end, max, -INF)
         point_set(count, A, best + 1, max)
     return range_reduce(count, 0, MAX_CAPACITY + 1, max, -INF)
+
+Sample: Point Set Range Max Find
+
+def main_acl_j():
+    # verified: https://atcoder.jp/contests/practice2/submissions/17053966
+    N, Q = map(int, input().split())
+    AS = list(map(int, input().split()))
+
+    binop = max
+    unity = -INF
+    table = init_from_values(AS, binop, unity)
+
+    for _q in range(Q):
+        q, x, y = map(int, input().split())
+        if q == 1:
+            # update
+            point_set(table, x - 1, y, max)
+        elif q == 2:
+            # find
+            print(range_reduce(table, x - 1, y, max, -INF))
+        else:
+            print(bisect_left(table, x - 1, N, y) + 1)
 
 """
 
@@ -106,12 +129,24 @@ def full_up(table, binop):
             table[2 * i + 1])
 
 
+def init_from_values(values, binop, unity):
+    N = len(values)
+    set_width(N)
+
+    table = [unity] * SEGTREE_SIZE
+    table[NONLEAF_SIZE:NONLEAF_SIZE + len(values)] = values
+    full_up(table, binop)
+    return table
+
+
 def get_value(table, pos):
     return table[NONLEAF_SIZE + pos]
 
 
-def get_values(table, N=NONLEAF_SIZE):
-    return table[NONLEAF_SIZE:NONLEAF_SIZE+N]
+def get_values(table, N=None):
+    if N is None:
+        N = NONLEAF_SIZE
+    return table[NONLEAF_SIZE:NONLEAF_SIZE + N]
 
 # --- end of library ---
 
@@ -119,23 +154,22 @@ def get_values(table, N=NONLEAF_SIZE):
 INF = 10 ** 9 + 1
 
 
-def solve(N, K, AS):
-    MAX_CAPACITY = 300_000
-    set_width(MAX_CAPACITY + 10)
+def main_abl_d():
+    # verified: https://atcoder.jp/contests/abl/tasks/abl_d
+    def solve(N, K, AS):
+        MAX_CAPACITY = 300_000
+        set_width(MAX_CAPACITY + 10)
 
-    count = [0] * SEGTREE_SIZE
-    point_set(count, AS[0], 1, max)
-    for i in range(1, N):
-        A = AS[i]
-        start = max(0, A - K)
-        end = min(A + K + 1, MAX_CAPACITY + 1)
-        best = range_reduce(count, start, end, max, -INF)
-        point_set(count, A, best + 1, max)
-    return range_reduce(count, 0, MAX_CAPACITY + 1, max, -INF)
+        count = [0] * SEGTREE_SIZE
+        point_set(count, AS[0], 1, max)
+        for i in range(1, N):
+            A = AS[i]
+            start = max(0, A - K)
+            end = min(A + K + 1, MAX_CAPACITY + 1)
+            best = range_reduce(count, start, end, max, -INF)
+            point_set(count, A, best + 1, max)
+        return range_reduce(count, 0, MAX_CAPACITY + 1, max, -INF)
 
-
-def main():
-    # parse input
     N, K = map(int, input().split())
     AS = []
     for _i in range(N):
@@ -160,7 +194,7 @@ T1 = """
 """
 TEST_T1 = """
 >>> as_input(T1)
->>> main()
+>>> main_abl_d()
 7
 """
 
@@ -175,7 +209,7 @@ T2 = """
 """
 TEST_T2 = """
 >>> as_input(T2)
->>> main()
+>>> main_abl_d()
 5
 """
 
@@ -190,8 +224,49 @@ T3 = """
 """
 TEST_T3 = """
 >>> as_input(T3)
->>> main()
+>>> main_abl_d()
 5
+"""
+
+
+def main_acl_j():
+    # verified: https://atcoder.jp/contests/practice2/submissions/17053966
+    N, Q = map(int, input().split())
+    AS = list(map(int, input().split()))
+
+    binop = max
+    unity = -INF
+    table = init_from_values(AS, binop, unity)
+
+    for _q in range(Q):
+        q, x, y = map(int, input().split())
+        if q == 1:
+            # update
+            point_set(table, x - 1, y, max)
+        elif q == 2:
+            # find
+            print(range_reduce(table, x - 1, y, max, -INF))
+        else:
+            print(bisect_left(table, x - 1, N, y) + 1)
+
+
+# tests
+T1 = """
+5 5
+1 2 3 2 1
+2 1 5
+3 2 3
+1 3 1
+2 2 4
+3 1 3
+"""
+TEST_T1 = """
+>>> as_input(T1)
+>>> main_acl_j()
+3
+3
+2
+6
 """
 
 

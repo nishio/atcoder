@@ -8,7 +8,26 @@ MOD = 10 ** 9 + 7
 def debug(*x):
     print(*x, file=sys.stderr)
 
-# Segment Tree
+
+"""
+Segment Tree
+
+Sample: ACL Beginner Contest D
+def solve(N, K, AS):
+    MAX_CAPACITY = 300_000
+    set_width(MAX_CAPACITY + 10)
+
+    count = [0] * SEGTREE_SIZE
+    point_set(count, AS[0], 1, max)
+    for i in range(1, N):
+        A = AS[i]
+        start = max(0, A - K)
+        end = min(A + K + 1, MAX_CAPACITY + 1)
+        best = range_reduce(count, start, end, max, -INF)
+        point_set(count, A, best + 1, max)
+    return range_reduce(count, 0, MAX_CAPACITY + 1, max, -INF)
+
+"""
 
 
 def set_depth(depth):
@@ -36,8 +55,10 @@ def point_set(table, pos, value, binop):
 
 
 def range_reduce(table, left, right, binop, unity):
+    assert right <= NONLEAF_SIZE
     ret_left = unity
     ret_right = unity
+    # debug("left,right", left, right)
     left += SEGTREE_SIZE // 2
     right += SEGTREE_SIZE // 2
     while left < right:
@@ -96,14 +117,34 @@ def full_up(table, binop):
             table[2 * i + 1])
 
 
-def main():
-    N, Q = map(int, input().split())
-    AS = list(map(int, input().split()))
+def init_from_values(values, binop, unity):
+    N = len(values)
     set_width(N)
 
-    table = [0] * SEGTREE_SIZE
-    table[NONLEAF_SIZE:NONLEAF_SIZE + len(AS)] = AS
-    full_up(table, max)
+    table = [unity] * SEGTREE_SIZE
+    table[NONLEAF_SIZE:NONLEAF_SIZE + len(values)] = values
+    full_up(table, binop)
+    return table
+
+
+def get_value(table, pos):
+    return table[NONLEAF_SIZE + pos]
+
+
+def get_values(table, N=None):
+    if N is None:
+        N = NONLEAF_SIZE
+    return table[NONLEAF_SIZE:NONLEAF_SIZE + N]
+
+
+def main():
+    # verified: https://atcoder.jp/contests/practice2/submissions/17053966
+    N, Q = map(int, input().split())
+    AS = list(map(int, input().split()))
+
+    binop = max
+    unity = -INF
+    table = init_from_values(AS, binop, unity)
 
     for _q in range(Q):
         q, x, y = map(int, input().split())
