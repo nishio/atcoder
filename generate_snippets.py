@@ -4,9 +4,10 @@ import os
 import json
 DIR = os.path.dirname(__file__)
 snippets = {}
+snippets_for_global = {}
 
 
-def push(prefix, desc, body=None):
+def push(prefix, desc, body=None, for_global=False):
     if not body:
         body = desc
         desc = prefix
@@ -17,12 +18,16 @@ def push(prefix, desc, body=None):
         print(f"{desc} already exists")
         desc = desc + "'"
 
-    snippets[desc] = dict(
+    snip = dict(
         scope="python",
         prefix=prefix,
         body=lines,
         description=desc
     )
+    if for_global:
+        snippets_for_global[desc] = snip
+    else:
+        snippets[desc] = snip
 
 
 push("readlist", "read list of integers", """
@@ -136,6 +141,8 @@ push("unionfind", read_file("libs/unionfind.py"))
 def main():
     path = os.path.join(DIR, ".vscode/snippet.code-snippets")
     json.dump(snippets, open(path, "w"), indent=2)
+    path = "/Users/nishio/Library/Application Support/Code/User/snippets/python.code-snippets"
+    json.dump(snippets_for_global, open(path, "w"), indent=2)
 
 
 if __name__ == "__main__":
