@@ -87,6 +87,8 @@ def main():
     action_unity = INF
     table = [action_unity] * SEGTREE_SIZE
 
+    # Dual Segtreeで作りかけ
+
     def action_force(action, value, size):
         return min(action, value)
 
