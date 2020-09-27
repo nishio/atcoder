@@ -33,7 +33,7 @@ def main():
     # parse input
     N, K = map(int, input().split())
     SS = []
-    for i in range(K):
+    for _i in range(K):
         SS.append(tuple(map(int, input().split())))
     print(solve(N, K, SS))
 
