@@ -1,16 +1,12 @@
-#!/usr/bin/env python3
-import sys
-sys.setrecursionlimit(10**6)
-INF = 10 ** 9 + 1  # sys.maxsize # float("inf")
-MOD = 10 ** 9 + 7
-
-# Strongly connected component
-# derived from https://atcoder.jp/contests/practice2/submissions/16645774
+"""
+Strongly connected component
+derived from https://atcoder.jp/contests/practice2/submissions/16645774
+"""
 
 
 def get_strongly_connected_components(edges, num_vertex):
     """
-    edges: {v: [v]}
+    edges: [(v1, v2)]
     """
     from collections import defaultdict
 
@@ -72,10 +68,6 @@ def get_strongly_connected_components(edges, num_vertex):
                 queue.append(j)
         result.append(component)
     return result
-
-
-def debug(*x):
-    print(*x, file=sys.stderr)
 
 
 def solve(N, D, data):
