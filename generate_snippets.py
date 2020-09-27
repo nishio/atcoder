@@ -180,6 +180,9 @@ push("dinic_maxflow", read_file("libs/dinic.py"))
 push("loop_detection", read_file("libs/loop_detection.py"))
 push("accum_dp", read_file("libs/accum_dp.py"))
 push("mod_inverse", read_file("libs/mod_inverse.py"))
+push("scc", read_file("libs/scc.py"))
+push("two_sat", read_file("libs/two_sat.py"))
+push("suffix_array", read_file("libs/suffix_array.py"))
 
 
 def main():

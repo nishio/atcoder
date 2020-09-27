@@ -1,11 +1,7 @@
-#!/usr/bin/env python3
-import sys
-sys.setrecursionlimit(10**6)
-INF = 10 ** 9 + 1  # sys.maxsize # float("inf")
-MOD = 10 ** 9 + 7
-
-# Strongly connected component
-# derived from https://atcoder.jp/contests/practice2/submissions/16645774
+"""
+Strongly connected component
+derived from https://atcoder.jp/contests/practice2/submissions/16645774
+"""
 
 
 def get_strongly_connected_components(edges, num_vertex):
@@ -73,6 +69,8 @@ def get_strongly_connected_components(edges, num_vertex):
         result.append(component)
     return result
 
+# --- end of library ---
+
 
 def debug(*x):
     print(*x, file=sys.stderr)
@@ -86,7 +84,7 @@ def solve(N, M, edges):
 
 
 def main():
-    # parse input
+    # verified: https://atcoder.jp/contests/practice2/tasks/practice2_g
     N, M = map(int, input().split())
     from collections import defaultdict
     edges = defaultdict(list)
@@ -136,12 +134,12 @@ def as_input(s):
     g["read"] = lambda: bytes(f.read(), "ascii")
 
 
-input = sys.stdin.buffer.readline
-read = sys.stdin.buffer.read
-
-if sys.argv[-1] == "-t":
-    print("testing")
-    _test()
-    sys.exit()
-
-main()
+if __name__ == "__main__":
+    import sys
+    input = sys.stdin.buffer.readline
+    read = sys.stdin.buffer.read
+    if sys.argv[-1] == "-t":
+        print("testing")
+        _test()
+        sys.exit()
+    main()

@@ -1,12 +1,26 @@
 """
-Strongly connected component
+Two SAT
 derived from https://atcoder.jp/contests/practice2/submissions/16645774
+
+usage:
+    from collections import defaultdict
+    edges = defaultdict(list)
+
+    add_then_edge(edges, i, 0, j, 1)
+    add_or_edge(edges, j, 0, i, 1)
+
+    scc = get_strongly_connected_components(edges, N * 2)
+    ret = get_sat_result(scc, N * 2)
+    if ret is None:
+        print("No")
+        return
+    print(ret)
 """
 
 
 def get_strongly_connected_components(edges, num_vertex):
     """
-    edges: [(v1, v2)]
+    edges: {v1: [v2, v3]]}
     """
     from collections import defaultdict
 
@@ -70,46 +84,60 @@ def get_strongly_connected_components(edges, num_vertex):
     return result
 
 
+def add_then_edge(edges, i, bool_i, j, bool_j):
+    edges[i * 2 + int(bool_i)].append(j * 2 + int(bool_j))
+
+
+def add_or_edge(edges, i, neg_i, j, neg_j):
+    add_then_edge(edges, i, False ^ neg_i, j, True ^ neg_j)
+    add_then_edge(edges, j, False ^ neg_j, i, True ^ neg_i)
+
+
+def get_sat_result(scc, num_vertex):
+    group_id = [0] * num_vertex
+    for i, xs in enumerate(scc):
+        for x in xs:
+            group_id[x] = i
+
+    N = num_vertex // 2
+    ret = [0] * N
+    for i in range(N):
+        if group_id[2 * i] == group_id[2 * i + 1]:
+            return None  # mean not satisfied
+
+        ret[i] = (group_id[2 * i] < group_id[2 * i + 1])
+
+    return ret
+
+# --- end of library ---
+
+
 def solve(N, D, data):
-    # edges = [[] for i in range(N * 2)]
-    # edges = []
     from collections import defaultdict
     edges = defaultdict(list)
-
-    def add_then_edge(i, bool_i, j, bool_j):
-        edges[i * 2 + int(bool_i)].append(j * 2 + int(bool_j))
-        # edges.append((i * 2 + int(bool_i), j * 2 + int(bool_j)))
 
     for i in range(N):
         xi, yi = data[i]
         for j in range(i + 1, N):
             xj, yj = data[j]
             if abs(xi - xj) < D:
-                add_then_edge(i, 0, j, 1)
-                add_then_edge(j, 0, i, 1)
+                add_then_edge(edges, i, 0, j, 1)
+                add_then_edge(edges, j, 0, i, 1)
             if abs(xi - yj) < D:
-                add_then_edge(i, 0, j, 0)
-                add_then_edge(j, 1, i, 1)
+                add_then_edge(edges, i, 0, j, 0)
+                add_then_edge(edges, j, 1, i, 1)
             if abs(yi - xj) < D:
-                add_then_edge(i, 1, j, 1)
-                add_then_edge(j, 0, i, 0)
+                add_then_edge(edges, i, 1, j, 1)
+                add_then_edge(edges, j, 0, i, 0)
             if abs(yi - yj) < D:
-                add_then_edge(i, 1, j, 0)
-                add_then_edge(j, 1, i, 0)
+                add_then_edge(edges, i, 1, j, 0)
+                add_then_edge(edges, j, 1, i, 0)
 
     scc = get_strongly_connected_components(edges, N * 2)
-    group_id = [0] * (2 * N)
-    for i, xs in enumerate(scc):
-        for x in xs:
-            group_id[x] = i
-
-    ret = [0] * N
-    for i in range(N):
-        if group_id[2 * i] == group_id[2 * i + 1]:
-            print("No")
-            return
-
-        ret[i] = (group_id[2 * i] < group_id[2 * i + 1])
+    ret = get_sat_result(scc, N * 2)
+    if ret is None:
+        print("No")
+        return
 
     print("Yes")
     for i in range(N):
@@ -173,12 +201,12 @@ def as_input(s):
     g["read"] = lambda: bytes(f.read(), "ascii")
 
 
-input = sys.stdin.buffer.readline
-read = sys.stdin.buffer.read
-
-if sys.argv[-1] == "-t":
-    print("testing")
-    _test()
-    sys.exit()
-
-main()
+if __name__ == "__main__":
+    import sys
+    input = sys.stdin.buffer.readline
+    read = sys.stdin.buffer.read
+    if sys.argv[-1] == "-t":
+        print("testing")
+        _test()
+        sys.exit()
+    main()
