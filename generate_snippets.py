@@ -166,6 +166,7 @@ push("def_debug_indent", read_file("snippets/debug_indent.py"))
 push("readmap", read_file("snippets/readMap.py"))
 
 push("unionfind", read_file("libs/unionfind.py"))
+push("fenwick_tree", read_file("libs/fenwick_tree.py"))
 push("segtree", read_file("libs/segtree.py"))
 push("dual_segtree", read_file("libs/dual_segtree.py"))
 push("lazy_segtree", read_file("libs/lazy_segtree.py"))
