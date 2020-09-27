@@ -127,6 +127,8 @@ def debug(*x):
 push("ifmain", """
 if __name__ == "__main__":
     import sys
+    input = sys.stdin.buffer.readline
+    read = sys.stdin.buffer.read
     if sys.argv[-1] == "-t":
         print("testing")
         _test()
@@ -153,10 +155,14 @@ def as_input(s):
 """)
 
 
+EOL = "# --- end of library ---"
+push("eol", "end of library", EOL)
+
+
 def read_file(filename):
     data = open(os.path.join(DIR, filename)).read()
-    if "# --- end of library ---" in data:
-        data = data.split("# --- end of library ---")[0]
+    if EOL in data:
+        data = data.split(EOL)[0]
     return data
 
 
@@ -173,6 +179,7 @@ push("lazy_segtree", read_file("libs/lazy_segtree.py"))
 push("dinic_maxflow", read_file("libs/dinic.py"))
 push("loop_detection", read_file("libs/loop_detection.py"))
 push("accum_dp", read_file("libs/accum_dp.py"))
+push("mod_inverse", read_file("libs/mod_inverse.py"))
 
 
 def main():
