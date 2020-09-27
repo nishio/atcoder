@@ -1,12 +1,12 @@
 """
 Generalized Lazy Segment Tree
 
-- Range update(set) Rande minimum
-- Range add, range sum
-- Rande add, range minimum
-- Rande update, Rande sum
-- Range Affine Range Sum
-- Range nagate of 0/1 sequence, range calculation of inversion(TENTOUSUU)
+- Range set, Rande minimum
+- Range add, Range sum
+- Rande add, Range minimum
+- Rande set, Rande sum
+- Range Affine, Range sum
+- Range nagate of 0/1 sequence, Range calculation of inversion(TENTOUSUU)
 """
 
 
@@ -223,7 +223,7 @@ def usage():
 
 def mainF():
     """
-    Range update(set) Rande minimum
+    Range set, Rande minimum
 
     RMQ and RUQ
     https://onlinejudge.u-aizu.ac.jp/courses/library/3/DSL/2/DSL_2_F
@@ -327,7 +327,7 @@ TEST_T4F = """
 
 def mainG():
     """
-    Range add, range sum
+    Range add, Range sum
 
     RSQ and RAQ
     https://onlinejudge.u-aizu.ac.jp/courses/library/3/DSL/2/DSL_2_G
@@ -396,7 +396,7 @@ TEST_T2G = """
 
 def mainH():
     """
-    Rande add, range minimum
+    Rande add, Range minimum
 
     RMQ and RAQ
     https://onlinejudge.u-aizu.ac.jp/courses/library/3/DSL/2/DSL_2_H
@@ -459,7 +459,7 @@ TEST_T1H = """
 
 def mainI():
     """
-    Rande update, Rande sum
+    Rande set, Rande sum
     RSQ and RUQ
     https://onlinejudge.u-aizu.ac.jp/courses/library/3/DSL/2/DSL_2_I
     """
@@ -523,7 +523,7 @@ TEST_T1I = """
 
 def mainACLPC_K():
     """
-    Range Affine Range Sum
+    Range Affine, Range sum
     https://atcoder.jp/contests/practice2/tasks/practice2_k
 
     Pack 2 values into an integer to avoid TLE
@@ -604,7 +604,7 @@ TEST_TACLPC_K = """
 
 def mainACLPC_L():
     """
-    Range nagate of 0/1 sequence, range calculation of inversion
+    Range nagate of 0/1 sequence, Range calculation of inversion
 
     https://atcoder.jp/contests/practice2/tasks/practice2_l
     """
