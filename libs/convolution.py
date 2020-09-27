@@ -1,9 +1,6 @@
 """
 Convolution
 """
-
-
-# convolve
 # derive from https://atcoder.jp/contests/practice2/submissions/16789717
 MOD = 998244353
 G = 3
@@ -71,8 +68,8 @@ def solve(AS, BS):
 
 
 def main():
-    # parse input
-    N, M = map(int, input().split())
+    # verified: https://atcoder.jp/contests/practice2/tasks/practice2_f
+    _N, _M = map(int, input().split())
     AS = list(map(int, input().split()))
     BS = list(map(int, input().split()))
     print(*solve(AS, BS), sep=" ")
