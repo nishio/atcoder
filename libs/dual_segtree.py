@@ -2,7 +2,7 @@
 Dual Segment Tree / Half Lazy Segment Tree
 Range action, Point get
 
-When `action_composite` is commutative:
+When `action_composite` is commutative (such as chmax, add):
     Dual Segment Tree
         range action: range_update(table, s, t, new_value, action_composite)
         point get: point_get(table, args[0], action_composite, action_unity)
