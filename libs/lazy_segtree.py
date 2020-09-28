@@ -27,10 +27,11 @@ def get_size(pos):
 
 
 def full_up(value_table, value_binop):
-    for i in range(NONLEAF_SIZE - 1, 0, -1):
-        value_table[i] = value_binop(
-            value_table[2 * i],
-            value_table[2 * i + 1])
+    for pos in range(NONLEAF_SIZE - 1, 0, -1):
+        value_table[pos] = value_binop(
+            value_table[pos * 2],
+            value_table[pos * 2 + 1]
+        )
 
 
 def up(pos):
@@ -38,12 +39,12 @@ def up(pos):
     return pos // (pos & -pos)
 
 
-def up_propagate(table, pos, binop):
+def up_propagate(value_table, pos, value_binop):
     while pos > 1:
         pos >>= 1
-        table[pos] = binop(
-            table[pos * 2],
-            table[pos * 2 + 1]
+        value_table[pos] = value_binop(
+            value_table[pos * 2],
+            value_table[pos * 2 + 1]
         )
 
 
@@ -218,7 +219,54 @@ def usage():
         action_table, value_table, start, end,
         action_composite, action_force, action_unity, value_binop, value_unity))
 
+
+# samples for action
+def action_set_min(action_unity=None):
+
+    def action_force(action, value, size):
+        if action == action_unity:
+            return value
+        return action
+
+    def action_composite(new_action, old_action):
+        if new_action != action_unity:
+            return new_action
+        return old_action
+
+    return action_unity, action_force, action_composite
+
+
+def action_set_sum(action_unity=None):
+
+    def action_force(action, value, size):
+        if action == action_unity:
+            return value
+        return action * size
+
+    def action_composite(new_action, old_action):
+        if new_action != action_unity:
+            return new_action
+        return old_action
+
+    return action_unity, action_force, action_composite
+
+
+def action_add_sum(action_unity=0):
+
+    def action_force(action, value, size):
+        return action * size + value
+
+    def action_composite(new_action, old_action):
+        return new_action + old_action
+
+    return action_unity, action_force, action_composite
+
 # --- end of library ---
+
+
+def debug(*x):
+    import sys
+    print(*x, file=sys.stderr)
 
 
 def mainF():
@@ -233,18 +281,9 @@ def mainF():
 
     value_unity = (1 << 31) - 1
     value_table = [value_unity] * SEGTREE_SIZE
-    action_unity = -1
+
+    action_unity, action_force, action_composite = action_set_min()
     action_table = [action_unity] * SEGTREE_SIZE
-
-    def action_force(action, value, size):
-        if action == action_unity:
-            return value
-        return action
-
-    def action_composite(new_action, old_action):
-        if new_action != action_unity:
-            return new_action
-        return old_action
 
     for _ in range(Q):
         q, *args = map(int, input().split())
@@ -340,14 +379,9 @@ def mainG():
     value_unity = 0
     value_table = [value_unity] * SEGTREE_SIZE
     value_binop = add
-    action_unity = 0
+
+    action_unity, action_force, action_composite = action_add_sum()
     action_table = [action_unity] * SEGTREE_SIZE
-
-    def action_force(action, value, size):
-        return action * size + value
-
-    def action_composite(new_action, old_action):
-        return new_action + old_action
 
     for _ in range(Q):
         q, *args = map(int, input().split())
@@ -471,18 +505,9 @@ def mainI():
     value_unity = 0
     value_table = [0] * SEGTREE_SIZE
     value_binop = add
-    action_unity = None
+
+    action_unity, action_force, action_composite = action_set_sum()
     action_table = [action_unity] * SEGTREE_SIZE
-
-    def action_force(action, value, size):
-        if action == action_unity:
-            return value
-        return action * size
-
-    def action_composite(new_action, old_action):
-        if new_action != action_unity:
-            return new_action
-        return old_action
 
     for _ in range(Q):
         q, *args = map(int, input().split())
@@ -534,8 +559,11 @@ def mainACLPC_K():
     set_width(N + 1)  # include N
 
     value_unity = 0
-    value_table = [value_unity] * SEGTREE_SIZE
-    value_table[NONLEAF_SIZE:NONLEAF_SIZE + len(AS)] = AS
+
+    def value_binop(a, b):
+        return (a + b) % MOD
+
+    value_table = init_from_values(AS, value_binop, value_unity)
 
     action_unity = None
     action_table = [action_unity] * SEGTREE_SIZE
@@ -562,10 +590,6 @@ def mainACLPC_K():
         b = (b1 * b2) % MOD
         c = (b2 * c1 + c2) % MOD
         return (b << 32) + c
-
-    def value_binop(a, b):
-        return (a + b) % MOD
-    full_up(value_table, value_binop)
 
     for _q in range(Q):
         q, *args = map(int, input().split())
@@ -669,13 +693,189 @@ TEST_TACLPC_L = """
 """
 
 
+def main_ABL_E():
+    # TLE: https://atcoder.jp/contests/abl/submissions/17088762
+    MOD = 998244353
+    N, Q = map(int, input().split())
+
+    cache11 = {}
+    i = 1
+    p = 1
+    step = 10
+    while i <= N:
+        cache11[i] = p
+        p = (p * step + p) % MOD
+        step = (step * step) % MOD
+        i *= 2
+
+    cache10 = {0: 1}
+    i = 1
+    p = 10
+    while i <= N:
+        cache10[i] = p
+        p = (p * 10) % MOD
+        i += 1
+
+    # value_unity = (0, 0)  # value, size
+    value_unity = 0
+
+    def value_binop(a, b):
+        # 1:
+        # return (a * (10 ** size) + b) % MOD
+        # 2:
+        # a, size_a = a
+        # b, size_b = b
+        # return (
+        #     (a * cache10[size_b] + b) % MOD,
+        #     size_a + size_b
+        # )
+        # 3:
+        value_a = a >> 32
+        size_a = a - (value_a << 32)
+        value_b = b >> 32
+        size_b = b - (value_b << 32)
+        value = (value_a * cache10[size_b] + value_b) % MOD
+        size = size_a + size_b
+        ret = (value << 32) + size
+        return ret
+
+    init_value = (1 << 32) + 1
+    value_table = init_from_values(
+        [init_value] * N,
+        value_binop,
+        value_unity
+    )
+
+    action_unity = None
+    action_table = [action_unity] * SEGTREE_SIZE
+
+    def action_force(action, value, size):
+        if action == action_unity:
+            return value
+        # 1:
+        # return int(str(action) * size)
+        # 2:
+        # return (
+        #     (cache11[size] * action) % MOD,
+        #     size
+        # )
+        # 3:
+        new_value = (cache11[size] * action) % MOD
+        ret = (new_value << 32) + size
+        return ret
+
+    def action_composite(new_action, old_action):
+        if new_action == action_unity:
+            return old_action
+        return new_action
+
+    full_up(value_table, value_binop)
+
+    ret = lazy_range_reduce(
+        action_table, value_table, 0, N, action_composite, action_force, action_unity,
+        value_binop, value_unity)
+
+    for _q in range(Q):
+        l, r, d = map(int, input().split())
+        lazy_range_update(
+            action_table, value_table, l - 1, r, d,
+            action_composite, action_force, action_unity, value_binop)
+
+        ret = lazy_range_reduce(
+            action_table, value_table, 0, N, action_composite, action_force, action_unity,
+            value_binop, value_unity)
+        value = ret >> 32
+        _size = ret - (value << 32)
+        print(value)
+
+
+# tests
+T1 = """
+8 5
+3 6 2
+1 4 7
+3 8 3
+2 2 2
+4 5 1
+"""
+TEST_T1 = """
+>>> as_input(T1)
+>>> main_ABL_E()
+11222211
+77772211
+77333333
+72333333
+72311333
+"""
+
+T2 = """
+200000 1
+123 456 7
+"""
+TEST_T2 = """
+>>> as_input(T2)
+>>> main_ABL_E()
+641437905
+"""
+
+T3 = """
+4 4
+1 1 2
+1 2 3
+1 3 4
+1 4 5
+"""
+TEST_T3 = """
+>>> as_input(T3)
+>>> main_ABL_E()
+2111
+3311
+4441
+5555
+"""
+
+T4 = """
+4 4
+4 4 2
+3 4 3
+2 4 4
+1 4 5
+1112
+1133
+1444
+5555
+"""
+TEST_T4 = """
+>>> as_input(T4)
+>>> main_ABL_E()
+1112
+1133
+1444
+5555
+"""
+
+T5 = """
+9 3
+1 9 1
+1 9 5
+1 9 9
+"""
+TEST_T5 = """
+>>> as_input(T5)
+>>> main_ABL_E()
+111111111
+555555555
+1755646
+"""
+
+
 def _test():
     import doctest
     doctest.testmod()
     g = globals()
     for k in sorted(g):
         if k.startswith("TEST_"):
-            doctest.run_docstring_examples(g[k], g)
+            doctest.run_docstring_examples(g[k], g, name=k)
 
 
 def as_input(s):
@@ -694,4 +894,4 @@ if __name__ == "__main__":
         print("testing")
         _test()
         sys.exit()
-    mainF()
+    main_ABL_E()

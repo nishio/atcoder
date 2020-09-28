@@ -100,6 +100,23 @@ from functools import lru_cache
 """)
 
 
+def make_template(code, args):
+    args = args.split()
+    for i, arg in enumerate(args):
+        placeholder = "${%d:%s}" % (i + 1, arg)
+        code = code.replace(arg, placeholder)
+    return code
+
+
+push("unpack", make_template("""
+x = pair >> 32
+y = pair - (x << 32)
+""", "pair 32 x y"))
+
+push("pack", make_template("""
+pair = (x << 32) + y
+""", "pair 32 x y"))
+
 # import
 push("impdef", "from collections import defaultdict")
 push("impdeq", "from collections import deque")
