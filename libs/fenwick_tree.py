@@ -1,5 +1,5 @@
 """
-Fenwick Tree
+Fenwick Tree / Binary Indexed Tree (BIT)
 """
 
 
@@ -9,7 +9,7 @@ def init(n):
     bit = [0] * (N + 1)  # 1-origin
 
 
-def bit_add(pos, val):
+def bit_add(pos, val):  # point add / range sum
     assert pos > 0
     x = pos
     while x <= N:
@@ -17,11 +17,46 @@ def bit_add(pos, val):
         x += x & -x  # (x & -x) = rightmost 1 = block width
 
 
+def bit_set(pos, val):  # point set / range max
+    assert pos > 0
+    x = pos
+    while x <= N:
+        bit[x] = max(bit[x], val)
+        x += x & -x  # (x & -x) = rightmost 1 = block width
+
+
+def bit_point_action(pos, action_force, action):
+    assert pos > 0
+    x = pos
+    while x <= N:
+        bit[x] = action_force(bit[x], action)
+        x += x & -x  # (x & -x) = rightmost 1 = block width
+
+
+def bit_max(pos):
+    assert pos > 0
+    ret = 0
+    x = pos
+    while x > 0:
+        ret = max(ret, bit[x])
+        x -= x & -x
+    return ret
+
+
 def bit_sum(pos):
     ret = 0
     x = pos
     while x > 0:
         ret += bit[x]
+        x -= x & -x
+    return ret
+
+
+def bit_range_reduce(pos, value_binop, value_unity):
+    ret = value_unity
+    x = pos
+    while x > 0:
+        ret = value_binop(ret, bit[x])
         x -= x & -x
     return ret
 
@@ -73,6 +108,10 @@ TEST_T1 = """
 7
 25
 6
+"""
+
+TEST_ALL = """
+>>> 
 """
 
 
