@@ -171,18 +171,11 @@ push("numbamain", read_file("snippets/numbamain.py"))
 push("def_debug_indent", read_file("snippets/debug_indent.py"))
 push("readmap", read_file("snippets/readMap.py"))
 
-push("unionfind", read_file("libs/unionfind.py"))
-push("fenwick_tree", read_file("libs/fenwick_tree.py"))
-push("segtree", read_file("libs/segtree.py"))
-push("dual_segtree", read_file("libs/dual_segtree.py"))
-push("lazy_segtree", read_file("libs/lazy_segtree.py"))
-push("dinic_maxflow", read_file("libs/dinic.py"))
-push("loop_detection", read_file("libs/loop_detection.py"))
-push("accum_dp", read_file("libs/accum_dp.py"))
-push("mod_inverse", read_file("libs/mod_inverse.py"))
-push("scc", read_file("libs/scc.py"))
-push("two_sat", read_file("libs/two_sat.py"))
-push("suffix_array", read_file("libs/suffix_array.py"))
+# register libs/*.py
+for filename in os.listdir(os.path.join(DIR, "libs")):
+    if filename.endswith(".py"):
+        prefix = filename.replace(".py", "")
+        push(prefix, read_file(os.path.join("libs", filename)))
 
 
 def main():
