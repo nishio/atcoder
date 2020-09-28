@@ -26,7 +26,7 @@ def bit_sum(pos):
     return ret
 
 
-def bit_bisect(lower):
+def bit_bisect(lower):  # not tested
     "find a s.t. v1 + v2 + ... + va >= lower"
     x = 0
     k = 1 << (N.bit_length() - 1)  # largest 2^m <= N

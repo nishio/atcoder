@@ -25,7 +25,7 @@ def bit_set(pos, val):  # point set / range max
         x += x & -x  # (x & -x) = rightmost 1 = block width
 
 
-def bit_point_action(pos, action_force, action):
+def bit_point_action(pos, action_force, action):  # not tested
     assert pos > 0
     x = pos
     while x <= N:
@@ -52,7 +52,7 @@ def bit_sum(pos):
     return ret
 
 
-def bit_range_reduce(pos, value_binop, value_unity):
+def bit_range_reduce(pos, value_binop, value_unity):  # not tested
     ret = value_unity
     x = pos
     while x > 0:
@@ -110,9 +110,81 @@ TEST_T1 = """
 6
 """
 
-TEST_ALL = """
->>> 
+
+def main_DP_Q():
+    # verified: https://atcoder.jp/contests/dp/tasks/dp_q
+    N = int(input())
+    HS = list(map(int, input().split()))
+    VS = list(map(int, input().split()))
+    init(N + 1)  # 1-origin
+
+    for i in range(N):
+        h = HS[i]
+        m = bit_max(h)
+        bit_set(h, m + VS[i])
+
+    print(bit_max(N))
+
+
+# tests
+T1_DP_Q = """
+4
+3 1 4 2
+10 20 30 40
 """
+
+
+def test_T1_DP_Q():
+    """
+    >>> as_input(T1_DP_Q)
+    >>> main_DP_Q()
+    60
+    """
+
+
+T2_DP_Q = """
+1
+1
+10
+"""
+
+
+def test_T2_DP_Q():
+    """
+    >>> as_input(T2_DP_Q)
+    >>> main_DP_Q()
+    10
+    """
+
+
+T3_DP_Q = """
+5
+1 2 3 4 5
+1000000000 1000000000 1000000000 1000000000 1000000000
+"""
+
+
+def test_T3_DP_Q():
+    """
+    >>> as_input(T3_DP_Q)
+    >>> main_DP_Q()
+    5000000000
+    """
+
+
+T4_DP_Q = """
+9
+4 2 5 8 3 6 1 7 9
+6 8 8 4 6 3 5 7 5
+"""
+
+
+def test_T4_DP_Q():
+    """
+    >>> as_input(T4_DP_Q)
+    >>> main_DP_Q()
+    31
+    """
 
 
 def _test():
@@ -141,4 +213,5 @@ if __name__ == "__main__":
         print("testing")
         _test()
         sys.exit()
-    main()
+    # main()
+    main_DP_Q()
