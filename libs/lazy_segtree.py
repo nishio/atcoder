@@ -95,22 +95,22 @@ def force_range_update(
         right //= 2
 
 
-def range_reduce(table, left, right, binop, unity):
-    ret_left = unity
-    ret_right = unity
+def range_reduce(table, left, right, value_binop, value_unity):
+    ret_left = value_unity
+    ret_right = value_unity
     left += NONLEAF_SIZE
     right += NONLEAF_SIZE
     while left < right:
         if left & 1:
-            ret_left = binop(ret_left, table[left])
+            ret_left = value_binop(ret_left, table[left])
             left += 1
         if right & 1:
             right -= 1
-            ret_right = binop(table[right], ret_right)
+            ret_right = value_binop(table[right], ret_right)
 
         left //= 2
         right //= 2
-    return binop(ret_left, ret_right)
+    return value_binop(ret_left, ret_right)
 
 
 def lazy_range_update(
