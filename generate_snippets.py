@@ -86,7 +86,7 @@ ${3:result}
 
 push("dp", "debug print", """
 debug("$1", $1)
-""")
+""", for_global=True)
 
 push("bp", "conditional breakpoint", """
 if ${1:True}:
@@ -97,7 +97,7 @@ if ${1:True}:
 push("cache", """
 from functools import lru_cache
 @lru_cache(maxsize=None)
-""")
+""", for_global=True)
 
 
 def make_template(code, args):
@@ -118,10 +118,11 @@ pair = (x << 32) + y
 """, "pair 32 x y"))
 
 # import
-push("impdef", "from collections import defaultdict")
-push("impdeq", "from collections import deque")
-push("impheap", "from heapq import heappush, heappop")
-push("impnp", "import numpy as np")
+push("impdef", "from collections import defaultdict", for_global=True)
+push("impcou", "from collections import Counter", for_global=True)
+push("impdeq", "from collections import deque", for_global=True)
+push("impheap", "from heapq import heappush, heappop", for_global=True)
+push("impnp", "import numpy as np", for_global=True)
 
 
 push("deftest", """
@@ -180,7 +181,7 @@ def read_file(filename):
     data = open(os.path.join(DIR, filename)).read()
     if EOL in data:
         data = data.split(EOL)[0]
-    return data
+    return f"# included from {filename}\n{data}\n# end of {filename}"
 
 
 push("main", read_file("snippets/main.py"))
