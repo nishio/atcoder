@@ -332,7 +332,7 @@ TEST_T5 = """
 
 def test2():
     """
-    #>>> test2()
+    >>> test2()
     ok
     """
     for i in range(2, 100):
