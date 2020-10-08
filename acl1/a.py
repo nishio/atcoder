@@ -5,101 +5,100 @@ INF = 10 ** 9 + 1  # sys.maxsize # float("inf")
 MOD = 10 ** 9 + 7
 
 
-def debug(*x):
-    print(*x, file=sys.stderr)
-
-# Strongly connected component
-# derived from https://atcoder.jp/contests/practice2/submissions/16645774
+def debug(*x, msg=""):
+    import sys
+    print(msg, *x, file=sys.stderr)
 
 
-def get_strongly_connected_components(edges, num_vertex):
-    """
-    edges: [(v1, v2)]
-    """
-    from collections import defaultdict
+# included from libs/unionfind.py
+"""
+Union-Find Tree / Disjoint Set Union (DSU)
+"""
 
-    reverse_edges = defaultdict(list)
-    for v1 in edges:
-        for v2 in edges[v1]:
-            reverse_edges[v2].append(v1)
 
-    terminate_order = []
-    done = [0] * num_vertex  # 0 -> 1 -> 2
-    count = 0
-    for i0 in range(num_vertex):
-        if done[i0]:
+def init_unionfind(N):
+    global parent, rank, NUM_VERTEX
+    NUM_VERTEX = N
+    parent = [-1] * N
+    rank = [0] * N
+
+
+def find_root(x):
+    p = parent[x]
+    if p == -1:
+        return x
+    p2 = find_root(p)
+    parent[x] = p2
+    return p2
+
+
+def unite(x, y):
+    x = find_root(x)
+    y = find_root(y)
+    if x == y:
+        return  # already united
+    if rank[x] < rank[y]:
+        parent[x] = y
+    else:
+        parent[y] = x
+        if rank[x] == rank[y]:
+            rank[x] += 1
+
+
+def is_connected(x, y):
+    return (find_root(x) == find_root(y))
+
+
+def num_components():
+    return len(set(find_root(x) for x in range(NUM_VERTEX)))
+
+
+# end of libs/unionfind.py
+def solve(N, YS, XS):
+    from collections import Counter
+    group = [None] * N
+    init_unionfind(N)
+    group_to_rightmost = {}
+    for i in range(N):
+        y0 = YS[i]
+        if y0 is None:
             continue
-        queue = [~i0, i0]
-        # dfs
-        while queue:
-            i = queue.pop()
-            if i < 0:
-                if done[~i] == 2:
-                    continue
-                done[~i] = 2
-                terminate_order.append(~i)
-                count += 1
+        group[i] = i
+        rightmost = i
+        for j in range(i + 1, N):
+            y = YS[j]
+            if y is None:
                 continue
-            if i >= 0:
-                if done[i]:
-                    continue
-                done[i] = 1
-            for j in edges[i]:
-                if done[j]:
-                    continue
-                queue.append(~j)
-                queue.append(j)
+            if y > y0:
+                # add to group
+                group[j] = i
+                rightmost = j
+                YS[j] = None
+        for g in group_to_rightmost:
+            r = group_to_rightmost[g]
+            if i < r:
+                unite(i, g)
+                if rightmost < r:
+                    rightmost = r
 
-    done = [0] * num_vertex
-    result = []
-    for i0 in terminate_order[::-1]:
-        if done[i0]:
-            continue
-        component = []
-        queue = [~i0, i0]
-        while queue:
-            i = queue.pop()
-            if i < 0:
-                if done[~i] == 2:
-                    continue
-                done[~i] = 2
-                component.append(~i)
-                continue
-            if i >= 0:
-                if done[i]:
-                    continue
-                done[i] = 1
-            for j in reverse_edges[i]:
-                if done[j]:
-                    continue
-                queue.append(~j)
-                queue.append(j)
-        result.append(component)
-    return result
+        group_to_rightmost[find_root(i)] = rightmost
 
-
-def solve(N, edges):
-    ret = [0] * N
-    scc = get_strongly_connected_components(edges, N)
-    for g in scc:
-        n = len(g)
-        for v in g:
-            ret[v] = n
-
-    return ret
+    roots = [find_root(group[i]) for i in range(N)]
+    count = Counter(roots)
+    return [count[roots[x]] for x in XS]
 
 
 def main():
     # parse input
     N = int(input())
-    from collections import defaultdict
-    edges = defaultdict(list)
+    YS = [0] * N
+    XS = []
     for _i in range(N):
-        a, b = map(int, input().split())
-        edges[a - 1].append(b - 1)
-        edges[b - 1].append(a - 1)
+        x, y = map(int, input().split())
+        YS[x - 1] = y - 1
+        XS.append(x - 1)
 
-    print(*solve(N, edges), sep="\n")
+    print(*solve(N, YS, XS), sep="\n")
 
 
 # tests
@@ -113,7 +112,32 @@ T1 = """
 TEST_T1 = """
 >>> as_input(T1)
 >>> main()
-result
+1
+1
+2
+2
+"""
+
+T2 = """
+7
+6 4
+4 3
+3 5
+7 1
+2 7
+5 2
+1 6
+"""
+TEST_T2 = """
+>>> as_input(T2)
+>>> main()
+3
+3
+1
+1
+2
+3
+2
 """
 
 
