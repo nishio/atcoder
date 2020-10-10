@@ -84,8 +84,12 @@ ${3:result}
 """
 ''', for_global=True)
 
-push("dp", "debug print", """
+push("dpold", "debug print", """
 debug("$1", $1)
+""", for_global=True)
+
+push("dp", "debug print", """
+debug($1, msg="$2:$1")
 """, for_global=True)
 
 push("bp", "conditional breakpoint", """
@@ -128,6 +132,7 @@ push("impnp", "import numpy as np", for_global=True)
 push("deftest", """
 def _test():
     import doctest
+    print("testing")
     doctest.testmod()
     g = globals()
     for k in sorted(g):
@@ -136,9 +141,9 @@ def _test():
 """, for_global=True)
 
 push("defdebug", """
-def debug(*x):
+def debug(*x, msg=""):
     import sys
-    print(*x, file=sys.stderr)
+    print(msg, *x, file=sys.stderr)
 """, for_global=True)
 
 
@@ -148,7 +153,6 @@ if __name__ == "__main__":
     input = sys.stdin.buffer.readline
     read = sys.stdin.buffer.read
     if sys.argv[-1] == "-t":
-        print("testing")
         _test()
         sys.exit()
     main()

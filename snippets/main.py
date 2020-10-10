@@ -1,6 +1,7 @@
-def debug(*x):
+
+def debug(*x, msg=""):
     import sys
-    print(*x, file=sys.stderr)
+    print(msg, *x, file=sys.stderr)
 
 
 def solve(SOLVE_PARAMS):

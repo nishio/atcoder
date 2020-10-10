@@ -3,10 +3,10 @@ Fenwick Tree / Binary Indexed Tree (BIT)
 """
 
 
-def init(n):
+def init(n, value=0):
     global N, bit
     N = n
-    bit = [0] * (N + 1)  # 1-origin
+    bit = [value] * (N + 1)  # 1-origin
 
 
 def bit_add(pos, val):  # point add / range sum
