@@ -7,8 +7,6 @@ def debug(*x):
 def solve(N, AB):
     import sys
     sys.setrecursionlimit(10 ** 6)
-    INF = sys.maxsize  # float("inf")
-    MOD = 10 ** 9 + 7  # 998_244_353
 
     used = [0] * (2 * N + 10)
     fixed = []
@@ -78,12 +76,18 @@ def solve(N, AB):
                     continue
                 if diff[b] != 0 and b - diff[b] != a:
                     continue
+                used[a] = 1
+                used[b] = 1
                 r = paint(a, b)
                 if r:
+                    used[a] = 0
+                    used[b] = 0
                     diff[:] = copy_diff
                     continue
                 r = fix_both(i + 1)
                 if r:
+                    used[a] = 0
+                    used[b] = 0
                     diff[:] = copy_diff
                     continue
                 return False
@@ -112,10 +116,13 @@ def solve(N, AB):
                 r = paint(a, b)
                 if r:
                     diff[:] = copy_diff
+                    used[a] = 0
                     continue
+                used[a] = 1
                 r = fix_a(i + 1)
                 if r:
                     diff[:] = copy_diff
+                    used[a] = 0
                     continue
                 return False
             return True
@@ -129,9 +136,15 @@ def solve(N, AB):
         # debug("a", a)
         if diff[a] != 0:
             b = a + diff[a]
+            if b >= 2 * N + 1:
+                # debug("over bound", b)
+                return True
             if used[b]:
+                # debug("single b used", b)
                 return True
             if paint(a, b):
+                # debug("single b bad diff", b)
+
                 return True
             # debug("single b fixed", b)
             return fix_b(i + 1)
@@ -145,15 +158,18 @@ def solve(N, AB):
                 if diff[b] != 0 and a + diff[b] != b:
                     # debug("b bad diff", b)
                     continue
+                used[b] = 1
                 r = paint(a, b)
                 if r:
                     diff[:] = copy_diff
+                    used[b] = 0
                     continue
                 # debug("single b temp fix", b)
                 r = fix_b(i + 1)
                 if r:
                     # debug("recover", b)
                     diff[:] = copy_diff
+                    used[b] = 0
                     continue
                 # debug("success")
                 return False
@@ -269,6 +285,54 @@ T8 = """
 """
 TEST_T8 = """
 >>> as_input(T8)
+>>> main()
+No
+"""
+
+T9 = """
+3
+1 3
+2 -1
+-1 -1
+"""
+TEST_T9 = """
+>>> as_input(T9)
+>>> main()
+Yes
+"""
+
+T10 = """
+3
+1 4
+2 -1
+-1 -1
+"""
+TEST_T10 = """
+>>> as_input(T10)
+>>> main()
+Yes
+"""
+
+T11 = """
+3
+1 -1
+2 -1
+3 -1
+"""
+TEST_T11 = """
+>>> as_input(T11)
+>>> main()
+Yes
+"""
+
+T12 = """
+3
+1 -1
+2 -1
+4 -1
+"""
+TEST_T12 = """
+>>> as_input(T12)
 >>> main()
 No
 """
