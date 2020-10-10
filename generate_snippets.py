@@ -191,7 +191,6 @@ def read_file(filename):
 push("main", read_file("snippets/main.py"))
 push("numbamain", read_file("snippets/numbamain.py"))
 push("def_debug_indent", read_file("snippets/debug_indent.py"))
-push("readmap", read_file("snippets/readMap.py"))
 
 # register libs/*.py
 for filename in os.listdir(os.path.join(DIR, "libs")):
