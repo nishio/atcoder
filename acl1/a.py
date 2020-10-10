@@ -54,7 +54,16 @@ def num_components():
 
 
 # end of libs/unionfind.py
-def solve(N, YS, XS):
+
+def solve(N, XS, YS):
+    x2y = [0] * N
+    for i in range(N):
+        x2y[XS[i]] = YS[i]
+
+    to_visit = [(YS[i], XS[i]) for i in range(N)]
+    while to_visit:
+        pass
+
     from collections import Counter
     group = [None] * N
     init_unionfind(N)
@@ -91,14 +100,14 @@ def solve(N, YS, XS):
 def main():
     # parse input
     N = int(input())
-    YS = [0] * N
+    YS = []
     XS = []
     for _i in range(N):
         x, y = map(int, input().split())
-        YS[x - 1] = y - 1
         XS.append(x - 1)
+        YS.append(y - 1)
 
-    print(*solve(N, YS, XS), sep="\n")
+    print(*solve(N, XS, YS), sep="\n")
 
 
 # tests
