@@ -176,6 +176,8 @@ def as_input(s):
     g["read"] = lambda: bytes(f.read(), "ascii")
 """)
 
+push("MOD1", "MOD = 1_000_000_007")
+push("MOD9", "MOD = 998_244_353")
 
 EOL = "# --- end of library ---"
 push("eol", "end of library", EOL)
