@@ -108,7 +108,14 @@ def construct(s, maxvalue, to_print=False, to_return=True):
         print("num0:", num0)
         print("start_positions:", start_positions)
     if to_return:
-        return bs, num0, start_positions
+        return WavelerMatrix(bs, num0, start_positions)
+
+
+class WavelerMatrix:
+    def __init__(self, bs, num0, start_positions, BitVector=AccumBitVector):
+        self.bs = [BitVector(b) for b in bs]
+        self.num0 = num0
+        self.start_positions = start_positions
 
 # --- end of library ---
 
