@@ -1,11 +1,11 @@
-# included from snippets/main.py
+
 
 def debug(*x, msg=""):
     import sys
     print(msg, *x, file=sys.stderr)
 
 
-def solve(N, XYZS):
+def solve_WA(N, XYZS):
     global dist
     import sys
     sys.setrecursionlimit(10 ** 6)
@@ -40,6 +40,7 @@ def solve(N, XYZS):
                 continue
             newpos = i | mask
             d = dist[last[i]][j]
+            debug(msg=f"s{i}->s{newpos} {last[i]}->{j} {memo[i] + d}")
             if newpos == GOAL:
                 memolast[j] = min(memolast[j], memo[i] + d + dist[j][0])
             elif memo[newpos] > memo[i] + d:
@@ -56,6 +57,46 @@ def solve(N, XYZS):
     #     for j in range(N)
     # )
     return min(memolast)
+
+
+def solve(N, XYZS):
+    import sys
+    INF = sys.maxsize  # float("inf")
+
+    dist = []
+    for i in range(N):
+        a, b, c = XYZS[i]
+        ds = []
+        dist.append(ds)
+        for j in range(N):
+            p, q, r = XYZS[j]
+            ds.append(abs(p - a) + abs(q - b) + max(0, r - c))
+
+    SIZE = 2 ** N
+    memo = [[INF] * N for _i in range(SIZE)]
+
+    # memo[-1][0] = 0
+    # for subset in range(SIZE - 2, -1, -1):
+    #     for v in range(N):
+    #         for u in range(N):
+    #             mask = 1 << u
+    #             if not(subset & mask):
+    #                 memo[subset][v] = min(
+    #                     memo[subset][v],
+    #                     memo[subset | mask][u] + dist[v][u]
+    #                 )
+    # return memo[0][0]
+
+    memo[0][0] = 0
+    for subset in range(1, SIZE):
+        for v in range(N):
+            for u in range(N):
+                mask = 1 << u
+                if subset & mask:
+                    memo[subset][v] = min(
+                        memo[subset][v],
+                        memo[subset ^ mask][u] + dist[v][u])
+    return memo[-1][0]
 
 
 def main():
@@ -156,14 +197,23 @@ TEST_T6 = """
 5
 """
 
-T7 = """
 
-"""
-TEST_T7 = """
->>> as_input(T7)
->>> main()
-result
-"""
+def random_test():
+    from random import seed, randint
+    N = 5
+    XYZS = []
+    for s in range(100):
+        seed(s)
+        for i in range(N):
+            XYZS.append([
+                randint(0, 3),
+                randint(0, 3),
+                randint(0, 0)
+            ])
+        if solve(N, XYZS) != correct(N, XYZS):
+            print(XYZS)
+            # [[2, 3, -9], [-2, 6, 5], [2, -1, 5], [1, 8, -4], [6, -6, -1]]
+            return
 
 
 def _test():
@@ -192,7 +242,6 @@ if __name__ == "__main__":
         print("testing")
         _test()
         sys.exit()
-    as_input(T1)
     main()
 
 # end of snippets/main.py
