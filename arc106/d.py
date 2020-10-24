@@ -97,11 +97,20 @@ def solve(N, K, AS):
     MOD = 998_244_353
     div2 = pow(2, MOD - 2, MOD)
     sumTable = [N] * (K + 2)
+    # for x in range(1, K + 1):
+    #     s = 0
+    #     for a in AS:
+    #         s += pow(a, x, MOD)
+    #         s %= MOD
+    #     sumTable[x] = s
+    ps = AS[:]
     for x in range(1, K + 1):
         s = 0
-        for a in AS:
-            s += pow(a, x, MOD)
+        for i in range(N):
+            s += ps[i]
             s %= MOD
+            ps[i] *= AS[i]
+            ps[i] %= MOD
         sumTable[x] = s
 
     c = Comb(K + 1, MOD)
