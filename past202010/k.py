@@ -84,18 +84,28 @@ def bit_bisect(lower):
 # end of libs/fenwick_tree.py
 def solve(K, seqs, Q, BS):
     MOD = 10 ** 9
+    N = 20
+    bit = [0] * (N + 1)  # 1-origin
 
-    init(20)
     n = 0
-    BS = [x - 1 for x in BS]
-
     ret = 0
     for b in BS:
-        for a in seqs[b]:
-            ret += (n - bit_sum(a))
+        for a in seqs[b - 1]:
+            s = 0
+            x = a
+            while x > 0:
+                s += bit[x]
+                x -= x & -x
+
+            ret += (n - s)
 
             n += 1
-            bit_add(a, 1)
+
+            x = a
+            while x <= N:
+                bit[x] += 1
+                x += x & -x  # (x & -x) = rightmost 1 = block width
+
             ret %= MOD
     return ret
 
