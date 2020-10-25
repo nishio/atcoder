@@ -30,11 +30,11 @@ def takahashi(LR):
 
 def random_test():
     from random import seed, randint
-    for s in range(1000):
+    for s in range(1000_00):
         seed(s)
         LR = []
-        for i in range(5):
-            W = 20
+        for i in range(10):
+            W = 999
             l = randint(0, W - 1)
             r = randint(l + 1, W)
             LR.append((l, r))
@@ -42,7 +42,7 @@ def random_test():
         a = aoki(LR)
         # if t != a:
         #     print(s, LR, t, a)
-        if t - a > 2:
+        if t - a > 8:
             print(s, LR, t, a)
 
 
@@ -84,9 +84,9 @@ def main():
 
 
 def _test():
-    # random_test()
-    for i in range(100):
-        solve(100, i)
+    random_test()
+    # for i in range(100):
+    #     solve(100, i)
 
     import doctest
     doctest.testmod()
