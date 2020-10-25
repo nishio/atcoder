@@ -15,13 +15,13 @@ def solve(data):
     ONE = ord("1")
     QUEST = ord("?")
 
-    table = [0] * (2 ** 6)
+    table = [0] * (2 ** 12)
     table[0] = 1
     for y in range(18):
         for x in range(6):
-            newtable = [0] * (2 ** 6)
+            newtable = [0] * (2 ** 12)
 
-            for s in range(2 ** 6):
+            for s in range(2 ** 12):
                 if table[s] == 0:
                     continue
                 if data[y][x] == QUEST:
@@ -42,24 +42,36 @@ def solve(data):
                     else:
                         total -= 1
 
-                    if (s >> x) & 1:
+                    up = (s >> x) & 1
+                    if up:
                         total += 1
                     else:
                         total -= 1
 
                     debug(total, msg=":total")
                     if total != 3:
-                        # can place 0
-                        next = s ^ (s & (1 << x))
-                        debug(y, x, f"{s:06b}", f"{next:06b}",
-                              msg="canbe0:y, x")
-                        newtable[next] += table[s]
+                        danger = (s >> (6 + x)) & 1
+                        if not (up and danger):
+                            # can place 0
+                            next = s ^ (s & (1 << x))
+                            if total == 1:
+                                # danger, should not place 1 below
+                                next |= (1 << 6)
+                            debug(y, x, f"{s:06b}", f"{next:06b}",
+                                  msg="canbe0:y, x")
+                            newtable[next] += table[s]
                     if total != -3:
-                        # can place 1
-                        next = s | (1 << x)
-                        debug(y, x, f"{s:06b}", f"{next:06b}",
-                              msg="canbe1:y, x")
-                        newtable[next] += table[s]
+                        danger = (s >> (6 + x)) & 1
+                        if not (not up and danger):
+                            # can place 1
+                            next = s | (1 << x)
+                            if total == -1:
+                                # danger, should not place 0 below
+                                next |= (1 << 6)
+
+                            debug(y, x, f"{s:06b}", f"{next:06b}",
+                                  msg="canbe1:y, x")
+                            newtable[next] += table[s]
                 elif data[y][x] == ZERO:
                     next = s ^ (s & (1 << x))
                     newtable[next] += table[s]
@@ -70,7 +82,7 @@ def solve(data):
                     raise RuntimeError
 
             table = newtable
-            debug(table, msg=":table")
+            # debug(table, msg=":table")
     return sum(table)
 
 

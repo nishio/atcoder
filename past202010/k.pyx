@@ -83,14 +83,20 @@ def bit_bisect(lower):
 
 # end of libs/fenwick_tree.py
 def solve(K, seqs, Q, BS):
+    cdef long a
+    cdef long x
+
     MOD = 10 ** 9
     N = 20
-    bit = [0] * (N + 1)  # 1-origin
+    # bit = [0] * (N + 1)  # 1-origin
+    # cdef long[N + 1] bit
+    cdef long[21] bit
 
     n = 0
     ret = 0
     for b in BS:
         bit_a = [0] * (N + 1)  # 1-origin
+
         m = 0
         freq = [0] * 21
         for a in seqs[b - 1]:
