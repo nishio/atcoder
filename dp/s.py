@@ -14,31 +14,34 @@ def debug(*x):
     print(*x, file=sys.stderr)
 
 
-def solve(K, D):
-    K = [x - ord("0") for x in K]
-    N = len(K)
-    less = [[0] * D for i in range(N + 1)]
-    border = 0
-    for i in range(N):
-        for j in range(10):
+def solve(N, D):
+    less = [0] * D
+    equal = 0
+    for digit in N:
+        new_less = [0] * D
+        for new_digit in range(10):
             for d in range(D):
-                less[i][(d + j) % D] += less[i - 1][d]
-                less[i][(d + j) % D] %= MOD
-            if j < K[i]:
-                less[i][(border + j) % D] += 1
-        border += K[i]
-        border %= D
+                new_less[(d + new_digit) % D] += less[d]
+            if new_digit < digit:
+                new_less[(equal + new_digit) % D] += 1
+        equal += digit
+        equal %= D
+        for d in range(D):
+            new_less[d] %= MOD
+        less = new_less
 
-    ret = less[N - 1][0] - 1
-    ret += (border == 0)
+    ret = less[0]
+    ret -= 1  # for x = 0
+    if equal == 0:  # for x = N
+        ret += 1
     return ret % MOD
 
 
 def main():
     # parse input
-    K = input().strip()
+    N = [x - ord('0') for x in input().strip()]
     D = int(input())
-    print(solve(K, D))
+    print(solve(N, D))
 
 
 # tests
