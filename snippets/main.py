@@ -5,10 +5,7 @@ def debug(*x, msg=""):
 
 
 def solve(SOLVE_PARAMS):
-    import sys
-    sys.setrecursionlimit(10 ** 6)
-    INF = sys.maxsize  # float("inf")
-    MOD = 10 ** 9 + 7  # 998_244_353
+    pass
 
 
 def main():
@@ -24,6 +21,7 @@ def _test():
     g = globals()
     for k in sorted(g):
         if k.startswith("TEST_"):
+            print(k)
             doctest.run_docstring_examples(g[k], g, name=k)
 
 
@@ -40,8 +38,10 @@ if __name__ == "__main__":
     import sys
     input = sys.stdin.buffer.readline
     read = sys.stdin.buffer.read
+    sys.setrecursionlimit(10 ** 6)
     if sys.argv[-1] == "-t":
         print("testing")
         _test()
         sys.exit()
     main()
+    sys.exit()
