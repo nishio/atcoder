@@ -71,9 +71,9 @@ from collections import defaultdict
 edges = defaultdict(dict)
 for _i in range(NUM_EDGES):
     frm, to, cost = map(int, input().split())
-    edges[frm - 1][to - 1] = cost
-    edges[to - 1][frm - 1] = cost
-""", "NUM_EDGES frm to cost"))
+    edges[frm-1][to-1] = cost  # -1 for 1-origin vertexes
+    edges[to-1][frm-1] = cost  # if bidirectional
+""", "NUM_EDGES -1"))
 
 push("readbigint", "[x - ord('0') for x in input().strip()]")
 push("profile", "define @profile if not exist", """
