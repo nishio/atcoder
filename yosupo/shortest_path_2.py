@@ -1,5 +1,6 @@
+# included from libs/dijkstra.py
 """
-Get Distances of Shortest Path (Dijkstra)
+Shortest Path (Dijkstra)
 
 edges: dict<from:int, dict<to:int, cost:number>>
 """
@@ -8,10 +9,11 @@ edges: dict<from:int, dict<to:int, cost:number>>
 from heapq import heappush, heappop
 
 
-def one_to_one(
+def shortest_path(
         start, goal, num_vertexes, edges,
         INF=9223372036854775807, UNREACHABLE=-1):
     distances = [INF] * num_vertexes
+    prev = [None] * num_vertexes
     distances[start] = 0
     queue = [(0, start)]
     while queue:
@@ -20,39 +22,25 @@ def one_to_one(
             # already know shorter path
             continue
         if frm == goal:
-            return d
+            path = [goal]
+            p = goal
+            while p != start:
+                p = prev[p]
+                path.append(p)
+            path.reverse()
+            return d, path
         for to in edges[frm]:
             new_cost = distances[frm] + edges[frm][to]
             if distances[to] > new_cost:
                 # found shorter path
                 distances[to] = new_cost
+                prev[to] = frm
                 heappush(queue, (distances[to], to))
 
     return UNREACHABLE
 
-
-def one_to_all(
-        start, num_vertexes, edges,
-        INF=9223372036854775807):
-
-    distances = [INF] * num_vertexes
-    distances[start] = 0
-    queue = [(0, start)]
-    while queue:
-        d, frm = heappop(queue)
-        if distances[frm] < d:
-            # already know shorter path
-            continue
-        for to in edges[frm]:
-            new_cost = distances[frm] + edges[frm][to]
-
-            if distances[to] > new_cost:
-                # found shorter path
-                distances[to] = new_cost
-                heappush(queue, (distances[to], to))
-    return distances
-
-# --- end of library ---
+# end of libs/dijkstra.py
+# included from snippets/main.py
 
 
 def debug(*x, msg=""):
@@ -60,68 +48,57 @@ def debug(*x, msg=""):
     print(msg, *x, file=sys.stderr)
 
 
-def solve(N, M, edges):
-    INF = 9223372036854775807
-    ret = INF
-
-    for start in range(N):
-        distances = one_to_all(start, N, edges)
-        debug(distances, msg=":distances")
-        ret = min(ret, max(distances))
-    return ret
+def solve(N, M, S, T, edges):
+    ret = shortest_path(S, T, N, edges)
+    if ret == -1:
+        print(-1)
+        return
+    dist, path = ret
+    num_vertexes = len(path)
+    print(dist, num_vertexes - 1)
+    for i in range(num_vertexes - 1):
+        print(path[i], path[i + 1])
 
 
 def main():
-    # verified https://atcoder.jp/contests/abc012/tasks/abc012_4
-    N, M = map(int, input().split())
+    # parse input
+    N, M, S, T = map(int, input().split())
     from collections import defaultdict
     edges = defaultdict(dict)
     for _i in range(M):
-        A, B, T = map(int, input().split())
-        edges[A - 1][B - 1] = T
-        edges[B - 1][A - 1] = T
-    print(solve(N, M, edges))
+        frm, to, cost = map(int, input().split())
+        edges[frm][to] = cost
+    solve(N, M, S, T, edges)
 
 
 # tests
 T1 = """
-3 2
-1 2 10
-2 3 10
+5 7 2 3
+0 3 5
+0 4 3
+2 4 2
+4 3 10
+4 0 7
+2 1 5
+1 0 1
 """
 TEST_T1 = """
 >>> as_input(T1)
 >>> main()
-10
+11 3
+2 1
+1 0
+0 3
 """
 
 T2 = """
-5 5
-1 2 12
-2 3 14
-3 4 7
-4 5 9
-5 1 18
+2 1 0 1
+1 0 10
 """
 TEST_T2 = """
 >>> as_input(T2)
 >>> main()
-26
-"""
-
-T3 = """
-4 6
-1 2 1
-2 3 1
-3 4 1
-4 1 1
-1 3 1
-4 2 1
-"""
-TEST_T3 = """
->>> as_input(T3)
->>> main()
-1
+-1
 """
 
 
@@ -131,7 +108,6 @@ def _test():
     g = globals()
     for k in sorted(g):
         if k.startswith("TEST_"):
-            print(k)
             doctest.run_docstring_examples(g[k], g, name=k)
 
 
