@@ -37,7 +37,7 @@ def is_connected(x, y):
 
 
 def num_components():
-    return len(set(find_root(x) for x in range(NUM_VERTEX)))
+    return sum(1 for x in range(NUM_VERTEX) if find_root(x) == x)
 
 # --- end of library ---
 
@@ -46,7 +46,7 @@ def main_yosupo():
     # verified: https://judge.yosupo.jp/problem/unionfind
     N, Q = [int(x) for x in input().split()]
     init_unionfind(N)
-    for q in range(Q):
+    for _q in range(Q):
         typ, u, v = [int(x) for x in input().split()]
         if typ == 0:
             unite(u, v)
