@@ -39,6 +39,14 @@ def push(prefix, desc, body=None, for_global=False):
         snippets[desc] = snip
 
 
+def make_template(code, args):
+    args = args.split()
+    for i, arg in enumerate(args):
+        placeholder = "${%d:%s}" % (i + 1, arg)
+        code = code.replace(arg, placeholder)
+    return code
+
+
 push("readlist", "read list of integers", """
 list(map(int, input().split()))
 """)
@@ -58,6 +66,16 @@ for _q in range(Q):
     QS.append(tuple(map(int, input().split())))
 """)
 
+push("readedges", "read graph", make_template("""
+from collections import defaultdict
+edges = defaultdict(dict)
+for _i in range(NUM_EDGES):
+    frm, to, cost = map(int, input().split())
+    edges[frm - 1][to - 1] = cost
+    edges[to - 1][frm - 1] = cost
+""", "NUM_EDGES frm to cost"))
+
+push("readbigint", "[x - ord('0') for x in input().strip()]")
 push("profile", "define @profile if not exist", """
 try:
     profile
@@ -102,14 +120,6 @@ push("cache", """
 from functools import lru_cache
 @lru_cache(maxsize=None)
 """, for_global=True)
-
-
-def make_template(code, args):
-    args = args.split()
-    for i, arg in enumerate(args):
-        placeholder = "${%d:%s}" % (i + 1, arg)
-        code = code.replace(arg, placeholder)
-    return code
 
 
 push("unpack", make_template("""
@@ -178,6 +188,7 @@ def as_input(s):
 
 push("MOD1", "MOD = 1_000_000_007")
 push("MOD9", "MOD = 998_244_353")
+push("INF", "INF = 9223372036854775807")
 
 EOL = "# --- end of library ---"
 push("eol", "end of library", EOL)
