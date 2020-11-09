@@ -3,7 +3,30 @@ read map from stdin into one-dimension list with sentinel
 """
 
 
-def readMap(H, W, sentinel=1):
+def dir9():
+    return [
+        -1 - WIDTH, -WIDTH, 1 - WIDTH,
+        -1, 0, 1,
+        WIDTH - 1, WIDTH, WIDTH + 1
+    ]
+
+
+def dir8():
+    return [
+        -1 - WIDTH, -WIDTH, 1 - WIDTH,
+        -1, 1,
+        WIDTH - 1, WIDTH, WIDTH + 1
+    ]
+
+
+def dir4():
+    return [-WIDTH, -1, 1, WIDTH]
+
+
+_ENC1 = {ord("."): 1, "ELSE": 0, "SENTINEL": 0}
+
+
+def readMap(H, W, sentinel=1, encoding=_ENC1):
     global SENTINEL, HEIGHT, WIDTH
     global ORIGINAL_HEIGHT, ORIGINAL_WIDTH
     SENTINEL = sentinel
@@ -11,13 +34,12 @@ def readMap(H, W, sentinel=1):
     ORIGINAL_WIDTH = W
     HEIGHT = H + SENTINEL * 2
     WIDTH = W + SENTINEL * 2
-    data = [0] * (HEIGHT * WIDTH)
-    ok = ord(".")
+    data = [encoding["SENTINEL"]] * (HEIGHT * WIDTH)
     for i in range(H):
         S = input().strip()
         y = (i + SENTINEL) * WIDTH
         for j in range(W):
-            data[y + (j + SENTINEL)] = 1 if S[j] == ok else 0
+            data[y + (j + SENTINEL)] = encoding.get(S[j], encoding["ELSE"])
     return data
 
 
