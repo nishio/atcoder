@@ -142,11 +142,11 @@ push("impnp", "import numpy as np", for_global=True)
 push("deftest", """
 def _test():
     import doctest
-    print("testing")
     doctest.testmod()
     g = globals()
     for k in sorted(g):
         if k.startswith("TEST_"):
+            print(k)
             doctest.run_docstring_examples(g[k], g, name=k)
 """, for_global=True)
 
