@@ -40,7 +40,8 @@ def solve(N, S, T):
         ret += (spos[i] - tpos[j])
         i += 1
         j += 1
-
+    if j != len(tpos) - N:
+        return -1
     return ret
 
 
