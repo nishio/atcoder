@@ -9,24 +9,28 @@ def solve(N, AS, BS):
     NGs = []
     spans = []
     for i in range(N):
+        ng = False
         if BS[i] >= AS[i]:
             NGs.append(AS[i])
-        else:
-            spans.append((AS[i] - BS[i], +1))
-            spans.append((AS[i], -1))
+            ng = True
+        spans.append((AS[i] - BS[i], +1, ng))
+        spans.append((AS[i], -1, ng))
 
     spans.sort()
     # debug(spans, msg=":spans")
     i = 0
     cover = 0
+    ng_cover = 0
     ret = 0
-    for pos, diff in spans:
+    for pos, diff, ng in spans:
         # debug(pos, diff, msg=":pos, diff")
         if pos > NGs[i]:
             # debug(NGs[i], msg=":NGs[i]")
             if cover > 0:
                 # debug(cover, msg=":cover")
                 # already covered
+                if ng_cover == cover == 1:
+                    ret += 1
                 pass
             else:
                 ret += 1
@@ -34,6 +38,8 @@ def solve(N, AS, BS):
             if i == len(NGs):
                 break
         cover += diff
+        if ng:
+            ng_cover += diff
 
     return ret
 
