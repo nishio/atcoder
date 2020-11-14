@@ -11,8 +11,9 @@ def solve(N, AS, BS):
     for i in range(N):
         if BS[i] >= AS[i]:
             NGs.append(AS[i])
-        spans.append((AS[i] - BS[i], +1))
-        spans.append((AS[i] - 1, -1))
+        else:
+            spans.append((AS[i] - BS[i], +1))
+            spans.append((AS[i], -1))
 
     spans.sort()
     # debug(spans, msg=":spans")
@@ -64,6 +65,39 @@ T2 = """
 """
 TEST_T2 = """
 >>> as_input(T2)
+>>> main()
+0
+"""
+
+T3 = """
+2
+1 3
+1 1
+"""
+TEST_T3 = """
+>>> as_input(T3)
+>>> main()
+1
+"""
+
+T4 = """
+2
+1 2
+1 1
+"""
+TEST_T4 = """
+>>> as_input(T4)
+>>> main()
+0
+"""
+
+T5 = """
+2
+1 3
+1 2
+"""
+TEST_T5 = """
+>>> as_input(T5)
 >>> main()
 0
 """
