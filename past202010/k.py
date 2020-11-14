@@ -52,6 +52,9 @@ def bit_max(pos):
 
 
 def bit_sum(pos):
+    """
+    sum includes x[pos]
+    """
     ret = 0
     x = pos
     while x > 0:
@@ -85,47 +88,32 @@ def bit_bisect(lower):
 def solve(K, seqs, Q, BS):
     MOD = 10 ** 9
     N = 20
-    bit = [0] * (N + 1)  # 1-origin
 
-    n = 0
-    ret = 0
-    for b in BS:
-        bit_a = [0] * (N + 1)  # 1-origin
-        m = 0
+    invs = []
+    freqs = []
+    for i in range(K):
+        init(N)
         freq = [0] * 21
-        for a in seqs[b - 1]:
-            s = 0
-            x = a
-            while x > 0:
-                s += bit_a[x]
-                x -= x & -x
-
-            ret += (m - s)
-            m += 1
+        inv = 0
+        for a in seqs[i]:
+            bit_add(a, 1)
+            inv += bit_sum(N) - bit_sum(a)
             freq[a] += 1
+        invs.append(inv)
+        freqs.append(freq)
 
-            x = a
-            while x <= N:
-                bit_a[x] += 1
-                x += x & -x  # (x & -x) = rightmost 1 = block width
+    ret = 0
+    freq = [0] * 21
+    for b in BS:
+        ret += invs[b - 1]
+        f = freqs[b - 1]
+        for i in range(1, 21):
+            for j in range(i + 1, 21):
+                ret += f[i] * freq[j]
 
         for i in range(1, 21):
-            s = 0
-            x = i
-            while x > 0:
-                s += bit[x]
-                x -= x & -x
-
-            ret += (n - s) * freq[i]
-            ret %= MOD
-
-        for i in range(1, 21):
-            x = i
-            while x <= N:
-                bit[x] += freq[i]
-                x += x & -x  # (x & -x) = rightmost 1 = block width
-
-        n += m
+            freq[i] += f[i]
+        ret %= MOD
 
     return ret
 
@@ -230,11 +218,21 @@ TEST_T5 = """
 
 
 def _test():
+    # init(20)
+    # inv = 0
+    # for a in [20, 1, 20, 1, 1]:
+    #     bit_add(a, 1)
+    #     inv += bit_sum(N) - bit_sum(a)
+    #     debug(bit_sum(N), msg=":bit_sum(N)")
+    #     debug(bit_sum(a), msg=":bit_sum(a)")
+    #     debug(inv, msg=":inv")
+
     import doctest
     doctest.testmod()
     g = globals()
     for k in sorted(g):
         if k.startswith("TEST_"):
+            print(k)
             doctest.run_docstring_examples(g[k], g, name=k)
 
 

@@ -44,6 +44,9 @@ def bit_max(pos):
 
 
 def bit_sum(pos):
+    """
+    sum includes x[pos]
+    """
     ret = 0
     x = pos
     while x > 0:
