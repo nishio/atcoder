@@ -23,13 +23,17 @@ def solve(N, S, T):
         return -1
 
     tpos += [N] * N
+    spos.append(-1)
     i = 0
     j = 0
     ret = 0
-    while i < len(spos):
+    while i < len(spos) - 1:
         if spos[i] < tpos[j]:
             # spos_i should be deleted
-            ret += (spos[i + 1] - spos[i])
+            next = spos[i + 1]
+            if next == -1:
+                return -1
+            ret += (next - spos[i])
             i += 2
             continue
 
@@ -81,6 +85,61 @@ TEST_T3 = """
 >>> main()
 5
 """
+
+T4 = """
+1
+1
+1
+"""
+TEST_T4 = """
+>>> as_input(T4)
+>>> main()
+0
+"""
+
+T5 = """
+1
+0
+0
+"""
+TEST_T5 = """
+>>> as_input(T5)
+>>> main()
+0
+"""
+
+T6 = """
+1
+0
+1
+"""
+TEST_T6 = """
+>>> as_input(T6)
+>>> main()
+-1
+"""
+
+T7 = """
+6
+111111
+000000
+"""
+TEST_T7 = """
+>>> as_input(T7)
+>>> main()
+3
+"""
+
+
+def random_test():
+    from random import seed, randint
+    for i in range(1000):
+        seed(i)
+        N = randint(1, 10)
+        S = [randint(0, 1) for _i in range(N)]
+        T = [randint(0, 1) for _i in range(N)]
+        debug(N, S, T, msg=":N,S,T")
+        ret = solve(N, S, T)
 
 
 def _test():
