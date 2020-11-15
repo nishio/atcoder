@@ -65,37 +65,56 @@ def solve(H, W, data):
     v_accum = [0] * N
     d_accum = [0] * N
     table = [0] * N
+
     table[WIDTH + 1] = 1
+    h_accum[WIDTH + 1] = 1
+    v_accum[WIDTH + 1] = 1
+    d_accum[WIDTH + 1] = 1
     for pos in allPosition():
         if pos == WIDTH + 1:
             continue
-        hvalue = 0
-        p = pos
-        while True:
-            p -= 1
-            if data[p] == 0:
-                break
-            hvalue += table[p]
+        if data[pos] == 0:
+            table[pos] = 0
+            h_accum[pos] = 0
+            v_accum[pos] = 0
+            d_accum[pos] = 0
+            continue
 
-        vvalue = 0
-        p = pos
-        while True:
-            p -= WIDTH
-            if data[p] == 0:
-                break
-            vvalue += table[p]
+        # hvalue = 0
+        # p = pos
+        # while True:
+        #     p -= 1
+        #     if data[p] == 0:
+        #         break
+        #     hvalue += table[p]
+        # debug(divmod(pos, WIDTH), hvalue, msg=":pos")
+        hvalue = h_accum[pos - 1]
+        # debug(divmod(pos, WIDTH), hvalue, msg=":accum")
 
-        dvalue = 0
-        p = pos
-        while True:
-            p -= (WIDTH + 1)
-            if data[p] == 0:
-                break
-            dvalue += table[p]
+        # vvalue = 0
+        # p = pos
+        # while True:
+        #     p -= WIDTH
+        #     if data[p] == 0:
+        #         break
+        #     vvalue += table[p]
+        vvalue = v_accum[pos - WIDTH]
+
+        # dvalue = 0
+        # p = pos
+        # while True:
+        #     p -= (WIDTH + 1)
+        #     if data[p] == 0:
+        #         break
+        #     dvalue += table[p]
+        dvalue = d_accum[pos - WIDTH - 1]
 
         ret = hvalue + vvalue + dvalue
         ret %= MOD
         table[pos] = ret
+        h_accum[pos] = (h_accum[pos - 1] + ret) % MOD
+        v_accum[pos] = (v_accum[pos - WIDTH] + ret) % MOD
+        d_accum[pos] = (d_accum[pos - WIDTH - 1] + ret) % MOD
 
     return ret
 
