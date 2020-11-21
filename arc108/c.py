@@ -7,10 +7,11 @@ def debug(*x, msg=""):
 
 def solve(N, M, edges):
     vlabel = [None] * N
-
-    def f(cur, parentEdge=None, exclude=None):
+    stack = [(0, None, None)]
+    while stack:
+        cur, parentEdge, exclude = stack.pop()
         if vlabel[cur] is not None:
-            return
+            continue
         if parentEdge is None:
             vlabel[cur] = -1  # temporary show "visited"
             used = [False] * N
@@ -20,7 +21,7 @@ def solve(N, M, edges):
                 if vlabel[child]:
                     continue
                 c = edges[cur][child]
-                f(child, c)
+                stack.append((child, c, None))
                 used[c - 1] = True
             vlabel[cur] = used.index(False) + 1
         else:
@@ -30,11 +31,10 @@ def solve(N, M, edges):
                     continue
                 c = edges[cur][child]
                 if c != parentEdge:
-                    f(child, c)
+                    stack.append((child, c, None))
                 else:
-                    f(child, None, parentEdge)
+                    stack.append((child, c, parentEdge))
 
-    f(0, None, None)
     return vlabel
 
 
