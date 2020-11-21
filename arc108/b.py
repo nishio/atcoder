@@ -7,25 +7,25 @@ def debug(*x, msg=""):
 
 def solve(N, S):
     i = 0
-    state = 0
+    state = [0]
     ret = N
     while i < N:
-        if state == 0:
+        if state[-1] == 0:
             if S[i] == "f":
-                state = 1
-        elif state == 1:
+                state.append(1)
+        elif state[-1] == 1:
             if S[i] == "o":
-                state = 2
+                state[-1] = 2
             else:
                 # TODO: NEST
-                state = 0
-        elif state == 2:
+                state.pop()
+        elif state[-1] == 2:
             if S[i] == "x":
-                state = 0
+                state.pop()
                 ret -= 3
             else:
                 # TODO: NEST
-                state = 0
+                state.pop()
         i += 1
     return ret
 
