@@ -8,31 +8,21 @@ def debug(*x, msg=""):
 def solve(N, M, edges):
     vlabel = [None] * N
 
-    def f(cur, parentEdge=None, exclude=None):
+    def f(cur, parentEdge=None, parent=None):
         if vlabel[cur] is not None:
             return
         if parentEdge is None:
-            vlabel[cur] = -1  # temporary show "visited"
-            used = [False] * N
-            if exclude is not None:
-                used[exclude - 1] = True
-            for child in edges[cur]:
-                if vlabel[child]:
-                    continue
-                c = edges[cur][child]
-                f(child, c)
-                used[c - 1] = True
-            vlabel[cur] = used.index(False) + 1
+            vlabel[cur] = 1
         else:
-            vlabel[cur] = parentEdge
-            for child in edges[cur]:
-                if vlabel[child]:
-                    continue
-                c = edges[cur][child]
-                if c != parentEdge:
-                    f(child, c)
-                else:
-                    f(child, None, parentEdge)
+            if parentEdge != parent:
+                vlabel[cur] = parentEdge
+            else:
+                vlabel[cur] = (parentEdge % N) + 1
+        for child in edges[cur]:
+            if vlabel[child]:
+                continue
+            c = edges[cur][child]
+            f(child, c, vlabel[cur])
 
     f(0, None, None)
     return vlabel
