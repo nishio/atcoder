@@ -16,10 +16,16 @@ def solve(N, S):
         elif state == 1:
             if S[i] == "o":
                 state = 2
+            else:
+                # TODO: NEST
+                state = 0
         elif state == 2:
             if S[i] == "x":
                 state = 0
                 ret -= 3
+            else:
+                # TODO: NEST
+                state = 0
         i += 1
     return ret
 
@@ -40,6 +46,16 @@ TEST_T1 = """
 >>> as_input(T1)
 >>> main()
 3
+"""
+
+T2 = """
+7
+firebox
+"""
+TEST_T2 = """
+>>> as_input(T2)
+>>> main()
+7
 """
 
 
