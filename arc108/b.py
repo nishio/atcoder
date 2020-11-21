@@ -10,6 +10,7 @@ def solve(N, S):
     state = [0]
     ret = N
     while i < N:
+        # debug(i, S[i], state, msg=":i, state")
         if state[-1] == 0:
             if S[i] == "f":
                 state.append(1)
@@ -19,7 +20,7 @@ def solve(N, S):
             elif S[i] == "f":
                 state.append(1)
             else:
-                state.pop()
+                state = [0]
         elif state[-1] == 2:
             if S[i] == "x":
                 state.pop()
@@ -27,7 +28,7 @@ def solve(N, S):
             elif S[i] == "f":
                 state.append(1)
             else:
-                state.pop()
+                state = [0]
         i += 1
     return ret
 
@@ -88,6 +89,56 @@ TEST_T5 = """
 >>> as_input(T5)
 >>> main()
 0
+"""
+
+T6 = """
+4
+ffox
+"""
+TEST_T6 = """
+>>> as_input(T6)
+>>> main()
+1
+"""
+
+T7 = """
+4
+fofx
+"""
+TEST_T7 = """
+>>> as_input(T7)
+>>> main()
+4
+"""
+
+T8 = """
+9
+fffoxoxox
+"""
+TEST_T8 = """
+>>> as_input(T8)
+>>> main()
+0
+"""
+
+T9 = """
+9
+ffoxofoxx
+"""
+TEST_T9 = """
+>>> as_input(T9)
+>>> main()
+0
+"""
+
+T10 = """
+6
+fofomx
+"""
+TEST_T10 = """
+>>> as_input(T10)
+>>> main()
+6
 """
 
 
