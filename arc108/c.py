@@ -12,11 +12,13 @@ def solve(N, M, edges):
         if vlabel[cur] is not None:
             return
         if parentEdge is None:
-            vlabel[cur] = 0  # temporary show "visited"
+            vlabel[cur] = -1  # temporary show "visited"
             used = [False] * N
             if exclude is not None:
                 used[exclude - 1] = True
             for child in edges[cur]:
+                if vlabel[child]:
+                    continue
                 c = edges[cur][child]
                 f(child, c)
                 used[c - 1] = True
@@ -24,6 +26,8 @@ def solve(N, M, edges):
         else:
             vlabel[cur] = parentEdge
             for child in edges[cur]:
+                if vlabel[child]:
+                    continue
                 c = edges[cur][child]
                 if c != parentEdge:
                     f(child, c)
