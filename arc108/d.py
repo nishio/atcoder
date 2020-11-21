@@ -119,6 +119,8 @@ def debug(*x, msg=""):
 
 
 def solve(N, S):
+    if N < 4:
+        return 1
     MOD = 1_000_000_007
     S = [x[0] - ord("A") for x in S]
     AA, AB, BA, BB = 0, 1, 2, 3
@@ -136,6 +138,7 @@ def solve(N, S):
                 if M - i < i:
                     break
                 ret += c.comb(M - i, i)
+                ret %= MOD
             return ret
         else:
             return pow(2, N - 3, MOD)
@@ -150,6 +153,7 @@ def solve(N, S):
                 if M - i < i:
                     break
                 ret += c.comb(M - i, i)
+                ret %= MOD
             return ret
         else:
             return pow(2, N - 3, MOD)
@@ -187,6 +191,32 @@ TEST_T2 = """
 >>> as_input(T2)
 >>> main()
 1
+"""
+
+T3 = """
+10
+B
+A
+A
+A
+"""
+TEST_T3 = """
+>>> as_input(T3)
+>>> main()
+result
+"""
+
+T = """
+1000
+A
+B
+B
+A
+"""
+TEST_T = """
+>>> as_input(T)
+>>> main()
+result
 """
 
 
