@@ -80,36 +80,11 @@ def solve(H, W, data):
             d_accum[pos] = 0
             continue
 
-        # hvalue = 0
-        # p = pos
-        # while True:
-        #     p -= 1
-        #     if data[p] == 0:
-        #         break
-        #     hvalue += table[p]
-        # debug(divmod(pos, WIDTH), hvalue, msg=":pos")
-        hvalue = h_accum[pos - 1]
-        # debug(divmod(pos, WIDTH), hvalue, msg=":accum")
+        h_value = h_accum[pos - 1]
+        v_value = v_accum[pos - WIDTH]
+        d_value = d_accum[pos - WIDTH - 1]
 
-        # vvalue = 0
-        # p = pos
-        # while True:
-        #     p -= WIDTH
-        #     if data[p] == 0:
-        #         break
-        #     vvalue += table[p]
-        vvalue = v_accum[pos - WIDTH]
-
-        # dvalue = 0
-        # p = pos
-        # while True:
-        #     p -= (WIDTH + 1)
-        #     if data[p] == 0:
-        #         break
-        #     dvalue += table[p]
-        dvalue = d_accum[pos - WIDTH - 1]
-
-        ret = hvalue + vvalue + dvalue
+        ret = h_value + v_value + d_value
         ret %= MOD
         table[pos] = ret
         h_accum[pos] = (h_accum[pos - 1] + ret) % MOD

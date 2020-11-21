@@ -10,7 +10,6 @@ def solve(SOLVE_PARAMS):
 
 
 def main():
-    # parse input
     N, W = map(int, input().split())
     diff = [0] * 20_0010
     for _i in range(N):
