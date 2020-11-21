@@ -16,15 +16,17 @@ def solve(N, S):
         elif state[-1] == 1:
             if S[i] == "o":
                 state[-1] = 2
+            elif S[i] == "f":
+                state.append(1)
             else:
-                # TODO: NEST
                 state.pop()
         elif state[-1] == 2:
             if S[i] == "x":
                 state.pop()
                 ret -= 3
+            elif S[i] == "f":
+                state.append(1)
             else:
-                # TODO: NEST
                 state.pop()
         i += 1
     return ret
@@ -56,6 +58,36 @@ TEST_T2 = """
 >>> as_input(T2)
 >>> main()
 7
+"""
+
+T3 = """
+48
+ffoxoxuvgjyzmehmopfohrupffoxoxfofofoxffoxoxejffo
+"""
+TEST_T3 = """
+>>> as_input(T3)
+>>> main()
+27
+"""
+
+T4 = """
+6
+ffoxox
+"""
+TEST_T4 = """
+>>> as_input(T4)
+>>> main()
+0
+"""
+
+T5 = """
+6
+fofoxx
+"""
+TEST_T5 = """
+>>> as_input(T5)
+>>> main()
+0
 """
 
 
