@@ -9,8 +9,6 @@ def solve(N, M, edges):
     vlabel = [None] * N
 
     def f(cur, parentEdge=None, parent=None):
-        if vlabel[cur] is not None:
-            return
         if parentEdge is None:
             vlabel[cur] = 1
         else:
