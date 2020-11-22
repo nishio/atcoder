@@ -90,15 +90,14 @@ def solve(data):
             if v > 0:  # WARP
                 # debug(v, msg="warp:v")
                 for p2 in WARP[v]:
-                    if data[p2] >= 0:
-                        data[p2] = -1
-                        new_visit.append(p2)
+                    data[p2] = 0
+                    new_visit.append(p2)
                 WARP[v] = []
             for d in DIR4:
                 p2 = p + d
                 if data[p2] >= 0:
                     new_visit.append(p2)
-        to_visit = new_visit
+        to_visit = set(new_visit)
         ret += 1
         # debug([divmod(x, WIDTH) for x in new_visit], msg=":new")
     return -1
