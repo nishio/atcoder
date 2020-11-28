@@ -60,12 +60,11 @@ def debug(*x, msg=""):
 
 
 def solve(N, T, AS):
+    from bisect import bisect_right
     S1 = []
-    from itertools import permutations
     S1 = sum_for_all_subset_grey(AS[:N//2])
     S2 = sum_for_all_subset_grey(AS[N // 2:])
     S2.sort()
-    from bisect import bisect_right
     ret = 0
     # debug(S1, S2, msg=":S1, S2")
     for x in S1:
