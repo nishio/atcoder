@@ -80,6 +80,16 @@ TEST_T4 = """
 0
 """
 
+T5 = """
+1 1
+1 6
+"""
+TEST_T5 = """
+>>> as_input(T5)
+>>> main()
+result
+"""
+
 
 def _test():
     import doctest
