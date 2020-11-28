@@ -13,22 +13,37 @@ def naive(N, K, S):
     next = []
     for i in range(0, 2 ** K, 2):
         next.append(match[last[i % N] * 3 + last[(i + 1) % N]])
-    debug(next, msg=":next")
+    # debug(next, msg=":next")
     last = next
     while next:
         next = []
         n = len(last)
         for i in range(0, n, 2):
             next.append(match[last[i % n] * 3 + last[(i + 1) % n]])
-        debug(next, msg=":next")
+        # debug(next, msg=":next")
         if len(next) == 1:
             return "RPS"[next[0]]
         last = next
 
 
 def solve(N, K, S):
-    return naive(N, K, S)
-    pass
+    X0 = [0 if c == "R" else 1 if c == "P" else 2 for c in S]
+    match = [0, 1, 0, 1, 1, 2, 0, 2, 2]
+
+    last = X0
+    next = []
+    for i in range(0, 4 * N, 2):
+        next.append(match[last[i % N] * 3 + last[(i + 1) % N]])
+    # debug(next, msg=":next")
+    last = next
+    for k in range(K - 1, 0, -1):
+        next = []
+        n = 2 * N
+        for i in range(0, 4 * N, 2):
+            next.append(match[last[i % n] * 3 + last[(i + 1) % n]])
+        # debug(next, msg=":next")
+        last = next
+    return "RPS"[last[0]]
 
 
 def main():
@@ -57,6 +72,16 @@ TEST_T2 = """
 >>> as_input(T2)
 >>> main()
 P
+"""
+
+T3 = """
+1 100
+S
+"""
+TEST_T3 = """
+>>> as_input(T3)
+>>> main()
+S
 """
 
 
