@@ -27,21 +27,13 @@ def naive(N, K, S):
 
 
 def solve(N, K, S):
-    X0 = [0 if c == "R" else 1 if c == "P" else 2 for c in S]
+    last = [0 if c == "R" else 1 if c == "P" else 2 for c in S]
     match = [0, 1, 0, 1, 1, 2, 0, 2, 2]
 
-    last = X0
-    next = []
-    for i in range(0, 4 * N, 2):
-        next.append(match[last[i % N] * 3 + last[(i + 1) % N]])
-    # debug(next, msg=":next")
-    last = next
-    for k in range(K - 1, 0, -1):
+    for _k in range(K - 1, -1, -1):
         next = []
-        n = 2 * N
-        for i in range(0, 4 * N, 2):
-            next.append(match[last[i % n] * 3 + last[(i + 1) % n]])
-        # debug(next, msg=":next")
+        for i in range(0, 2 * N, 2):
+            next.append(match[last[i % N] * 3 + last[(i + 1) % N]])
         last = next
     return "RPS"[last[0]]
 
