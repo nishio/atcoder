@@ -21,8 +21,7 @@ def solve(N, T):
     ret = 0
     for i in range(3):
         if state[i]:
-            debug(i, N, msg=":i,")
-            ret += (3 * 10 ** 10 - (i - N % 3 + N)) // 3 + 1
+            ret += (3 * 10 ** 10 - ((i - N) % 3 + N)) // 3 + 1
     return ret
 
 
@@ -82,6 +81,26 @@ TEST_T6 = """
 >>> as_input(T6)
 >>> main()
 10000000000
+"""
+
+T7 = """
+2
+10
+"""
+TEST_T7 = """
+>>> as_input(T7)
+>>> main()
+10000000000
+"""
+
+T8 = """
+2
+01
+"""
+TEST_T8 = """
+>>> as_input(T8)
+>>> main()
+9999999999
 """
 
 
