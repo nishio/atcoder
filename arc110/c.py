@@ -20,9 +20,7 @@ def solve(N, PS):
             if used[i - 1]:
                 return [-1]
             swap(i)
-        # debug(PS, msg=":PS")
 
-    # debug(used, msg=":used")
     if False in used:
         return [-1]
     return ret
