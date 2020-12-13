@@ -32,10 +32,10 @@ def main_acl_j():
         q, x, y = map(int, input().split())
         if q == 1:
             # update
-            point_set(table, x - 1, y, max)
+            point_set(table, x - 1, y, binop)
         elif q == 2:
             # find
-            print(range_reduce(table, x - 1, y, max, -INF))
+            print(range_reduce(table, x - 1, y, binop, unity))
         else:
             print(bisect_left(table, x - 1, N, y) + 1)
 
@@ -178,7 +178,7 @@ def main_abl_d():
 
 
 # tests
-T1 = """
+T1_abl_d = """
 10 3
 1
 5
@@ -191,13 +191,13 @@ T1 = """
 2
 4
 """
-TEST_T1 = """
->>> as_input(T1)
+TEST_T1_abl_d = """
+>>> as_input(T1_abl_d)
 >>> main_abl_d()
 7
 """
 
-T2 = """
+T2_abl_d = """
 6 2
 5
 7
@@ -206,8 +206,8 @@ T2 = """
 3
 3
 """
-TEST_T2 = """
->>> as_input(T2)
+TEST_T2_abl_d = """
+>>> as_input(T2_abl_d)
 >>> main_abl_d()
 5
 """
@@ -241,16 +241,16 @@ def main_acl_j():
         q, x, y = map(int, input().split())
         if q == 1:
             # update
-            point_set(table, x - 1, y, max)
+            point_set(table, x - 1, y, binop)
         elif q == 2:
             # find
-            print(range_reduce(table, x - 1, y, max, -INF))
+            print(range_reduce(table, x - 1, y, binop, unity))
         else:
             print(bisect_left(table, x - 1, N, y) + 1)
 
 
 # tests
-T1 = """
+T1_acl_j = """
 5 5
 1 2 3 2 1
 2 1 5
@@ -259,13 +259,73 @@ T1 = """
 2 2 4
 3 1 3
 """
-TEST_T1 = """
->>> as_input(T1)
+TEST_T1_acl_j = """
+>>> as_input(T1_acl_j)
 >>> main_acl_j()
 3
 3
 2
 6
+"""
+
+
+def main_abc185f():
+    # verified: https://atcoder.jp/contests/abc185/tasks/abc185_f
+    from operator import xor
+    _N, Q = map(int, input().split())
+    AS = list(map(int, input().split()))
+
+    binop = xor
+    unity = 0
+    table = init_from_values(AS, binop, unity)
+
+    for _q in range(Q):
+        q, x, y = map(int, input().split())
+        if q == 1:
+            # update
+            point_set(table, x - 1, get_value(table, x - 1) ^ y, binop)
+        elif q == 2:
+            print(range_reduce(table, x - 1, y, binop, unity))
+
+
+T1_abc185f = """
+3 4
+1 2 3
+2 1 3
+2 2 3
+1 2 3
+2 2 3
+"""
+TEST_T1_abc185f = """
+>>> as_input(T1_abc185f)
+>>> main_abc185f()
+0
+1
+2
+"""
+
+T2_abc185f = """
+10 10
+0 5 3 4 7 0 0 0 1 0
+1 10 7
+2 8 9
+2 3 6
+2 1 6
+2 1 10
+1 9 4
+1 6 1
+1 6 3
+1 1 7
+2 3 5
+"""
+TEST_T2_abc185f = """
+>>> as_input(T2_abc185f)
+>>> main_abc185f()
+1
+0
+5
+3
+0
 """
 
 
