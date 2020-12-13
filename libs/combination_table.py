@@ -1,5 +1,5 @@
 """
-Combination
+Combination Table
 Not fastest but PyPy compatible version
 """
 
@@ -12,10 +12,6 @@ def makeInverseTable(K=K, MOD=MOD):
     >>> invs = makeInverseTable(10)
     >>> [i * invs[i] % MOD for i in range(1, 10)]
     [1, 1, 1, 1, 1, 1, 1, 1, 1]
-
-    %timeit makeInverseTable()
-    516 ms ± 26.6 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
-    525 ms ± 19.5 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
     """
     ret = [1] * (K + 1)
     for i in range(2, K + 1):
@@ -32,10 +28,6 @@ def makeFactorialTable(K=K, MOD=MOD):
     >>> import math
     >>> fs == [math.factorial(i) % 23 for i in range(11)]
     True
-
-    %timeit makeFactorialTable()
-    163 ms ± 805 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
-    169 ms ± 1.97 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
     """
     ret = [1] * (K + 1)
     cur = 1
@@ -49,11 +41,6 @@ def makeFactorialTable(K=K, MOD=MOD):
 def makeInvFactoTable(inv, K=K, MOD=MOD):
     """calc i!^-1 for i in [0, K] mod MOD. MOD should be prime
     You can not do inv[facto[i]], because facto[i] may greater than K.
-
-    inv = makeInverseTable()
-    %timeit makeInvFactoTable(inv)
-    182 ms ± 1.08 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
-    189 ms ± 1.56 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
     """
     ret = [1] * (K + 1)
     cur = 1
@@ -66,14 +53,11 @@ def makeInvFactoTable(inv, K=K, MOD=MOD):
 
 def combination(n, k, facto, invf, MOD=MOD):
     """combination C(n, k)
-    >>> facto = makeFactorialTable()
-    >>> inv = makeInverseTable()
-    >>> invf = makeInvFactoTable(inv)
-    >>> [combination(10000, i, facto, invf) for i in range(7)]
-    [1, 10000, 49995000, 616668838, 709582588, 797500005, 2082363]
-
-    %timeit combination(10000, 100, facto, invf)
-    814 ns ± 6.5 ns per loop (mean ± std. dev. of 7 runs, 1000000 loops each)
+    # >>> facto = makeFactorialTable()
+    # >>> inv = makeInverseTable()
+    # >>> invf = makeInvFactoTable(inv)
+    # >>> [combination(10000, i, facto, invf) for i in range(7)]
+    # [1, 10000, 49995000, 616668838, 709582588, 797500005, 2082363]
     """
     assert n >= 0
     assert k >= 0
@@ -84,19 +68,16 @@ def combination(n, k, facto, invf, MOD=MOD):
 
 def comb_rep(n, k, facto, invf, MOD=MOD):
     """combination with replacement Cr(n, k)
-    >>> facto = makeFactorialTable()
-    >>> inv = makeInverseTable()
-    >>> invf = makeInvFactoTable(inv)
-    >>> [comb_rep(3, i, facto, invf) for i in range(7)]
-    [1, 3, 6, 10, 15, 21, 28]
-
-    %timeit comb_rep(10000, 100, facto, invf)
-    881 ns ± 8.53 ns per loop (mean ± std. dev. of 7 runs, 1000000 loops each)
+    # >>> facto = makeFactorialTable()
+    # >>> inv = makeInverseTable()
+    # >>> invf = makeInvFactoTable(inv)
+    # >>> [comb_rep(3, i, facto, invf) for i in range(7)]
+    # [1, 3, 6, 10, 15, 21, 28]
     """
     return facto[n + k - 1] * invf[k] % MOD * invf[n - 1] % MOD
 
 
-class Combination:
+class CombinationTable:
     def __init__(self, maxValue, modulo):
         self.maxValue = maxValue
         self.modulo = modulo
@@ -114,7 +95,7 @@ def main():
     # verified: https://scrapbox.io/nishio/ABC132D
     N, K = map(int, input().split())
     MOD = 1_000_000_007
-    c = Combination(N, MOD)
+    c = CombinationTable(N, MOD)
     for i in range(1, K + 1):
         r = c.comb(K - 1, i - 1)
         r *= c.comb(N - K + 1, i)
@@ -153,6 +134,36 @@ TEST_T2 = """
 3990006
 327341989
 """
+
+TEST_T3 = """
+>>> print_all()
+  1   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0
+  1   1   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0
+  1   2   1   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0
+  1   3   3   1   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0
+  1   4   6   4   1   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0
+  1   5  10  10   5   1   0   0   0   0   0   0   0   0   0   0   0   0   0   0
+  1   6  15  20  15   6   1   0   0   0   0   0   0   0   0   0   0   0   0   0
+  1   7  21  35  35  21   7   1   0   0   0   0   0   0   0   0   0   0   0   0
+  1   8  28  56  70  56  28   8   1   0   0   0   0   0   0   0   0   0   0   0
+  1   9  36  84  23  23  84  36   9   1   0   0   0   0   0   0   0   0   0   0
+  1  10  45  17   4  46   4  17  45  10   1   0   0   0   0   0   0   0   0   0
+  1  11  55  62  21  50  50  21  62  55  11   1   0   0   0   0   0   0   0   0
+  1  12  66  14  83  71 100  71  83  14  66  12   1   0   0   0   0   0   0   0
+  1  13  78  80  97  51  68  68  51  97  80  78  13   1   0   0   0   0   0   0
+  1  14  91  55  74  45  16  33  16  45  74  55  91  14   1   0   0   0   0   0
+  1  15   2  43  26  16  61  49  49  61  16  26  43   2  15   1   0   0   0   0
+  1  16  17  45  69  42  77   7  98   7  77  42  69  45  17  16   1   0   0   0
+  1  17  33  62  11   8  16  84   2   2  84  16   8  11  62  33  17   1   0   0
+  1  18  50  95  73  19  24 100  86   4  86 100  24  19  73  95  50  18   1   0
+  1  19  68  42  65  92  43  21  83  90  90  83  21  43  92  65  42  68  19   1
+"""
+
+
+def print_all():
+    c = CombinationTable(10000, 103)
+    for i in range(20):
+        print(*("%3d" % c.comb(i, j) for j in range(20)))
 
 
 def _test():

@@ -3,34 +3,17 @@ Mod Inverse for single value
 Given K, N, R, find x s.t. Kx mod N = R
 """
 
-MOD1 = 1_000_000_007
-MOD9 = 998_244_353
-
 
 def mod_inverse(X, MOD):
     """
     return X^-1 mod MOD
     """
-    try:
-        return pow(X, -1, MOD)
-    except:
-        return _mod_inverse_ee(X, MOD)
+    return pow(X, MOD - 2, MOD)
 
 
-def _mod_inverse_py38(X, MOD):
-    # since Python3.8
-    return pow(X, -1, MOD)
-
-
-def _mod_inverse_ee(a, m):
-    """
-    Solve ax mod m = 1 with extended euclidean.
-    x = a^-1.
-    """
-    x, y, g = _extended_euclidean(a, m)
-    assert g == 1
-    return x % m
-
+# --- end of library ---
+MOD1 = 1_000_000_007
+MOD9 = 998_244_353
 
 # included from libs/extended_euclidean.py
 """
@@ -38,7 +21,7 @@ Extended Euclidean algorithm
 """
 
 
-def _extended_euclidean(a, b, test=False):
+def extended_euclidean(a, b, test=False):
     """
     Given a, b, solve:
     ax + by = gcd(a, b)
@@ -47,9 +30,9 @@ def _extended_euclidean(a, b, test=False):
     Other form, for a prime b:
     ax mod b = gcd(a, b) = 1
 
-    >>> _extended_euclidean(3, 5, test=True)
+    >>> extended_euclidean(3, 5, test=True)
     3 * 2 + 5 * -1 = 1 True
-    >>> _extended_euclidean(240, 46, test=True)
+    >>> extended_euclidean(240, 46, test=True)
     240 * -9 + 46 * 47 = 2 True
 
     Derived from https://atcoder.jp/contests/acl1/submissions/16914912
@@ -71,17 +54,26 @@ def _extended_euclidean(a, b, test=False):
 
 # end of libs/extended_euclidean.py
 
-# --- end of library ---
+def _mod_inverse_ee(a, m):
+    """
+    Solve ax mod m = 1 with extended euclidean.
+    x = a^-1.
+    """
+    x, y, g = extended_euclidean(a, m)
+    assert g == 1
+    return x % m
+
+
 def test1():
     """
     >>> test1()
     ok
     """
     for i in range(1, 10000):
-        if _mod_inverse_py38(i, MOD1) != _mod_inverse_ee(i, MOD1):
+        if mod_inverse(i, MOD1) != _mod_inverse_ee(i, MOD1):
             print(i)
     for i in range(1, 10000):
-        if _mod_inverse_py38(i, MOD9) != _mod_inverse_ee(i, MOD9):
+        if mod_inverse(i, MOD9) != _mod_inverse_ee(i, MOD9):
             print(i)
     print("ok")
 
