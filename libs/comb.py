@@ -67,4 +67,4 @@ if __name__ == "__main__":
     if sys.argv[-1] == "-t":
         _test()
         sys.exit()
-    main()
+    # main()
