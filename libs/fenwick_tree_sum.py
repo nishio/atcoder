@@ -115,5 +115,4 @@ if __name__ == "__main__":
         print("testing")
         _test()
         sys.exit()
-    # main()
-    main_DP_Q()
+    main()
