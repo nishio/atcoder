@@ -5,69 +5,42 @@ def debug(*x, msg=""):
     print(msg, *x, file=sys.stderr)
 
 
-# included from libs/fenwick_tree.py
+# included from libs/fenwick_tree_sum.py
 """
 Fenwick Tree / Binary Indexed Tree (BIT)
+for add/sum operation
 """
 
 
-def init(n, value=0):
-    global N, bit
+def bit_init(n, value=0):
+    global N, bit, raw_value
     N = n
     bit = [value] * (N + 1)  # 1-origin
+    raw_value = [value] * (N + 1)  # for debug
 
 
 def bit_add(pos, val):  # point add / range sum
     assert pos > 0
+    raw_value[pos] += val
+
     x = pos
     while x <= N:
         bit[x] += val
         x += x & -x  # (x & -x) = rightmost 1 = block width
 
 
-def bit_set(pos, val):  # point set / range max
-    assert pos > 0
-    x = pos
-    while x <= N:
-        bit[x] = max(bit[x], val)
-        x += x & -x  # (x & -x) = rightmost 1 = block width
-
-
-def bit_point_action(pos, action_force, action):  # not tested
-    assert pos > 0
-    x = pos
-    while x <= N:
-        bit[x] = action_force(bit[x], action)
-        x += x & -x  # (x & -x) = rightmost 1 = block width
-
-
-def bit_max(pos):
-    assert pos > 0
-    ret = 0
-    x = pos
-    while x > 0:
-        ret = max(ret, bit[x])
-        x -= x & -x
-    return ret
+def bit_set(pos, val):
+    bit_add(pos, val - raw_value[pos])
 
 
 def bit_sum(pos):
     """
-    sum includes x[pos]
+    sum for [0, pos)
     """
     ret = 0
-    x = pos
+    x = pos - 1
     while x > 0:
         ret += bit[x]
-        x -= x & -x
-    return ret
-
-
-def bit_range_reduce(pos, value_binop, value_unity):  # not tested
-    ret = value_unity
-    x = pos
-    while x > 0:
-        ret = value_binop(ret, bit[x])
         x -= x & -x
     return ret
 
@@ -83,24 +56,21 @@ def bit_bisect(lower):
         k //= 2
     return x + 1
 
-# end of libs/fenwick_tree.py
 
+# end of libs/fenwick_tree_sum.py
 
 def solve(H, W, M, PS):
     minX = [H] * W
     minY = [W] * H
     for x, y in PS:
-        # debug(x, y, W, H, msg=":x,y,W,H")
         minX[y - 1] = min(minX[y - 1], x - 1)
         minY[x - 1] = min(minY[x - 1], y - 1)
 
     ret = 0
     # horizontal -> vertical
     for x in range(0, minX[0]):
-        # debug(x, minY[x], msg=":x, minY[x]")
         ret += minY[x]
 
-    # debug(ret, msg=":ret")
     # grouping
     from collections import defaultdict
     P2 = defaultdict(list)
@@ -108,23 +78,16 @@ def solve(H, W, M, PS):
         x, y = PS[i]
         P2[y - 1].append(x - 1)
 
-    init(200000 + 10)
+    bit_init(H + 1)
     x0 = minX[0]
-    blocks = [False] * H
     for y in range(0, minY[0]):
         x1 = minX[y]
-        # debug(y, x1, msg=":y,x1")
         if x1 > x0:
             ret += x1 - x0
             x1 = x0
-        # d = [bit_sum(a) for a in range(x1)]
-        # debug(d, msg=":d")
-        # debug(bit_sum(x1 - 1), msg=":bit_sum(x1)")
-        ret += bit_sum(x1 - 1)
+        ret += bit_sum(x1)
         for x in P2[y]:
-            if not blocks[x]:
-                blocks[x] = True
-                bit_add(x, 1)
+            bit_set(x, 1)
 
     return ret
 
