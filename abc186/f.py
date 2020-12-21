@@ -83,30 +83,49 @@ def bit_bisect(lower):
         k //= 2
     return x + 1
 
-
 # end of libs/fenwick_tree.py
 
+
 def solve(H, W, M, PS):
-    from operator import add
-    ret = H * W - M
+    minX = [H] * W
+    minY = [W] * H
+    for x, y in PS:
+        # debug(x, y, W, H, msg=":x,y,W,H")
+        minX[y - 1] = min(minX[y - 1], x - 1)
+        minY[x - 1] = min(minY[x - 1], y - 1)
 
-    init(200000 + 10)
+    ret = 0
+    # horizontal -> vertical
+    for x in range(0, minX[0]):
+        # debug(x, minY[x], msg=":x, minY[x]")
+        ret += minY[x]
 
+    # debug(ret, msg=":ret")
+    # grouping
     from collections import defaultdict
     P2 = defaultdict(list)
     for i in range(M):
-        x0, y0 = PS[i]
-        P2[x0].append(y0)
+        x, y = PS[i]
+        P2[y - 1].append(x - 1)
 
-    total = 0
-    for x0 in sorted(P2):
-        for y0 in sorted(P2[x0]):
-            s = bit_sum(y0 + 1)
-            # debug(s, msg=":s")
-            ret -= (total - s)
-        for y0 in P2[x0]:
-            bit_add(y0, 1)
-            total += 1
+    init(200000 + 10)
+    x0 = minX[0]
+    blocks = [False] * H
+    for y in range(0, minY[0]):
+        x1 = minX[y]
+        # debug(y, x1, msg=":y,x1")
+        if x1 > x0:
+            ret += x1 - x0
+            x1 = x0
+        # d = [bit_sum(a) for a in range(x1)]
+        # debug(d, msg=":d")
+        # debug(bit_sum(x1 - 1), msg=":bit_sum(x1)")
+        ret += bit_sum(x1 - 1)
+        for x in P2[y]:
+            if not blocks[x]:
+                blocks[x] = True
+                bit_add(x, 1)
+
     return ret
 
 
@@ -180,7 +199,17 @@ T3 = """
 TEST_T3 = """
 >>> as_input(T3)
 >>> main()
-23
+17
+"""
+
+T4 = """
+3 3 1
+1 2
+"""
+TEST_T4 = """
+>>> as_input(T4)
+>>> main()
+7
 """
 
 
