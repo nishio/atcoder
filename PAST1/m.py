@@ -6,8 +6,8 @@ def debug(*x, msg=""):
 
 
 def solve(N, M, AS, BS, CS, DS):
-    left = 1
-    right = 100000
+    left = 0
+    right = 100001
     while left * 1.00000001 < right:
         x = (left + right) / 2
         y = max(DS[i] - x * CS[i] for i in range(M))
