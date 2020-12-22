@@ -1,5 +1,93 @@
 # included from snippets/main.py
+# included from libs/lowest_common_ancestor.py
+"""
+LCA: Lowest Common Ancestor
+"""
 
+MAX_DOUBLING = 20  # calc 2 ** 19 th parent
+
+
+def parent_to_children(parent):
+    from collections import defaultdict
+    children = defaultdict(list)
+    for i, p in enumerate(parent):
+        children[p].append(i)
+    return children
+
+
+def children_to_parent(N, children, root):
+    # Nth element is sentinel: parent[-1] == -1
+    parent = [-1] * (N + 1)
+
+    stack = [root]
+    while stack:
+        v = stack.pop()
+        for c in children[v]:
+            parent[c] = v
+            stack.append(c)
+
+    return parent
+
+
+def construct(N, children, root, parent=None):
+    "children: 0-origin vertex -> list of children vertex"
+    global depth, parents
+    # calc depth
+    depth = [0] * N
+
+    stack = [root]
+    while stack:
+        v = stack.pop()
+        d = depth[v] + 1
+        for c in children[v]:
+            depth[c] = d
+            stack.append(c)
+
+    # doubling
+    if not parent:
+        parent = children_to_parent(N, children, root)
+    parents = [parent]
+    for _i in range(20):
+        prev = parents[-1]
+        # Nth element is sentinel: parent[-1] == -1
+        next = [-1] * (N + 1)
+        for i in range(N):
+            next[i] = prev[prev[i]]
+        parents.append(next)
+
+
+def get_nth_parent(a, n):
+    # find n-th parent of a
+    p = a
+    for i in range(MAX_DOUBLING):
+        if n % 2:
+            p = parents[i][p]
+        n //= 2
+    return p
+
+
+def query(a, b):
+    d = depth[a] - depth[b]
+    if d > 0:
+        a = get_nth_parent(a, d)
+    elif d < 0:
+        b = get_nth_parent(b, -d)
+
+    if a == b:
+        return a
+
+    d = 0
+    for i in range(MAX_DOUBLING):
+        a2 = parents[MAX_DOUBLING - 1 - i][a]
+        b2 = parents[MAX_DOUBLING - 1 - i][b]
+        if a2 != b2:
+            d += 2 ** (MAX_DOUBLING - 1 - i)
+            a = a2
+            b = b2
+    return parents[0][a]
+
+
+# end of libs/lowest_common_ancestor.py
 def debug(*x, msg=""):
     import sys
     print(msg, *x, file=sys.stderr)
@@ -8,31 +96,11 @@ def debug(*x, msg=""):
 def solve(N, PS, Q, QS):
     # to 0-origin
     PS = [p - 1 for p in PS]
-    from collections import defaultdict
-    children = defaultdict(list)
-    for i, p in enumerate(PS):
-        children[p].append(i)
 
-    # calc depth
-    depth = [0] * N
-
-    def visit(v):
-        d = depth[v] + 1
-        for c in children[v]:
-            depth[c] = d
-            visit(c)
+    children = parent_to_children(PS)
 
     root = children[-2][0]
-    visit(root)
-
-    # doubling
-    parents = [PS]
-    for _i in range(20):
-        prev = parents[-1]
-        next = [0] * N
-        for i in range(N):
-            next[i] = prev[prev[i]]
-        parents.append(next)
+    construct(N, children, root, PS)
 
     for a, b in QS:
         a -= 1
@@ -41,11 +109,8 @@ def solve(N, PS, Q, QS):
         if d < 0:
             print("No")
             continue
-        p = a
-        for i in range(20):
-            if d % 2:
-                p = parents[i][p]
-            d //= 2
+
+        p = get_nth_parent(a, d)
         if p == b:
             print("Yes")
         else:
