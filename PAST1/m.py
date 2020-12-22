@@ -6,22 +6,22 @@ def debug(*x, msg=""):
 
 
 def solve(N, M, AS, BS, CS, DS):
-    left = 0
-    right = 100001
-    while left * 1.00000001 < right:
+    left = 0.0
+    right = 1000000.0
+    while left < right - 10 ** -7:
         x = (left + right) / 2
         y = max(DS[i] - x * CS[i] for i in range(M))
         zs = list(sorted([BS[i] - x * AS[i] for i in range(N)], reverse=True))
-        if y > 0:
+        if y > zs[4]:
             y = y + sum(zs[:4])
         else:
             y = sum(zs[:5])
 
-        if y > 0:  # (2)
+        if y >= 0:
             left = x
         else:
             right = x
-    return right
+    return left
 
 
 def main():
@@ -75,6 +75,34 @@ TEST_T2 = """
 >>> as_input(T2)
 >>> main()
 9.000000014535544
+"""
+
+T3 = """
+4 1
+1 1
+1 1
+1 1
+1 1
+1 1
+"""
+TEST_T3 = """
+>>> as_input(T3)
+>>> main()
+result
+"""
+
+T4 = """
+4 1
+1 100000
+1 100000
+1 100000
+1 100000
+1 100000
+"""
+TEST_T4 = """
+>>> as_input(T4)
+>>> main()
+result
 """
 
 
