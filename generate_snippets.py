@@ -50,6 +50,7 @@ def make_template(code, args):
 push("readlist", "read list of integers", """
 list(map(int, input().split()))
 """)
+push("readtuple", "tuple(map(int, input().split()))")
 
 push("readints", "map(int, input().split())")
 
