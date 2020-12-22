@@ -57,14 +57,13 @@ def construct(N, children, root, parent=None):
 def get_nth_parent(a, n):
     # find n-th parent of a
     p = a
-    for i in range(20):
+    for i in range(MAX_DOUBLING):
         if n % 2:
             p = parents[i][p]
         n //= 2
     return p
 
 
-@profile
 def query(a, b):
     d = depth[a] - depth[b]
     if d > 0:
@@ -75,17 +74,15 @@ def query(a, b):
     if a == b:
         return a
 
-    left = 0
-    right = 2 ** (MAX_DOUBLING - 1)
-    while left < right - 1:
-        x = (left + right) // 2
-        a2 = get_nth_parent(a, x)
-        b2 = get_nth_parent(b, x)
+    d = 0
+    for i in range(MAX_DOUBLING):
+        a2 = parents[MAX_DOUBLING - 1 - i][a]
+        b2 = parents[MAX_DOUBLING - 1 - i][b]
         if a2 != b2:
-            left = x
-        else:
-            right = x
-    return get_nth_parent(a, right)
+            d += 2 ** (MAX_DOUBLING - 1 - i)
+            a = a2
+            b = b2
+    return parents[0][a]
 
 # --- end of library ---
 
@@ -171,6 +168,51 @@ TEST_T1 = """
 0
 """
 
+T2 = """
+16
+3 1 2 3
+3 4 5 6
+0
+2 7 8
+0
+2 9 10
+2 14 15
+0
+0
+0
+3 11 12 13
+0
+0
+0
+0
+0
+10
+1 3
+4 5
+4 9
+4 10
+4 13
+9 13
+9 14
+9 8
+13 14
+13 7
+"""
+TEST_T2 = """
+>>> as_input(T2)
+>>> main()
+0
+1
+1
+1
+1
+5
+1
+0
+1
+0
+"""
+
 
 def _test():
     import doctest
@@ -200,8 +242,8 @@ if __name__ == "__main__":
         print("testing")
         _test()
         sys.exit()
-    # main()
-    biased_test2()
+    main()
+    # biased_test2()
     sys.exit()
 
 # end of snippets/main.py
