@@ -1,10 +1,3 @@
-# included from snippets/main.py
-
-def debug(*x, msg=""):
-    import sys
-    print(msg, *x, file=sys.stderr)
-
-
 # included from libs/unionfind.py
 """
 Union-Find Tree / Disjoint Set Union (DSU)
@@ -49,10 +42,16 @@ def num_components():
 
 
 # end of libs/unionfind.py
+
+# included from snippets/main.py
+
+def debug(*x, msg=""):
+    import sys
+    print(msg, *x, file=sys.stderr)
+
+
 def solve(N, M, LARGE, SMALL):
     from math import sqrt
-    # from collections import defaultdict
-    # edges = defaultdict(dict)
     edges = []
     for i in range(N):
         x1, y1, c1 = LARGE[i]
@@ -61,8 +60,6 @@ def solve(N, M, LARGE, SMALL):
             d = sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
             if c1 != c2:
                 d *= 10
-            # edges[i][j] = d
-            # edges[j][i] = d
             edges.append((d, i, j))
     large_edges = edges[:]
 
