@@ -62,10 +62,17 @@ push("readstrascii", "input().strip().decode('ascii')")
 
 push("readquery", """
 N, Q = map(int, input().split())
+# Q = int(input())
 QS = []
 for _q in range(Q):
     QS.append(tuple(map(int, input().split())))
 """)
+
+push("readtuples", make_template("""
+XS = []
+for _i in range(N):
+    XS.append(tuple(map(int, input().split())))
+""", "XS N"))
 
 push("readedges", "read graph", make_template("""
 from collections import defaultdict
@@ -190,6 +197,14 @@ def as_input(s):
 push("MOD1", "MOD = 1_000_000_007")
 push("MOD9", "MOD = 998_244_353")
 push("INF", "INF = 9223372036854775807")
+
+push("for_subset", make_template("""
+for subset in range(2 ** N):
+    for i in range(N):
+        if subset & (1 << i):
+            pass
+    pass
+""", "subset N i"))
 
 EOL = "# --- end of library ---"
 push("eol", "end of library", EOL)
