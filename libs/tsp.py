@@ -3,7 +3,7 @@ TSP: Travelling salesman problem / bit DP
 """
 
 
-def solve_tsp(num_vertex, distance):
+def tsp_return(num_vertex, distances):
     import sys
     INF = sys.maxsize
 
@@ -18,8 +18,30 @@ def solve_tsp(num_vertex, distance):
                 if subset & mask:
                     memo[subset][v] = min(
                         memo[subset][v],
-                        memo[subset ^ mask][u] + distance[u][v])
+                        memo[subset ^ mask][u] + distances[u][v])
     return memo[-1][0]
+
+
+def tsp_not_return(num_vertex, distances, from_start):
+    # PAST3M
+    SUBSETS = 2 ** num_vertex
+    INF = 9223372036854775807
+    memo = [[INF] * num_vertex for _s in range(SUBSETS)]
+
+    for subset in range(1, SUBSETS):
+        for v in range(num_vertex):  # new vertex
+            mask = 1 << v
+            if subset == 1 << v:
+                # previous vertex is start
+                memo[subset][v] = min(
+                    memo[subset][v],
+                    from_start[v])
+            elif subset & mask:  # new subset includes v
+                for u in range(num_vertex):
+                    memo[subset][v] = min(
+                        memo[subset][v],
+                        memo[subset ^ mask][u] + distances[u][v])
+    return min(memo[-1])
 
 # --- end of library ---
 
@@ -34,7 +56,7 @@ def solve(N, XYZS):
             p, q, r = XYZS[j]
             ds.append(abs(p - a) + abs(q - b) + max(0, r - c))
 
-    return solve_tsp(N, dist)
+    return tsp_return(N, dist)
 
 
 def main():
