@@ -1,3 +1,28 @@
+# included from libs/coordinate_compression.py
+"""
+Coordinate compression (CoCo) / Zahyo Asshuku
+"""
+
+
+class CoordinateCompression:
+    def __init__(self):
+        self.values = []
+
+    def add(self, x):
+        self.values.append(x)
+
+    def compress(self):
+        self.values.sort()
+        x2i = {}
+        for i, x in enumerate(self.values):
+            x2i[x] = i
+        self.x2i = x2i
+        self.i2x = self.values
+        return self.x2i, self.i2x
+
+# end of libs/coordinate_compression.py
+
+
 # included from libs/segtree.py
 """
 Segment Tree
@@ -65,6 +90,11 @@ def point_set(table, pos, value, binop):
             table[pos * 2],
             table[pos * 2 + 1],
         )
+
+
+def point_add(table, pos, value, binop):
+    # frequent shortcut
+    point_set(table, pos, binop(get_value(table, pos), value), binop)
 
 
 def range_reduce(table, left, right, binop, unity):
@@ -159,38 +189,22 @@ def debug(*x, msg=""):
 
 
 def solve(N, Q, SS, QS):
-    xs = []
+    c = CoordinateCompression()
     for x, _, width, _ in SS:
-        xs.append(x)
-        xs.append(x + width)
+        c.add(x)
+        c.add(x + width)
     for x, _ in QS:
-        xs.append(x)
-    xs.sort()
-    x2i = {}
-    for i, x in enumerate(xs):
-        x2i[x] = i
-    i2x = xs
+        c.add(x)
+    x2i, i2x = c.compress()
 
     commands = []
     for x, y, width, cost in SS:
         start = x2i[x]
         end = x2i[x + width]
-        commands.append((
-            y, start - 0.5,
-            "add",
-            start, end, cost
-        ))
-        commands.append((
-            y + width, end + 0.5,
-            "add",
-            start, end, -cost
-        ))
+        commands.append((y, start - 0.5, "add", start, end, cost))
+        commands.append((y + width, end + 0.5, "add", start, end, -cost))
     for x, y in QS:
-        commands.append((
-            y, x2i[x],
-            "read",
-            None, None, None
-        ))
+        commands.append((y, x2i[x], "read", None, None, None))
     commands.sort()
     result = {}
 
@@ -201,8 +215,8 @@ def solve(N, Q, SS, QS):
     for y, x, typ, start, end, cost in commands:
         if typ == "add":
             # range add as two point_add
-            point_set(table, start, get_value(table, start) + cost, add)
-            point_set(table, end + 1, get_value(table, end + 1) - cost, add)
+            point_add(table, start, cost, add)
+            point_add(table, end + 1, -cost, add)
         else:
             # point read as range sum
             v = range_reduce(table, 0, x + 1, add, 0)
