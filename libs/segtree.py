@@ -66,6 +66,11 @@ def point_set(table, pos, value, binop):
         )
 
 
+def point_add(table, pos, value, binop):
+    # shortcut for frequent usecase
+    point_set(table, pos, binop(get_value(table, pos), value), binop)
+
+
 def range_reduce(table, left, right, binop, unity):
     assert right <= NONLEAF_SIZE + 1  # or right = min(right, NONLEAF_SIZE + 1)
     ret_left = unity
