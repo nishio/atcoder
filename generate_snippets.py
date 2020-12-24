@@ -206,6 +206,17 @@ for subset in range(2 ** N):
     pass
 """, "subset N i"))
 
+push("use_mincostflow", """
+global mcf
+mcf = MinCostFlow(numVertex)
+# construct graph
+mcf.add_edge(frm, to, capacity, cost)
+# debug
+print(list(mcf.edges()))
+# flow
+cap, cost = mcf.flow(start, goal)
+""")
+
 EOL = "# --- end of library ---"
 push("eol", "end of library", EOL)
 

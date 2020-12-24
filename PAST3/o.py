@@ -1,8 +1,7 @@
+# included from libs/mincostflow.py
 """
-Minimum Cost Flow
-Don't add negative edges
+Min Cost Flow
 
-usage: snippet "use mincostflow"
 """
 
 # derived: https://atcoder.jp/contests/practice2/submissions/16726003
@@ -108,74 +107,86 @@ class MinCostFlow():
             prev_cost = cost
         return res
 
-# --- end of library ---
+
+# end of libs/mincostflow.py
+
+# included from snippets/main.py
 
 
-def solve(N, data, K):
-    INF = 10 ** 10
-    mcf = MinCostFlow(2 * N + 2)
-    start = 2 * N
-    goal = 2 * N + 1
-    mcf.add_edge(start, goal, N * K, INF)
+def debug(*x, msg=""):
+    import sys
+    print(msg, *x, file=sys.stderr)
 
-    for i in range(N):
-        mcf.add_edge(start, i, K, 0)
-        mcf.add_edge(i + N, goal, K, 0)
+
+def solve(N, M, AS, BS, RS):
+    global mcf
+    INF = 10 ** 5
+    mcf = MinCostFlow(N + 5)
+    start = N
+    goal = N + 1
+    round = N + 2
+    for i in range(3):
+        mcf.add_edge(start, round + i, M, 0)
+
+    for i in range(3):
         for j in range(N):
-            mcf.add_edge(i, j + N, 1, INF - data[i][j])
+            r = AS[j] * (BS[j] ** (i + 1)) % RS[i]
+            mcf.add_edge(round + i, j, 1, INF - r)
 
-    print(N * K * INF - mcf.flow_with_limit(start, goal, N * K)[1])
+    for j in range(N):
+        cs = [AS[j] * (BS[j] ** (k + 1)) for k in range(3)]
+        cs.append(0)
+        for k in range(3):
+            c = cs[k] - cs[k-1]
+            mcf.add_edge(j, goal, 1, c)
 
-    ret = [['.' for j in range(N)] for i in range(N)]
-
-    for frm, to, _cap, flow, _cost in mcf.edges():
-        if flow == 0 or frm == start or to == goal:
-            continue
-        ret[frm][to - N] = 'X'
-
-    for r in ret:
-        print(''.join(r))
+    return INF * (3 * M) - mcf.flow(start, goal)[-1]
 
 
 def main():
-    # verified: https://atcoder.jp/contests/practice2/tasks/practice2_e
-    N, K = map(int, input().split())
-    data = []
-    for _i in range(N):
-        data.append(list(map(int, input().split())))
-
-    solve(N, data, K)
+    # parse input
+    N, M = map(int, input().split())
+    AS = list(map(int, input().split()))
+    BS = list(map(int, input().split()))
+    RS = list(map(int, input().split()))
+    print(solve(N, M, AS, BS, RS))
 
 
 # tests
 T1 = """
-3 1
-5 3 2
-1 4 8
-7 6 9
+2 1
+3 2
+3 3
+100000 100000 100000
 """
 TEST_T1 = """
 >>> as_input(T1)
 >>> main()
-19
-X..
-..X
-.X.
+81
 """
 
 T2 = """
-3 2
-10 10 1
-10 10 1
-1 1 10
+4 2
+2 4 3 3
+4 2 3 3
+100000 100000 100000
 """
 TEST_T2 = """
 >>> as_input(T2)
 >>> main()
-50
-XX.
-XX.
-..X
+210
+"""
+
+T3 = """
+20 19
+3 2 3 4 3 3 2 3 2 2 3 3 4 3 2 4 4 3 3 4
+2 3 4 2 4 3 3 2 4 2 4 3 3 2 3 4 4 4 2 2
+3 4 5
+"""
+TEST_T3 = """
+>>> as_input(T3)
+>>> main()
+-1417
 """
 
 
@@ -185,6 +196,7 @@ def _test():
     g = globals()
     for k in sorted(g):
         if k.startswith("TEST_"):
+            print(k)
             doctest.run_docstring_examples(g[k], g, name=k)
 
 
@@ -201,8 +213,12 @@ if __name__ == "__main__":
     import sys
     input = sys.stdin.buffer.readline
     read = sys.stdin.buffer.read
+    sys.setrecursionlimit(10 ** 6)
     if sys.argv[-1] == "-t":
         print("testing")
         _test()
         sys.exit()
     main()
+    sys.exit()
+
+# end of snippets/main.py
