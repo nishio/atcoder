@@ -18,6 +18,7 @@ class MinCostFlow():
     def add_edge(self, fr, to, cap, cost):
         #assert 0 <= fr < self.n
         #assert 0 <= to < self.n
+        assert cost >= 0  # Don't add negative edges
         m = len(self.pos)
         self.pos.append((fr, len(self.graph[fr])))
         self.graph[fr].append([to, len(self.graph[to]), cap, cost])
