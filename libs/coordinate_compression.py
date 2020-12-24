@@ -4,8 +4,10 @@ Coordinate compression (CoCo) / Zahyo Asshuku
 
 
 class CoordinateCompression:
-    def __init__(self):
-        self.values = []
+    def __init__(self, values=None):
+        if not values:
+            values = []
+        self.values = values[:]
 
     def add(self, x):
         self.values.append(x)
