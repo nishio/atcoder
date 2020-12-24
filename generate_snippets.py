@@ -74,13 +74,22 @@ for _i in range(N):
     XS.append(tuple(map(int, input().split())))
 """, "XS N"))
 
-push("readedges", "read graph", make_template("""
+push("readedgecost", "read edges with cost", make_template("""
 from collections import defaultdict
 edges = defaultdict(dict)
 for _i in range(NUM_EDGES):
     frm, to, cost = map(int, input().split())
     edges[frm-1][to-1] = cost  # -1 for 1-origin vertexes
     edges[to-1][frm-1] = cost  # if bidirectional
+""", "NUM_EDGES -1"))
+
+push("readedges", "read costless edges", make_template("""
+from collections import defaultdict
+edges = defaultdict(list)
+for _i in range(NUM_EDGES):
+    frm, to = map(int, input().split())
+    edges[frm-1].append(to-1)  # -1 for 1-origin vertexes
+    edges[to-1].append(frm-1)  # if bidirectional
 """, "NUM_EDGES -1"))
 
 push("readbigint", "[x - ord('0') for x in input().strip()]")
