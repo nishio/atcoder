@@ -6,12 +6,15 @@ def debug(*x, msg=""):
 
 
 def solve(D, L, N, CS, KFTS):
+    import bisect
     MAX_C = 10 ** 5
     first = [None] * MAX_C
     prev = [None] * MAX_C
     next = [None] * D
+    occur = [[] for _i in range(MAX_C)]
     for i, d in enumerate(CS):
         d -= 1  # to 0-origin
+        occur[d].append(i)
         if first[d] is None:
             first[d] = i
             prev[d] = i
@@ -21,6 +24,7 @@ def solve(D, L, N, CS, KFTS):
     for d in range(MAX_C):
         if prev[d] is not None:
             next[prev[d]] = D + first[d]
+            occur[d].append(D + first[d])
 
     ups = [0] * D
     for i in range(D):
@@ -55,28 +59,28 @@ def solve(D, L, N, CS, KFTS):
             print(0)
             continue
         ret = 0
-        if CS[F % D] == K:
-            ret = 1
         countdown = T - 1
         cur = F
         prev = cur
-        while countdown:
-            cur += 1
-            if CS[cur % D] == K:
-                ret += 1
-                countdown -= 1
-                # doubling binary search
-                for i in range(30 - 1, -1, -1):
-                    up = db_ups[i][cur % D]
-                    if countdown >= up:
-                        countdown -= up
-                        cur = db_next[i][cur % D]
-                        ret += 2 ** i
-                break
 
-            elif cur - prev == L:
-                prev = cur
-                countdown -= 1
+        # find first occurence
+        i = bisect.bisect_left(occur[K - 1], F)
+        oc = occur[K - 1][i]
+        up = (oc - cur - 1) // L + 1
+        if up > countdown:
+            print(0)
+            continue
+        countdown -= up
+        ret += 1
+        cur = oc % D
+        # doubling binary search
+        for i in range(30 - 1, -1, -1):
+            up = db_ups[i][cur % D]
+            if countdown >= up:
+                countdown -= up
+                cur = db_next[i][cur % D]
+                ret += 2 ** i
+
         print(ret)
 
 
