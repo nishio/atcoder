@@ -6,83 +6,67 @@ def debug(*x, msg=""):
 
 
 def solve(data):
-    import sys
-    sys.setrecursionlimit(10 ** 6)
-    INF = sys.maxsize  # float("inf")
-    MOD = 10 ** 9 + 7  # 998_244_353
-
     ZERO = ord("0")
     ONE = ord("1")
-    QUEST = ord("?")
 
-    table = [0] * (2 ** 12)
-    table[0] = 1
+    onemasks = []
+    zeromasks = []
     for y in range(18):
-        for x in range(6):
-            newtable = [0] * (2 ** 12)
+        onemask = 0
+        zeromask = 0
+        for i in range(6):
+            if data[y][i] == ONE:
+                onemask += 1 << i
+            if data[y][i] != ZERO:
+                zeromask += 1 << i
+        onemasks.append(onemask)
+        zeromasks.append(zeromask)
 
-            for s in range(2 ** 12):
-                if table[s] == 0:
+    def is_valid(y, s):
+        return (
+            onemasks[y] & s == onemasks[y] and
+            zeromasks[y] | s == zeromasks[y]
+        )
+
+    def is_median(p1, p2, s):
+        for i in range(6):
+            # median check
+            mask = (1 << i)
+            neighbor = sum(
+                x & mask > 0 for x in
+                [p1, (p2 << 1), (p2 >> 1), s])
+            is_ok_one = (p2 & mask) and neighbor >= 2
+            is_ok_zero = not(p2 & mask) and neighbor <= 2
+            if not (is_ok_one or is_ok_zero):
+                return False
+        return True
+
+    def debugprint(*args):
+        def to_s(x):
+            return "".join(reversed(f"{x:06b}"))
+        print(*[to_s(x) for x in args], sep="\n", file=sys.stderr)
+
+    P6 = 2 ** 6
+    P12 = 2 ** 12
+    table = [0] * P12
+    for s in range(P6):
+        if is_valid(0, s):
+            for s2 in range(P6):
+                if is_valid(1, s) and is_median(0, s, s2):
+                    table[s * P6 + s2] = 1
+
+    for y in range(2, 18):
+        newtable = [0] * P12
+        for s in range(P6):
+            if not is_valid(y, s):
+                continue
+            for past in range(P12):
+                if table[past] == 0:
                     continue
-                if data[y][x] == QUEST:
-                    total = 0
-                    if x > 0:
-                        if (s >> (x - 1)) & 1:
-                            total += 1
-                        else:
-                            total -= 1
-                    else:
-                        total -= 1
-
-                    if x < 5:
-                        if data[y][x + 1] == ONE:
-                            total += 1
-                        elif data[y][x + 1] == ZERO:
-                            total -= 1
-                    else:
-                        total -= 1
-
-                    up = (s >> x) & 1
-                    if up:
-                        total += 1
-                    else:
-                        total -= 1
-
-                    debug(total, msg=":total")
-                    if total != 3:
-                        danger = (s >> (6 + x)) & 1
-                        if not (up and danger):
-                            # can place 0
-                            next = s ^ (s & (1 << x))
-                            if total == 1:
-                                # danger, should not place 1 below
-                                next |= (1 << 6)
-                            debug(y, x, f"{s:06b}", f"{next:06b}",
-                                  msg="canbe0:y, x")
-                            newtable[next] += table[s]
-                    if total != -3:
-                        danger = (s >> (6 + x)) & 1
-                        if not (not up and danger):
-                            # can place 1
-                            next = s | (1 << x)
-                            if total == -1:
-                                # danger, should not place 0 below
-                                next |= (1 << 6)
-
-                            debug(y, x, f"{s:06b}", f"{next:06b}",
-                                  msg="canbe1:y, x")
-                            newtable[next] += table[s]
-                elif data[y][x] == ZERO:
-                    next = s ^ (s & (1 << x))
-                    newtable[next] += table[s]
-                elif data[y][x] == ONE:
-                    next = s | (1 << x)
-                    newtable[next] += table[s]
-                else:
-                    raise RuntimeError
-
-            table = newtable
-            # debug(table, msg=":table")
+                p1, p2 = divmod(past, P6)
+                if is_median(p1, p2, s):
+                    newtable[p2 * P6 + s] += table[past]
+        table = newtable
     return sum(table)
 
 
@@ -121,6 +105,59 @@ TEST_T1 = """
 2
 """
 
+T2 = """
+???000
+???000
+???000
+000000
+000000
+000000
+000000
+000000
+000000
+000000
+000000
+000000
+000000
+000000
+000000
+000000
+000000
+000000
+"""
+TEST_T2 = """
+>>> as_input(T2)
+>>> main()
+16
+"""
+
+T3 = """
+?01000
+1101?1
+100111
+1?11??
+???00?
+00011?
+1?1??1
+000101
+100?11
+1010??
+?101??
+?1??10
+????10
+?1??0?
+1?1???
+110?1?
+0000?0
+001?10
+"""
+
+TEST_T3 = """
+>>> as_input(T3)
+>>> main()
+0
+"""
+
 T4 = """
 ??????
 ??????
@@ -141,7 +178,7 @@ T4 = """
 ??????
 ??????
 """
-_TEST_T4 = """
+TEST_T4 = """
 >>> as_input(T4)
 >>> main()
 243882696958399859
@@ -154,6 +191,7 @@ def _test():
     g = globals()
     for k in sorted(g):
         if k.startswith("TEST_"):
+            print(k)
             doctest.run_docstring_examples(g[k], g, name=k)
 
 
