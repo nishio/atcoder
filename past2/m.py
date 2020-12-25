@@ -6,6 +6,22 @@ def debug(*x, msg=""):
 
 
 def solve(D, L, N, CS, KFTS):
+    MAX_C = 10 ** 5
+    first = [None] * MAX_C
+    prev = [None] * MAX_C
+    next = [None] * D
+    for i, d in enumerate(CS):
+        d -= 1  # to 0-origin
+        if first[d] is None:
+            first[d] = i
+            prev[d] = i
+        else:
+            next[prev[d]] = i
+            prev[d] = i
+    for d in range(MAX_C):
+        if prev[d] is not None:
+            next[prev[d]] = D + first[d]
+
     for K, F, T in KFTS:
         F -= 1  # 1-origin to 0-origin
         ret = 0
@@ -18,8 +34,22 @@ def solve(D, L, N, CS, KFTS):
             cur += 1
             if CS[cur % D] == K:
                 ret += 1
-                prev = cur
                 countdown -= 1
+                while True:
+                    n = next[cur % D]
+                    d = n - cur
+                    if d < 0:
+                        d += D
+                    up = (d - 1) // L + 1
+                    if countdown >= up:
+                        countdown -= up
+                        cur = n
+                        ret += 1
+                        continue
+                    else:
+                        countdown = 0
+                        break
+
             elif cur - prev == L:
                 prev = cur
                 countdown -= 1
