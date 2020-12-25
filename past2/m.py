@@ -22,6 +22,15 @@ def solve(D, L, N, CS, KFTS):
         if prev[d] is not None:
             next[prev[d]] = D + first[d]
 
+    ups = [0] * D
+    for i in range(D):
+        n = next[i]
+        d = n - i
+        if d < 0:
+            d += D
+        up = (d - 1) // L + 1
+        ups[i] = up
+
     for K, F, T in KFTS:
         F -= 1  # 1-origin to 0-origin
         ret = 0
@@ -36,16 +45,11 @@ def solve(D, L, N, CS, KFTS):
                 ret += 1
                 countdown -= 1
                 while True:
-                    n = next[cur % D]
-                    d = n - cur
-                    if d < 0:
-                        d += D
-                    up = (d - 1) // L + 1
+                    up = ups[cur % D]
                     if countdown >= up:
                         countdown -= up
-                        cur = n
+                        cur = next[cur % D]
                         ret += 1
-                        continue
                     else:
                         countdown = 0
                         break
