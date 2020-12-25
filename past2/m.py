@@ -31,6 +31,24 @@ def solve(D, L, N, CS, KFTS):
         up = (d - 1) // L + 1
         ups[i] = up
 
+    # doubling
+    db_next = [next]
+    db_ups = [ups]
+    for _i in range(1, 30):
+        next = db_next[-1]
+        ups = db_ups[-1]
+        new_next = []
+        new_ups = []
+        for i in range(D):
+            n1 = next[i] % D
+            n2 = next[n1]
+            u1 = ups[i]
+            u2 = ups[n1]
+            new_next.append(n2)
+            new_ups.append(u1 + u2)
+        db_next.append(new_next)
+        db_ups.append(new_ups)
+
     for K, F, T in KFTS:
         F -= 1  # 1-origin to 0-origin
         ret = 0
@@ -44,15 +62,14 @@ def solve(D, L, N, CS, KFTS):
             if CS[cur % D] == K:
                 ret += 1
                 countdown -= 1
-                while True:
-                    up = ups[cur % D]
+                # doubling binary search
+                for i in range(30 - 1, -1, -1):
+                    up = db_ups[i][cur % D]
                     if countdown >= up:
                         countdown -= up
-                        cur = next[cur % D]
-                        ret += 1
-                    else:
-                        countdown = 0
-                        break
+                        cur = db_next[i][cur % D]
+                        ret += 2 ** i
+                break
 
             elif cur - prev == L:
                 prev = cur
