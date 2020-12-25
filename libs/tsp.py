@@ -4,14 +4,13 @@ TSP: Travelling salesman problem / bit DP
 
 
 def tsp_return(num_vertex, distances):
-    import sys
-    INF = sys.maxsize
-
-    SIZE = 2 ** num_vertex
-    memo = [[INF] * num_vertex for _i in range(SIZE)]
+    # ABC180E
+    INF = 9223372036854775807
+    SUBSETS = 2 ** num_vertex
+    memo = [[INF] * num_vertex for _i in range(SUBSETS)]
 
     memo[0][0] = 0
-    for subset in range(1, SIZE):
+    for subset in range(1, SUBSETS):
         for v in range(num_vertex):
             for u in range(num_vertex):
                 mask = 1 << u
@@ -24,9 +23,9 @@ def tsp_return(num_vertex, distances):
 
 def tsp_not_return(num_vertex, distances, from_start):
     # PAST3M
-    SUBSETS = 2 ** num_vertex
     INF = 9223372036854775807
-    memo = [[INF] * num_vertex for _s in range(SUBSETS)]
+    SUBSETS = 2 ** num_vertex
+    memo = [[INF] * num_vertex for _i in range(SUBSETS)]
 
     for subset in range(1, SUBSETS):
         for v in range(num_vertex):  # new vertex
