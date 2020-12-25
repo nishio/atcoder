@@ -86,13 +86,17 @@ def solve(N, Q, QS):
 
     def swap(i):
         values[i], values[i + 1] = values[i + 1], values[i]
+        if i > 0:
+            ft.set(i - 1, 1)
+        ft.set(i, 1)
+        if i < N - 1:
+            ft.set(i + 1, 1)
 
     for t, x, y in QS:
         if t == 1:
             x -= 1
             # swap query
             swap(x)
-            ft.set(x, 1)
         else:
             x -= 1
             y -= 1
@@ -100,11 +104,10 @@ def solve(N, Q, QS):
             s = ft.sum(x) + 1
             pos = ft.bisect(s) - 1
             while pos < y:
-                # ft.set(pos, 0)
+                ft.set(pos, 0)
                 while pos >= x and values[pos] > values[pos + 1]:
                     swap(pos)
                     pos -= 1
-                s += 1
                 pos = ft.bisect(s) - 1
 
     return values
