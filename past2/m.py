@@ -51,6 +51,9 @@ def solve(D, L, N, CS, KFTS):
 
     for K, F, T in KFTS:
         F -= 1  # 1-origin to 0-origin
+        if first[K - 1] is None:
+            print(0)
+            continue
         ret = 0
         if CS[F % D] == K:
             ret = 1
