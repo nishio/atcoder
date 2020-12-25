@@ -6,16 +6,23 @@ def debug(*x, msg=""):
 
 
 def solve(N, K, D, AS):
+    from heapq import heappush, heappop, heapify
     end = N - D * (K - 1)
     start = 0
     ret = []
+    queue = [(AS[i], i) for i in range(start, end)]
+    heapify(queue)
     for _i in range(K):
-        subseq = AS[start:end]
-        if not subseq:
+        if start >= end:
             return [-1]
-        v = min(subseq)
+        while True:
+            v, i = heappop(queue)
+            if start <= i < end:
+                break
         ret.append(v)
-        start = AS.index(v, start) + D
+        start = i + D
+        for i in range(end, min(end + D, N)):
+            heappush(queue, (AS[i], i))
         end += D
     return ret
 
