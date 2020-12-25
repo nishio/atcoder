@@ -20,6 +20,12 @@ class FenwickTree:
     [0, 0, 1, 1, 1, 3, 3, 3, 7, 7]
     >>> ft.bisect(3)
     5
+    >>> ft.find_next(0)
+    1
+    >>> ft.find_next(1)
+    4
+    >>> ft.find_next(2)
+    4
     """
 
     def __init__(self, size, value=0):
@@ -50,7 +56,7 @@ class FenwickTree:
         return ret
 
     def bisect(self, lower):
-        "find a s.t. v1 + v2 + ... + va >= lower"
+        "find x s.t. sum(x) >= lower"
         x = 0
         k = 1 << (self.size.bit_length() - 1)  # largest 2^m <= N
         while k > 0:
@@ -59,6 +65,11 @@ class FenwickTree:
                 x += k
             k //= 2
         return x + 1
+
+    def find_next(self, pos):
+        "for 0/1 data, find i s.t. i > pos and raw_values[i] == 1"
+        s = self.sum(pos + 1) + 1
+        return self.bisect(s) - 1
 
 
 # end of libs/fenwick_tree_sum.py
@@ -70,26 +81,36 @@ def debug(*x, msg=""):
 
 
 def solve(N, Q, QS):
+    values = list(range(1, N + 1))
     ft = FenwickTree(N)
-    ft.set(0, 1)
-    start = [None] * N
-    end = [None] * N
-    start[0] = 0
-    end[0] = N
+
+    def swap(i):
+        values[i], values[i + 1] = values[i + 1], values[i]
+        if i > 0:
+            ft.set(i - 1, 1)
+        ft.set(i, 1)
+        if i < N - 1:
+            ft.set(i + 1, 1)
 
     for t, x, y in QS:
         if t == 1:
+            x -= 1
             # swap query
-            s = ft.sum(x)
-            pos = ft.bisect(s)
-            s = start[pos]
-            e = end[pos]
-            width = e - s
-            if x == pos:
-                start[pos] =
-                pass
-            elif x + 1 == pos + width:
-                pass
+            swap(x)
+        else:
+            x -= 1
+            y -= 1
+            # sort query
+            s = ft.sum(x) + 1
+            pos = ft.bisect(s) - 1
+            while pos < y:
+                ft.set(pos, 0)
+                while pos >= x and values[pos] > values[pos + 1]:
+                    swap(pos)
+                    pos -= 1
+                pos = ft.bisect(s) - 1
+
+    return values
 
 
 def main():
@@ -98,7 +119,7 @@ def main():
     QS = []
     for _i in range(Q):
         QS.append(tuple(map(int, input().split())))
-    print(solve(N, Q, QS))
+    print(*solve(N, Q, QS))
 
 
 # tests
@@ -112,6 +133,30 @@ TEST_T1 = """
 >>> as_input(T1)
 >>> main()
 2 1 3 4 5
+"""
+
+T2 = """
+10 15
+1 3 0
+1 5 0
+1 4 0
+1 2 0
+1 3 0
+2 4 7
+1 5 0
+1 7 0
+1 9 0
+1 8 0
+2 3 5
+1 8 0
+1 9 0
+1 5 0
+1 2 0
+"""
+TEST_T2 = """
+>>> as_input(T2)
+>>> main()
+1 2 4 5 3 6 8 7 9 10
 """
 
 
