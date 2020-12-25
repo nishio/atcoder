@@ -87,19 +87,8 @@ def query(a, b):
 
 
 # end of libs/lowest_common_ancestor.py
-# included from snippets/main.py
-
-def debug(*x, msg=""):
-    import sys
-    print(msg, *x, file=sys.stderr)
-
-
-def solve(N, Q, edges, QS, ordered_edges):
+def graph_to_tree(N, edges, root):
     from collections import defaultdict
-    color = [0] * N
-    uplink = [None] * N
-
-    # graph to tree
     children = defaultdict(list)
     parents = [None] * N
     root = 0
@@ -114,7 +103,23 @@ def solve(N, Q, edges, QS, ordered_edges):
             parents[u] = v
             children[v].append(u)
             stack.append(u)
+    return children, parents
 
+# included from snippets/main.py
+
+
+def debug(*x, msg=""):
+    import sys
+    print(msg, *x, file=sys.stderr)
+
+
+def solve(N, Q, edges, QS, ordered_edges):
+    from collections import defaultdict
+    color = [0] * N
+    uplink = [None] * N
+    root = 0
+    # graph to tree
+    children, parents = graph_to_tree(N, edges, root)
     # ready lca
     construct(N, children, root, parents)
 
