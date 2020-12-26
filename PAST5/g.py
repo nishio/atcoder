@@ -50,7 +50,6 @@ def allPosition():
             yield WIDTH + 1 + WIDTH * y + x
 
 # end of libs/readMap.py
-
 # included from snippets/main.py
 
 
@@ -59,106 +58,134 @@ def debug(*x, msg=""):
     print(msg, *x, file=sys.stderr)
 
 
-def solve(H, W, world, stamp):
-    S = max(H, W)
-    # world
-    WW = W + 2 * S
-    WH = H + 2 * S
-    # stamp
-    SW = W
-    SH = H
+def solve(H, W, data):
+    from collections import defaultdict
+    # make graph
+    edges = defaultdict(list)
+    count = 0
+    a_vertex = None
+    for x in range(H):
+        for y in range(W):
+            v = W * x + y
+            pos = WIDTH + 1 + WIDTH * x + y
+            if data[pos]:
+                a_vertex = v
+                count += 1
+                if data[pos + 1]:
+                    edges[v].append(v + 1)
+                    edges[v + 1].append(v)
+                if data[pos + WIDTH]:
+                    edges[v].append(v + W)
+                    edges[v + W].append(v)
 
-    def conflict():
-        for x in range(SW):
-            for y in range(SH):
-                if stamp[y * SW + x] == 0:
-                    if world[(sy + y) * WW + (sx + x)] == 0:
-                        # conflict
-                        return True
+    if count == 1:
+        print(1)
+        v = a_vertex
+        x, y = divmod(v, W)
+        print(x + 1, y + 1)
 
-    for _rot in range(4):
-        for sx in range(S + W):
-            for sy in range(S + H):
-                if conflict():
-                    continue
+    for start in edges:
+        visited = [False] * (H * W)
+        path = []
+
+        def visit(cur):
+            visited[cur] = True
+            path.append(cur)
+            if len(path) == count:
                 return True
-        # rotate
-        new_stamp = [0] * (W * H)
-        for x in range(SH):
-            for y in range(SW):
-                new_stamp[y * SH + x] = stamp[(SH - 1 - x) * SW + y]
-        stamp = new_stamp
-        SW, SH = SH, SW
+            for next in edges[cur]:
+                if not visited[next]:
+                    r = visit(next)
+                    if r:
+                        return True
+            visited[cur] = False
+            path.pop()
 
-    return False
+        if visit(start):
+            print(count)
+            for v in path:
+                x, y = divmod(v, W)
+                print(x + 1, y + 1)
+            return
 
 
 def main():
     # parse input
     H, W = map(int, input().split())
-    world = readMap(H, W, max(H, W))
-    stamp = readMap(H, W, 0)
-    if solve(H, W, world, stamp):
-        print("Yes")
-    else:
-        print("No")
+    data = readMap(H, W, 1, {ord("#"): 1, "ELSE": 0, "SENTINEL": 0})
+    solve(H, W, data)
 
 
 # tests
-T0 = """
-2 5
-..#..
-.....
-..##.
-.###.
-"""
-TEST_T0 = """
->>> as_input(T0)
->>> main()
-Yes
-"""
-
 T1 = """
 3 3
-...
-.#.
-..#
-#.#
+##.
+.##
 ###
-...
 """
 TEST_T1 = """
 >>> as_input(T1)
 >>> main()
-Yes
+7
+1 1
+1 2
+2 2
+2 3
+3 3
+3 2
+3 1
 """
 
 T2 = """
-3 3
-...
-#..
-#.#
-.#.
-.##
-##.
+3 4
+####
+####
+.#..
 """
 TEST_T2 = """
 >>> as_input(T2)
 >>> main()
-No
+9
+2 1
+1 1
+1 2
+1 3
+1 4
+2 4
+2 3
+2 2
+3 2
 """
 
-T3 = """
-2 5
-.....
-..#..
-..##.
-.###.
+T4 = """
+3 3
+.##
+###
+###
 """
-TEST_T3 = """
->>> as_input(T3)
+TEST_T4 = """
+>>> as_input(T4)
 >>> main()
-Yes
+8
+1 2
+1 3
+2 3
+2 2
+2 1
+3 1
+3 2
+3 3
+"""
+
+T5 = """
+1 1
+#
+"""
+TEST_T5 = """
+>>> as_input(T5)
+>>> main()
+1
+1 1
 """
 
 

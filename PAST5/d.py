@@ -15,7 +15,7 @@ def main():
     buf = []
     for _i in range(N):
         s = input().strip().decode('ascii')
-        buf.append((int(s), re.match("^0*", "0001").span()[1], s))
+        buf.append((int(s), -re.match("^0*", s).span()[1], s))
     buf.sort()
     for x in buf:
         print(x[2])
