@@ -59,29 +59,31 @@ def debug(*x, msg=""):
 
 
 def solve(H, W, R, C, world):
-    from collections import defaultdict
-    edges = defaultdict(list)
-    for pos in allPosition():
-        v = world[pos]
-        if v == 1:
-            for d in dir4():
-                edges[pos + d].append(pos)
-        elif v == 2:
-            edges[pos + 1].append(pos)
-        elif v == 3:
-            edges[pos - 1].append(pos)
-        elif v == 4:
-            edges[pos - WIDTH].append(pos)
-        elif v == 5:
-            edges[pos + WIDTH].append(pos)
-
     visited = [False] * (WIDTH * HEIGHT)
 
     def visit(pos):
         visited[pos] = True
-        for next in edges[pos]:
+
+        next = pos - 1
+        if world[next] == 1 or world[next] == 2:
             if not visited[next]:
                 visit(next)
+
+        next = pos + 1
+        if world[next] == 1 or world[next] == 3:
+            if not visited[next]:
+                visit(next)
+
+        next = pos + WIDTH
+        if world[next] == 1 or world[next] == 4:
+            if not visited[next]:
+                visit(next)
+
+        next = pos - WIDTH
+        if world[next] == 1 or world[next] == 5:
+            if not visited[next]:
+                visit(next)
+
     visit(WIDTH * R + C)
 
     for y in range(ORIGINAL_HEIGHT):
