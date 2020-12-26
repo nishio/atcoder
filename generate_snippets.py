@@ -234,6 +234,7 @@ def read_file(filename):
     data = open(os.path.join(DIR, filename)).read()
     if EOL in data:
         data = data.split(EOL)[0]
+    data = data.strip() + "\n"
     return f"# included from {filename}\n{data}\n# end of {filename}"
 
 
