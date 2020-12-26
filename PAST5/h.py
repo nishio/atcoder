@@ -82,7 +82,7 @@ def solve(H, W, R, C, world):
         for next in edges[pos]:
             if not visited[next]:
                 visit(next)
-    visit(WIDTH + 1 + WIDTH * R + C)
+    visit(WIDTH * R + C)
 
     for y in range(ORIGINAL_HEIGHT):
         line = ""
