@@ -26,6 +26,8 @@ def dir4():
 
 _ENC1 = {ord("."): 1, "ELSE": 0, "SENTINEL": 0}
 
+HUGE = False
+
 
 def readMap(H, W, sentinel=1, encoding=_ENC1):
     global SENTINEL, HEIGHT, WIDTH
@@ -36,11 +38,18 @@ def readMap(H, W, sentinel=1, encoding=_ENC1):
     HEIGHT = H + SENTINEL * 2
     WIDTH = W + SENTINEL * 2
     data = [encoding["SENTINEL"]] * (HEIGHT * WIDTH)
-    for i in range(H):
-        S = input().strip()
-        y = (i + SENTINEL) * WIDTH
-        for j in range(W):
-            data[y + (j + SENTINEL)] = encoding.get(S[j], encoding["ELSE"])
+    if HUGE:
+        for i in range(H):
+            y = (i + SENTINEL) * WIDTH
+            for j in range(W):
+                data[y + (j + SENTINEL)] = 1
+
+    else:
+        for i in range(H):
+            S = input().strip()
+            y = (i + SENTINEL) * WIDTH
+            for j in range(W):
+                data[y + (j + SENTINEL)] = encoding.get(S[j], encoding["ELSE"])
     return data
 
 
@@ -60,31 +69,36 @@ def debug(*x, msg=""):
 
 def solve(H, W, R, C, world):
     visited = [False] * (WIDTH * HEIGHT)
+    stack = {WIDTH * R + C}
 
-    def visit(pos):
+    while len(stack) > 0:
+        # debug(len(stack), msg=":len(stack)")
+        # import pdb
+        # pdb.set_trace()
+        pos = stack.pop()
         visited[pos] = True
+        # debug(visited, msg=":visited")
+        # debug(stack, msg=":stack")
 
         next = pos - 1
-        if world[next] == 1 or world[next] == 2:
-            if not visited[next]:
-                visit(next)
+        if not visited[next]:
+            if world[next] == 1 or world[next] == 2:
+                stack.add(next)
 
         next = pos + 1
-        if world[next] == 1 or world[next] == 3:
-            if not visited[next]:
-                visit(next)
+        if not visited[next]:
+            if world[next] == 1 or world[next] == 3:
+                stack.add(next)
 
         next = pos + WIDTH
-        if world[next] == 1 or world[next] == 4:
-            if not visited[next]:
-                visit(next)
+        if not visited[next]:
+            if world[next] == 1 or world[next] == 4:
+                stack.add(next)
 
         next = pos - WIDTH
-        if world[next] == 1 or world[next] == 5:
-            if not visited[next]:
-                visit(next)
-
-    visit(WIDTH * R + C)
+        if not visited[next]:
+            if world[next] == 1 or world[next] == 5:
+                stack.add(next)
 
     for y in range(ORIGINAL_HEIGHT):
         line = ""
@@ -106,7 +120,7 @@ def main():
     enc = {
         ord("."): 1, ord(">"): 2, ord("<"): 3,
         ord("^"): 4, ord("v"): 5, "ELSE": 0, "SENTINEL": 0}
-    world = readMap(H, W, encoding=enc)
+    world = readMap(H, W, sentinel=1, encoding=enc)
     solve(H, W, R, C, world)
 
 
@@ -223,7 +237,10 @@ if __name__ == "__main__":
         print("testing")
         _test()
         sys.exit()
-    main()
+    if HUGE:
+        solve(1000, 1000, 1, 1, readMap(1000, 1000))
+    else:
+        main()
     sys.exit()
 
 # end of snippets/main.py
