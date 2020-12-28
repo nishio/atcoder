@@ -72,13 +72,8 @@ def solve(H, W, R, C, world):
     stack = {WIDTH * R + C}
 
     while len(stack) > 0:
-        # debug(len(stack), msg=":len(stack)")
-        # import pdb
-        # pdb.set_trace()
         pos = stack.pop()
         visited[pos] = True
-        # debug(visited, msg=":visited")
-        # debug(stack, msg=":stack")
 
         next = pos - 1
         if not visited[next]:
@@ -101,16 +96,16 @@ def solve(H, W, R, C, world):
                 stack.add(next)
 
     for y in range(ORIGINAL_HEIGHT):
-        line = ""
+        line = []
         for x in range(ORIGINAL_WIDTH):
             pos = WIDTH + 1 + WIDTH * y + x
             if world[pos] == 0:
-                line += "#"
+                line.append("#")
             elif visited[pos]:
-                line += "o"
+                line.append("o")
             else:
-                line += "x"
-        print(line)
+                line.append("x")
+        print("".join(line))
 
 
 def main():
