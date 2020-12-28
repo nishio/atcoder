@@ -13,18 +13,21 @@ def solve(S, X):
     blocklength = []
     mblocklength = []
     taillength = []
-    for c in S:
+    bufstart = [0]
+    buflen = 0
+    for i, c in enumerate(S):
         if c in "123456789":
             c = int(c) + 1
             blocks.append((blocklen, buf))
-            taillength.append(len(buf))
-            blocklen += len(buf)
+            taillength.append(buflen)
+            blocklen += buflen
             blocklength.append(blocklen)
             blocklen *= c
             mblocklength.append(blocklen)
-            buf = []
+            bufstart.append(i + 1)
+            buflen = 0
         else:
-            buf.append(c)
+            buflen += 1
     blocks.append((blocklen, buf))
     taillength.append(len(buf))
     blocklen += len(buf)
@@ -32,17 +35,21 @@ def solve(S, X):
     blocklen *= 1
     mblocklength.append(blocklen)
 
-    # debug(S, X, msg=":S, X")
+    # debug(S, X, msg="\n:S, X")
     # debug(blocks, msg=":blocks")
     # debug(blocklength, msg=":blocklength")
     # debug(mblocklength, msg=":mblocklength")
     # debug(taillength, msg=":taillength")
+    # debug(bufstart, msg=":bufstart")
+    # S += "$$$"
+    # debug([S[x] for x in bufstart], msg=":bufstart")
     X -= 1
 
-    for i, (bodylen, tail) in enumerate(reversed(blocks)):
+    for i, (bodylen, _) in enumerate(reversed(blocks)):
         # debug(bodylen, X, tail, msg=":bodylen ,X")
         if X >= bodylen:
-            return tail[X - bodylen]
+            start = bufstart[-1-i]
+            return S[start + X - bodylen]
         X %= blocklength[-2 - i]
 
     return blocks[0][1][X]
