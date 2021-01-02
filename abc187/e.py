@@ -32,7 +32,6 @@ def solve(SOLVE_PARAMS):
 
 
 def main():
-    # parse input
     from collections import defaultdict
     N = int(input())
     edges = defaultdict(list)

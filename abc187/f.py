@@ -9,7 +9,6 @@ def solve(SOLVE_PARAMS):
 
 
 def main():
-    # parse input
     N, M = map(int, input().split())
     edges = []
     for _i in range(M):
@@ -20,14 +19,11 @@ def main():
 
     def visit(pos):
         nonlocal ret
-        # debug(pos, ccs, msg=":pos")
         if pos == N + 1:
             if len(ccs) < ret:
                 ret = len(ccs)
-                # debug(msg=":min")
             return
         if len(ccs) >= ret:
-            # debug(msg=":early stop")
             return
 
         for cc in ccs:
@@ -38,9 +34,7 @@ def main():
                 cc.pop()
 
         # create new cc
-        # cid = len(ccs)
         ccs.append([pos])
-        # vcc[pos - 1] = cid
         visit(pos + 1)
         ccs.pop()
 
