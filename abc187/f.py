@@ -16,19 +16,18 @@ def main():
         edges.append(tuple(map(int, input().split())))
 
     ccs = [[1]]
-    # vcc = [None] * N
-    # vcc[0] = 0
-
     ret = 18
 
     def visit(pos):
         nonlocal ret
-        debug(pos, ccs, msg=":pos")
+        # debug(pos, ccs, msg=":pos")
         if pos == N + 1:
             if len(ccs) < ret:
                 ret = len(ccs)
+                # debug(msg=":min")
             return
         if len(ccs) >= ret:
+            # debug(msg=":early stop")
             return
 
         for cc in ccs:
@@ -43,6 +42,7 @@ def main():
         ccs.append([pos])
         # vcc[pos - 1] = cid
         visit(pos + 1)
+        ccs.pop()
 
     visit(2)
     print(ret)
