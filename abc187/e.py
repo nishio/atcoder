@@ -72,13 +72,14 @@ def main():
 
     finish = [0] * N
 
-    def visit(v, x):
+    stack = [(root, 0)]
+    while stack:
+        v, x = stack.pop()
         x += veterx_diff[v]
         finish[v] += x
         for c in children[v]:
-            visit(c, x)
+            stack.append((c, x))
 
-    visit(root, 0)
     print(*finish, sep="\n")
 
 
