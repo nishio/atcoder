@@ -26,14 +26,17 @@ def solve(S, X):
             mblocklength.append(blocklen)
             bufstart.append(i + 1)
             buflen = 0
+            if blocklen > 10 ** 15:
+                break
         else:
             buflen += 1
-    blocks.append((blocklen, buf))
-    taillength.append(len(buf))
-    blocklen += len(buf)
-    blocklength.append(blocklen)
-    blocklen *= 1
-    mblocklength.append(blocklen)
+    else:
+        blocks.append((blocklen, buf))
+        taillength.append(len(buf))
+        blocklen += len(buf)
+        blocklength.append(blocklen)
+        blocklen *= 1
+        mblocklength.append(blocklen)
 
     # debug(S, X, msg="\n:S, X")
     # debug(blocks, msg=":blocks")
