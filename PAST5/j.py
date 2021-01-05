@@ -4,7 +4,7 @@ def debug(*x, msg=""):
     print(msg, *x, file=sys.stderr)
 
 
-def solve(S, X):
+def solve_TLE(S, X):
     blocks = []
     buf = []
     blocklen = 0
@@ -56,6 +56,38 @@ def solve(S, X):
         X %= blocklength[-2 - i]
 
     return blocks[0][1][X]
+
+
+def solve(S, X):
+    X -= 1  # 1-origin to 0-origin
+    S += "0"
+    blocklen = [0]
+    unitlen = [0]
+    repeat = [0]
+    tailstart = [0]
+    taillen = [0]
+    t = 0
+    tstart = 0
+    for i, c in enumerate(S):
+        if c in "0123456789":
+            rep = int(c) + 1
+            repeat.append(rep)
+            tailstart.append(tstart)
+            taillen.append(t)
+            unitlen.append(blocklen[-1] + t)
+            blocklen.append(unitlen[-1] * rep)
+            if blocklen[-1] > X:
+                break
+            # next tail
+            tstart = i + 1
+        else:
+            t += 1
+
+    for i in reversed(range(len(blocklen))):
+        X %= unitlen[i]
+        if X >= blocklen[i - 1]:
+            X -= blocklen[i - 1]
+            return S[tailstart[i] + X]
 
 
 def main():
