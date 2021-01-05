@@ -66,22 +66,23 @@ def solve(S, X):
     repeat = [0]
     tailstart = [0]
     taillen = [0]
-    t = 0
+    tlen = 0
     tstart = 0
     for i, c in enumerate(S):
         if c in "0123456789":
             rep = int(c) + 1
             repeat.append(rep)
             tailstart.append(tstart)
-            taillen.append(t)
-            unitlen.append(blocklen[-1] + t)
+            taillen.append(tlen)
+            unitlen.append(blocklen[-1] + tlen)
             blocklen.append(unitlen[-1] * rep)
             if blocklen[-1] > X:
                 break
             # next tail
             tstart = i + 1
+            tlen = 0
         else:
-            t += 1
+            tlen += 1
 
     for i in reversed(range(len(blocklen))):
         X %= unitlen[i]
@@ -95,6 +96,10 @@ def main():
     S = input().strip().decode('ascii')
     X = int(input())
     print(solve(S, X))
+
+
+def show_all(S, N):
+    print("".join(solve(S, i + 1) for i in range(N)))
 
 
 # tests
@@ -119,6 +124,16 @@ c
 """
 
 T02 = """
+ab2cd
+5
+"""
+TEST_T02 = """
+>>> as_input(T02)
+>>> main()
+a
+"""
+
+T02 = """
 abc
 1
 """
@@ -136,6 +151,16 @@ TEST_T1 = """
 >>> as_input(T1)
 >>> main()
 b
+"""
+
+T2 = """
+a1b1
+4
+"""
+TEST_T2 = """
+>>> as_input(T2)
+>>> main()
+a
 """
 
 
