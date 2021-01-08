@@ -5,16 +5,14 @@ HASH, DOT, LEFT, RIGHT, UP, DOWN = b"#.<>^v"
 
 
 class OneDimensionMap:
-    def __init__(self, H, W, sentinel=0):
+    def __init__(self, H, W, SENTINEL=0, S_CHAR=HASH):
         self.ORIGINAL_HEIGHT = H
         self.ORIGINAL_WIDTH = W
         self.rawdata = []
         for _i in range(H):
             S = input().strip()
             self.rawdata.append(S)
-        self._add_sentinel(sentinel)
 
-    def _add_sentinel(self, SENTINEL=1, S_CHAR=HASH):
         self.SENTINEL = SENTINEL
         self.HEIGHT = HEIGHT = self.ORIGINAL_HEIGHT + SENTINEL * 2
         self.WIDTH = WIDTH = self.ORIGINAL_WIDTH + SENTINEL * 2
@@ -26,7 +24,6 @@ class OneDimensionMap:
             for j in range(self.ORIGINAL_WIDTH):
                 data[y + (j + SENTINEL)] = S[j]
         self.mapdata = data
-        return data
 
     def allPosition(self):
         S = self.SENTINEL
