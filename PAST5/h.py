@@ -3,60 +3,106 @@
 read map from stdin into one-dimension list with sentinel
 """
 
-
-def dir9():
-    return [
-        -1 - WIDTH, -WIDTH, 1 - WIDTH,
-        -1, 0, 1,
-        WIDTH - 1, WIDTH, WIDTH + 1
-    ]
+HASH, DOT, LEFT, RIGHT, UP, DOWN = b"#.<>^v"
 
 
-def dir8():
-    return [
-        -1 - WIDTH, -WIDTH, 1 - WIDTH,
-        -1, 1,
-        WIDTH - 1, WIDTH, WIDTH + 1
-    ]
-
-
-def dir4():
-    return [-WIDTH, -1, 1, WIDTH]
-
-
-_ENC1 = {ord("."): 1, "ELSE": 0, "SENTINEL": 0}
-
-HUGE = False
-
-
-def readMap(H, W, sentinel=1, encoding=_ENC1):
-    global SENTINEL, HEIGHT, WIDTH
-    global ORIGINAL_HEIGHT, ORIGINAL_WIDTH
-    SENTINEL = sentinel
-    ORIGINAL_HEIGHT = H
-    ORIGINAL_WIDTH = W
-    HEIGHT = H + SENTINEL * 2
-    WIDTH = W + SENTINEL * 2
-    data = [encoding["SENTINEL"]] * (HEIGHT * WIDTH)
-    if HUGE:
-        for i in range(H):
-            y = (i + SENTINEL) * WIDTH
-            for j in range(W):
-                data[y + (j + SENTINEL)] = 1
-
-    else:
-        for i in range(H):
+class OneDimensionMap:
+    def __init__(self, H, W, sentinel=0):
+        self.ORIGINAL_HEIGHT = H
+        self.ORIGINAL_WIDTH = W
+        self.rawdata = []
+        for _i in range(H):
             S = input().strip()
+            self.rawdata.append(S)
+        if sentinel:
+            self.add_sentinel(sentinel)
+
+    def add_sentinel(self, SENTINEL=1, S_CHAR=HASH):
+        self.SENTINEL = SENTINEL
+        self.HEIGHT = HEIGHT = self.ORIGINAL_HEIGHT + SENTINEL * 2
+        self.WIDTH = WIDTH = self.ORIGINAL_WIDTH + SENTINEL * 2
+        data = [S_CHAR] * (HEIGHT * WIDTH)
+
+        for i in range(self.ORIGINAL_HEIGHT):
+            S = self.rawdata[i]
             y = (i + SENTINEL) * WIDTH
-            for j in range(W):
-                data[y + (j + SENTINEL)] = encoding.get(S[j], encoding["ELSE"])
-    return data
+            for j in range(self.ORIGINAL_WIDTH):
+                data[y + (j + SENTINEL)] = S[j]
+        self.mapdata = data
+        return data
 
+    def allPosition(self):
+        S = self.SENTINEL
+        for y in range(self.ORIGINAL_HEIGHT):
+            for x in range(self.ORIGINAL_WIDTH):
+                yield self.WIDTH * (y + S) + (x + S)
 
-def allPosition():
-    for y in range(ORIGINAL_HEIGHT):
-        for x in range(ORIGINAL_WIDTH):
-            yield WIDTH + 1 + WIDTH * y + x
+    def dfs(self, start):
+        # sample from PAST5H
+        visited = [False] * (self.WIDTH * self.HEIGHT)
+        stack = {start}
+        mapdata = self.mapdata
+
+        while len(stack) > 0:
+            pos = stack.pop()
+            visited[pos] = True
+
+            next = pos - 1
+            if not visited[next]:
+                if mapdata[next] == DOT or mapdata[next] == RIGHT:
+                    stack.add(next)
+
+            next = pos + 1
+            if not visited[next]:
+                if mapdata[next] == DOT or mapdata[next] == LEFT:
+                    stack.add(next)
+
+            next = pos + self.WIDTH
+            if not visited[next]:
+                if mapdata[next] == DOT or mapdata[next] == UP:
+                    stack.add(next)
+
+            next = pos - self.WIDTH
+            if not visited[next]:
+                if mapdata[next] == DOT or mapdata[next] == DOWN:
+                    stack.add(next)
+        return visited
+
+    def print2d(self, values):
+        # sample from PAST5H
+        S = self.SENTINEL
+        for y in range(self.ORIGINAL_HEIGHT):
+            line = []
+            for x in range(self.ORIGINAL_WIDTH):
+                pos = self.WIDTH * (y + S) + (x + S)
+                if self.mapdata[pos] == HASH:
+                    line.append("#")
+                elif values[pos]:
+                    line.append("o")
+                else:
+                    line.append("x")
+            print("".join(line))
+
+    def dir9(self):
+        W = self.WIDTH
+        return [
+            -1 - W, -W, 1 - W,
+            -1, 0, 1,
+            W - 1, W, W + 1
+        ]
+
+    def dir8(self):
+        W = self.WIDTH
+        return [
+            -1 - W, -W, 1 - W,
+            -1, 1,
+            W - 1, W, W + 1
+        ]
+
+    def dir4(self):
+        W = self.WIDTH
+        return [-W, -1, 1, W]
+
 
 # end of libs/readMap.py
 # included from snippets/main.py
@@ -68,54 +114,15 @@ def debug(*x, msg=""):
 
 
 def solve(H, W, R, C, world):
-    visited = [False] * (WIDTH * HEIGHT)
-    stack = {WIDTH * R + C}
-
-    while len(stack) > 0:
-        pos = stack.pop()
-        visited[pos] = True
-
-        next = pos - 1
-        if not visited[next]:
-            if world[next] == 1 or world[next] == 2:
-                stack.add(next)
-
-        next = pos + 1
-        if not visited[next]:
-            if world[next] == 1 or world[next] == 3:
-                stack.add(next)
-
-        next = pos + WIDTH
-        if not visited[next]:
-            if world[next] == 1 or world[next] == 4:
-                stack.add(next)
-
-        next = pos - WIDTH
-        if not visited[next]:
-            if world[next] == 1 or world[next] == 5:
-                stack.add(next)
-
-    for y in range(ORIGINAL_HEIGHT):
-        line = []
-        for x in range(ORIGINAL_WIDTH):
-            pos = WIDTH + 1 + WIDTH * y + x
-            if world[pos] == 0:
-                line.append("#")
-            elif visited[pos]:
-                line.append("o")
-            else:
-                line.append("x")
-        print("".join(line))
+    visited = world.dfs(world.WIDTH * R + C)
+    world.print2d(visited)
 
 
 def main():
     # parse input
     H, W = map(int, input().split())
     R, C = map(int, input().split())
-    enc = {
-        ord("."): 1, ord(">"): 2, ord("<"): 3,
-        ord("^"): 4, ord("v"): 5, "ELSE": 0, "SENTINEL": 0}
-    world = readMap(H, W, sentinel=1, encoding=enc)
+    world = OneDimensionMap(H, W, 1)
     solve(H, W, R, C, world)
 
 
@@ -232,10 +239,7 @@ if __name__ == "__main__":
         print("testing")
         _test()
         sys.exit()
-    if HUGE:
-        solve(1000, 1000, 1, 1, readMap(1000, 1000))
-    else:
-        main()
+    main()
     sys.exit()
 
 # end of snippets/main.py

@@ -4,50 +4,116 @@ read map from stdin into one-dimension list with sentinel
 """
 
 
-def dir9():
-    return [
-        -1 - WIDTH, -WIDTH, 1 - WIDTH,
-        -1, 0, 1,
-        WIDTH - 1, WIDTH, WIDTH + 1
-    ]
+HASH, DOT, LEFT, RIGHT, UP, DOWN = b"#.<>^v"
 
 
-def dir8():
-    return [
-        -1 - WIDTH, -WIDTH, 1 - WIDTH,
-        -1, 1,
-        WIDTH - 1, WIDTH, WIDTH + 1
-    ]
+class OneDimensionMap:
+    def __init__(self, H, W, sentinel=0):
+        self.ORIGINAL_HEIGHT = H
+        self.ORIGINAL_WIDTH = W
+        self.rawdata = []
+        for _i in range(H):
+            S = input().strip()
+            self.rawdata.append(S)
+        self._add_sentinel(sentinel)
 
+    def _add_sentinel(self, SENTINEL=1, S_CHAR=HASH):
+        self.SENTINEL = SENTINEL
+        self.HEIGHT = HEIGHT = self.ORIGINAL_HEIGHT + SENTINEL * 2
+        self.WIDTH = WIDTH = self.ORIGINAL_WIDTH + SENTINEL * 2
+        data = [S_CHAR] * (HEIGHT * WIDTH)
 
-def dir4():
-    return [-WIDTH, -1, 1, WIDTH]
+        for i in range(self.ORIGINAL_HEIGHT):
+            S = self.rawdata[i]
+            y = (i + SENTINEL) * WIDTH
+            for j in range(self.ORIGINAL_WIDTH):
+                data[y + (j + SENTINEL)] = S[j]
+        self.mapdata = data
+        return data
 
+    def allPosition(self):
+        S = self.SENTINEL
+        for y in range(self.ORIGINAL_HEIGHT):
+            for x in range(self.ORIGINAL_WIDTH):
+                yield self.WIDTH * (y + S) + (x + S)
 
-_ENC1 = {ord("."): 1, "ELSE": 0, "SENTINEL": 0}
+    def dfs(self, start):
+        # sample from PAST5H
+        visited = [False] * (self.WIDTH * self.HEIGHT)
+        stack = {start}
+        mapdata = self.mapdata
 
+        while len(stack) > 0:
+            pos = stack.pop()
+            visited[pos] = True
 
-def readMap(H, W, sentinel=1, encoding=_ENC1):
-    global SENTINEL, HEIGHT, WIDTH
-    global ORIGINAL_HEIGHT, ORIGINAL_WIDTH
-    SENTINEL = sentinel
-    ORIGINAL_HEIGHT = H
-    ORIGINAL_WIDTH = W
-    HEIGHT = H + SENTINEL * 2
-    WIDTH = W + SENTINEL * 2
-    data = [encoding["SENTINEL"]] * (HEIGHT * WIDTH)
-    for i in range(H):
-        S = input().strip()
-        y = (i + SENTINEL) * WIDTH
-        for j in range(W):
-            data[y + (j + SENTINEL)] = encoding.get(S[j], encoding["ELSE"])
-    return data
+            next = pos - 1
+            if not visited[next]:
+                if mapdata[next] == DOT or mapdata[next] == RIGHT:
+                    stack.add(next)
 
+            next = pos + 1
+            if not visited[next]:
+                if mapdata[next] == DOT or mapdata[next] == LEFT:
+                    stack.add(next)
 
-def allPosition():
-    for y in range(ORIGINAL_HEIGHT):
-        for x in range(ORIGINAL_WIDTH):
-            yield WIDTH + 1 + WIDTH * y + x
+            next = pos + self.WIDTH
+            if not visited[next]:
+                if mapdata[next] == DOT or mapdata[next] == UP:
+                    stack.add(next)
+
+            next = pos - self.WIDTH
+            if not visited[next]:
+                if mapdata[next] == DOT or mapdata[next] == DOWN:
+                    stack.add(next)
+        return visited
+
+    def print2d(self, values=None):
+        # sample from PAST5H
+        S = self.SENTINEL
+        for y in range(self.ORIGINAL_HEIGHT):
+            line = []
+            for x in range(self.ORIGINAL_WIDTH):
+                pos = self.WIDTH * (y + S) + (x + S)
+                if self.mapdata[pos] == HASH:
+                    line.append("#")
+                elif values is None:
+                    line.append(chr(self.mapdata[pos]))
+                elif values[pos]:
+                    line.append("o")
+                else:
+                    line.append("x")
+            print("".join(line))
+
+    def dir9(self):
+        W = self.WIDTH
+        return [
+            -1 - W, -W, 1 - W,
+            -1, 0, 1,
+            W - 1, W, W + 1
+        ]
+
+    def dir8(self):
+        W = self.WIDTH
+        return [
+            -1 - W, -W, 1 - W,
+            -1, 1,
+            W - 1, W, W + 1
+        ]
+
+    def dir4(self):
+        W = self.WIDTH
+        return [-W, -1, 1, W]
+
+    def rotate(self):
+        # from PAST5E
+        W, H = self.WIDTH, self.HEIGHT
+        newdata = [0] * (W * H)
+        for x in range(H):
+            for y in range(W):
+                newdata[y * H + x] = self.mapdata[(H - 1 - x) * W + y]
+        self.mapdata = newdata
+        self.WIDTH, self.HEIGHT = H, W
 
 # end of libs/readMap.py
 
@@ -60,19 +126,18 @@ def debug(*x, msg=""):
 
 
 def solve(H, W, world, stamp):
-    S = max(H, W)
+    S = world.SENTINEL
     # world
-    WW = W + 2 * S
-    WH = H + 2 * S
-    # stamp
-    SW = W
-    SH = H
+    WW = world.WIDTH
+    WH = world.HEIGHT
 
     def conflict():
+        SW = stamp.WIDTH
+        SH = stamp.HEIGHT
         for x in range(SW):
             for y in range(SH):
-                if stamp[y * SW + x] == 0:
-                    if world[(sy + y) * WW + (sx + x)] == 0:
+                if stamp.mapdata[y * SW + x] == HASH:
+                    if world.mapdata[(sy + y) * WW + (sx + x)] == HASH:
                         # conflict
                         return True
 
@@ -83,21 +148,15 @@ def solve(H, W, world, stamp):
                     continue
                 return True
         # rotate
-        new_stamp = [0] * (W * H)
-        for x in range(SH):
-            for y in range(SW):
-                new_stamp[y * SH + x] = stamp[(SH - 1 - x) * SW + y]
-        stamp = new_stamp
-        SW, SH = SH, SW
-
+        stamp.rotate()
     return False
 
 
 def main():
     # parse input
     H, W = map(int, input().split())
-    world = readMap(H, W, max(H, W))
-    stamp = readMap(H, W, 0)
+    world = OneDimensionMap(H, W, max(H, W))
+    stamp = OneDimensionMap(H, W, 0)
     if solve(H, W, world, stamp):
         print("Yes")
     else:
