@@ -6,11 +6,12 @@ INF = 10 ** 9 + 1  # sys.maxsize # float("inf")
 MOD = 10 ** 9 + 7
 
 
-def debug(*x):
-    print(*x, file=sys.stderr)
+def debug(*x, msg=""):
+    import sys
+    print(msg, *x, file=sys.stderr)
 
 
-def solve(N, AS, BS):
+def solve_WA(N, AS, BS):
     acount = [0] * (N + 10)
     bcount = [0] * (N + 10)
     for i in range(N):
@@ -71,12 +72,83 @@ def solve(N, AS, BS):
     print(*ret, sep=" ")
 
 
+def solve(N, AS, BS):
+    from collections import Counter
+    a_count = Counter(AS)
+    b_count = Counter(BS)
+
+    max_occur = 0
+    when_max = None
+    for i in range(N + 10):
+        t = a_count[i] + b_count[i]
+        if t > N:
+            return
+        if t > max_occur:
+            max_occur = t
+            when_max = i
+
+    # debug(max_occur, when_max, msg=":max_occur, when_max")
+    ret = []
+    del a_count[when_max]
+    del b_count[when_max]
+    a_keys = list(a_count.keys())
+    b_keys = list(b_count.keys())
+    a_pointer = 0
+    b_pointer = 0
+    a_len = len(a_keys)
+    b_len = len(b_keys)
+    for _i in range(N - max_occur):
+        # debug(a_keys, b_keys, msg=":a_keys, b_keys")
+        # debug(a_pointer, b_pointer, msg=":a_pointer, b_pointer")
+        a = a_keys[a_pointer]
+        if a == when_max:
+            a_pointer = (a_pointer + 1) % a_len
+            a = a_keys[a_pointer]
+        c = a_count[a]
+        if c == 0:
+            del a_count[a]
+            a_pointer = (a_pointer + 1) % a_len
+            a = a_keys[a_pointer]
+
+        # debug(a, msg=":a")
+        b = b_keys[b_pointer]
+        if b_count[b] == 0:
+            del b_count[b]
+            b_pointer = (b_pointer + 1) % b_len
+            b = b_keys[b_pointer]
+        if a == b or b == when_max:
+            b_pointer = (b_pointer + 1) % b_len
+            b = b_keys[b_pointer]
+        if b_count[b] == 0:
+            return
+        ret.append((a, b))
+        a_count[a] -= 1
+        b_count[b] -= 1
+
+    # debug(a_count, b_count, msg=":a_count, b_count")
+    for b in b_count:
+        for _i in range(b_count[b]):
+            ret.append((when_max, b))
+    for a in a_count:
+        for _i in range(a_count[a]):
+            ret.append((a, when_max))
+
+    # debug(ret, msg=":ret")
+    ret.sort()
+    return [b for a, b in ret]
+
+
 def main():
     # parse input
     N = int(input())
     AS = list(map(int, input().split()))
     BS = list(map(int, input().split()))
-    solve(N, AS, BS)
+    ret = solve(N, AS, BS)
+    if ret:
+        print("Yes")
+        print(*ret, sep=" ")
+    else:
+        print("No")
 
 
 # tests
@@ -158,8 +230,64 @@ T2 = """
 TEST_T2 = """
 >>> as_input(T2)
 >>> main()
-result
+Yes
+2 2 1 3 1
 """
+
+T3 = """
+3
+1 2 3
+1 2 3
+"""
+TEST_T3 = """
+>>> as_input(T3)
+>>> main()
+Yes
+2 3 1
+"""
+
+T4 = """
+3
+1 1 1
+2 3 4
+"""
+TEST_T4 = """
+>>> as_input(T4)
+>>> main()
+Yes
+2 3 4
+"""
+
+T5 = """
+3
+1 2 3
+4 5 6
+"""
+TEST_T5 = """
+>>> as_input(T5)
+>>> main()
+Yes
+6 4 5
+"""
+
+
+def random_test():
+    from random import seed, randint
+    from collections import Counter
+    for s in range(1000):
+        seed(s)
+        N = 10
+        AS = [randint(1, 10) for _i in range(N)]
+        BS = [randint(1, 10) for _i in range(N)]
+        AS.sort()
+        BS.sort()
+        ret = solve(N, AS, BS)
+        if ret:
+            if Counter(BS) != Counter(ret):
+                print(s)
+                print(AS)
+                print(BS, Counter(BS))
+                print(ret, Counter(ret))
 
 
 def _test():
@@ -167,7 +295,7 @@ def _test():
     doctest.testmod()
     g = globals()
     for k in sorted(g):
-        if k.startswith("TEST_"):
+        if k.startswith("TEST_T5"):
             doctest.run_docstring_examples(g[k], g, name=k)
 
 
