@@ -110,6 +110,7 @@ def main():
             ft.add(rightmost[c], -1)
             rightmost[c] = i
             ft.add(i, 1)
+        current = R
         s = ft.sum(R + 1) - ft.sum(L)
         answer[(L, R)] = s
 
