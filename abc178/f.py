@@ -112,15 +112,10 @@ def solve(N, AS, BS):
 
         # debug(a, msg=":a")
         b = b_keys[b_pointer]
-        if b_count[b] == 0:
-            del b_count[b]
+        while a == b or b == when_max or b_count[b] == 0:
             b_pointer = (b_pointer + 1) % b_len
             b = b_keys[b_pointer]
-        if a == b or b == when_max:
-            b_pointer = (b_pointer + 1) % b_len
-            b = b_keys[b_pointer]
-        if b_count[b] == 0:
-            return
+
         ret.append((a, b))
         a_count[a] -= 1
         b_count[b] -= 1
@@ -135,7 +130,8 @@ def solve(N, AS, BS):
 
     # debug(ret, msg=":ret")
     ret.sort()
-    return [b for a, b in ret]
+    ret = [b for a, b in ret]
+    return ret
 
 
 def main():
@@ -276,7 +272,7 @@ def random_test():
     from collections import Counter
     for s in range(1000):
         seed(s)
-        N = 10
+        N = 5
         AS = [randint(1, 10) for _i in range(N)]
         BS = [randint(1, 10) for _i in range(N)]
         AS.sort()
@@ -288,6 +284,11 @@ def random_test():
                 print(AS)
                 print(BS, Counter(BS))
                 print(ret, Counter(ret))
+            if any(AS[i] == ret[i] for i in range(N)):
+                print(s)
+                print(AS)
+                print(BS)
+                print(ret)
 
 
 def _test():
