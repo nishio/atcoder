@@ -33,6 +33,7 @@ def main():
             continue
         if y == X + 1:
             add(cost + 1, X)
+            assert 0 == 1
             continue
 
         if y % 2 == 0:
