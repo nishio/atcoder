@@ -13,33 +13,33 @@ def main():
     from heapq import heappush, heappop
     X, Y = map(int, input().split())
     queue = [(0, Y)]
-    visited = {}
+    minCost = {Y: 0}
+    INF = 9223372036854775807
+
+    def add(cost, y):
+        c = minCost.get(y, INF)
+        if cost < c:
+            minCost[y] = cost
+            heappush(queue, (cost, y))
+
     while True:
         cost, y = heappop(queue)
-        visited[y] = True
         # debug(cost, y, msg=":cost, y")
         if y == X:
             print(cost)
             return
         if y < X:
-            heappush(queue, (cost + (X - y), X))
+            add(cost + (X - y), X)
             continue
         if y == X + 1:
-            heappush(queue, (cost + 1, X))
+            add(cost + 1, X)
             continue
 
         if y % 2 == 0:
-            if y // 2 not in visited:
-                heappush(queue, (cost + 1, y // 2))
-            if y + 1 not in visited:
-                heappush(queue, (cost + 1, y + 1))
-            if y - 1 not in visited:
-                heappush(queue, (cost + 1, y - 1))
+            add(cost + 1, y // 2)
         else:
-            if (y + 1) // 2 not in visited:
-                heappush(queue, (cost + 2, (y + 1) // 2))
-            if (y - 1) // 2 not in visited:
-                heappush(queue, (cost + 2, (y - 1) // 2))
+            add(cost + 2, (y + 1) // 2)
+            add(cost + 2, (y - 1) // 2)
 
 
 # tests
