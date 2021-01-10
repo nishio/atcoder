@@ -4,14 +4,9 @@ def debug(*x, msg=""):
     print(msg, *x, file=sys.stderr)
 
 
-def solve(SOLVE_PARAMS):
-    pass
-
-
-def main():
-    # parse input
+def solve(X, Y):
     from heapq import heappush, heappop
-    X, Y = map(int, input().split())
+
     queue = [(0, Y)]
     minCost = {Y: 0}
     INF = 9223372036854775807
@@ -24,23 +19,51 @@ def main():
 
     while True:
         cost, y = heappop(queue)
-        # debug(cost, y, msg=":cost, y")
         if y == X:
-            print(cost)
-            return
+            return cost
         if y < X:
             add(cost + (X - y), X)
             continue
         if y == X + 1:
             add(cost + 1, X)
-            assert 0 == 1
             continue
+
+        add(cost + (y - X), X)
 
         if y % 2 == 0:
             add(cost + 1, y // 2)
         else:
             add(cost + 2, (y + 1) // 2)
             add(cost + 2, (y - 1) // 2)
+
+
+def main():
+    X, Y = map(int, input().split())
+    print(solve(X, Y))
+
+
+def blute(X, Y):
+    queue = {X}
+    ret = 0
+    while True:
+        newqueue = set()
+        if Y in queue:
+            return ret
+        ret += 1
+        for x in queue:
+            newqueue.add(x * 2)
+            newqueue.add(x + 1)
+            newqueue.add(x - 1)
+        queue = newqueue
+
+
+def fulltest():
+    for x in range(20):
+        for y in range(20):
+            s = solve(x, y)
+            b = blute(x, y)
+            if s != b:
+                print(x, y, s, b)
 
 
 # tests
