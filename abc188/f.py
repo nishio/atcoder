@@ -24,13 +24,17 @@ def main():
         if y < X:
             heappush(queue, (cost + (X - y), X))
             continue
-        if y - 1 == X:
+        if y == X + 1:
             heappush(queue, (cost + 1, X))
             continue
 
         if y % 2 == 0:
             if y // 2 not in visited:
                 heappush(queue, (cost + 1, y // 2))
+            if y + 1 not in visited:
+                heappush(queue, (cost + 1, y + 1))
+            if y - 1 not in visited:
+                heappush(queue, (cost + 1, y - 1))
         else:
             if (y + 1) // 2 not in visited:
                 heappush(queue, (cost + 2, (y + 1) // 2))
@@ -73,6 +77,15 @@ TEST_T4 = """
 >>> as_input(T4)
 >>> main()
 75
+"""
+
+T5 = """
+1 12
+"""
+TEST_T5 = """
+>>> as_input(T5)
+>>> main()
+4
 """
 
 
