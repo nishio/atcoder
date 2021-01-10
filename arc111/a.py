@@ -9,7 +9,6 @@ def solve(SOLVE_PARAMS):
 
 
 def main():
-    # parse input
     N, M = map(int, input().split())
     M2 = M * M
     doubling = [10 % M2]

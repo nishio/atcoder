@@ -55,7 +55,6 @@ def solve(SOLVE_PARAMS):
 
 
 def main():
-    # parse input
     N = int(input())
     init_unionfind(400000 + 1)
     numEdge = [0] * (400000 + 1)
