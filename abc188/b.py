@@ -9,7 +9,6 @@ def solve(SOLVE_PARAMS):
 
 
 def main():
-    # parse input
     N = int(input())
     AS = list(map(int, input().split()))
     BS = list(map(int, input().split()))
