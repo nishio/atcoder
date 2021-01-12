@@ -41,8 +41,6 @@ def main():
                 for v3 in edges[v2]:
                     if v3 == v1:
                         continue
-                    if (v2, v3) in answer:
-                        continue
                     stack.append((v2, v3))
 
     for v1, v2 in edgelist:
