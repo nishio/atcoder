@@ -31,20 +31,20 @@ def main():
 
     for v1, v2 in edgelist:
         if (v1, v2) not in answer:
-            answer[(v1, v2)] = "->"
-            answer[(v2, v1)] = "<-"
-
-            def visit(e):
-                (v1, v2) = e
+            stack = [(v1, v2)]
+            while stack:
+                v1, v2 = stack.pop()
+                if (v1, v2) in answer:
+                    continue
+                answer[(v1, v2)] = "->"
+                answer[(v2, v1)] = "<-"
                 for v3 in edges[v2]:
                     if v3 == v1:
                         continue
                     if (v2, v3) in answer:
                         continue
-                    answer[(v2, v3)] = "->"
-                    answer[(v3, v2)] = "<-"
-                    visit((v2, v3))
-            visit((v1, v2))
+                    stack.append((v2, v3))
+
     for v1, v2 in edgelist:
         print(answer[(v1, v2)])
 
