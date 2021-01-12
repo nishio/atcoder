@@ -9,7 +9,6 @@ def solve(SOLVE_PARAMS):
 
 
 def main():
-    # parse input
     print(solve(SOLVE_PARAMS))
 
 # tests
