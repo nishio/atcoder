@@ -10,19 +10,22 @@ def solve(SOLVE_PARAMS):
 
 def main():
     N = int(input())
-    if N == 1:
-        print("1\nAB")
-        return
-    from math import gcd
-    M = 2 ** N - 1
-    K = 2 ** (N - 1) - 1
-    g = M * K // gcd(M, K)
-    start = 0
-    S = "A" * K + "B" * (K + 1)
-    print(g)
-    for i in range(g):
-        print("A" + "".join(S[(i + start) % M] for i in range(M)))
-        start += K
+    group = []
+    for i in range(N):
+        P = 2 ** (2 ** i)
+        group = [x * (P + 1) for x in group]
+        group.append(P - 1)
+
+    K = 2 ** N - 1
+    print(K)
+    for i in range(1, K + 1):
+        x = 0
+        for j in range(N):
+            if (1 << j) & i:
+                x = x ^ group[j]
+        s = f"{x:0256b}"[-(2 ** N):]
+        s = s.replace("0", "A").replace("1", "B")
+        print(s)
 
 
 # tests
@@ -43,39 +46,9 @@ TEST_T2 = """
 >>> as_input(T2)
 >>> main()
 3
+ABAB
 AABB
 ABBA
-ABAB
-"""
-
-T3 = """
-3
-"""
-TEST_T3 = """
->>> as_input(T3)
->>> main()
-21
-AAAABBBB
-ABBBBAAA
-ABAAABBB
-AABBBBAA
-ABBAAABB
-AAABBBBA
-ABBBAAAB
-AAAABBBB
-ABBBBAAA
-ABAAABBB
-AABBBBAA
-ABBAAABB
-AAABBBBA
-ABBBAAAB
-AAAABBBB
-ABBBBAAA
-ABAAABBB
-AABBBBAA
-ABBAAABB
-AAABBBBA
-ABBBAAAB
 """
 
 

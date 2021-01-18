@@ -14,8 +14,9 @@ def main():
     from collections import Counter
     count = Counter(AS)
     ret = 0
-    while count[0] > 0:
+    while count[0] > 0 and K > 0:
         i = 0
+        K -= 1
         while count[i] > 0:
             ret += 1
             count[i] -= 1
@@ -43,6 +44,26 @@ TEST_T2 = """
 >>> as_input(T2)
 >>> main()
 11
+"""
+
+T3 = """
+3 2
+0 0 1
+"""
+TEST_T3 = """
+>>> as_input(T3)
+>>> main()
+3
+"""
+
+T4 = """
+3 1
+0 0 1
+"""
+TEST_T4 = """
+>>> as_input(T4)
+>>> main()
+2
 """
 
 
