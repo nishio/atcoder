@@ -58,7 +58,7 @@ def main():
             i = q[1] - 1
             x, y = XY[i]
             newXY = np.array([x, y, 1]).dot(trans)
-            answer[q] = (newXY[0], newXY[1])
+            answer[q] = newXY
 
             # debug(q, answer[q], msg=":q, answer[q]")
         else:
@@ -77,7 +77,7 @@ def main():
                 trans = trans.dot(OP4)
 
     for q in QS:
-        x, y = answer[q]
+        x, y, _z = answer[q]
         print(x, y)
 
 
