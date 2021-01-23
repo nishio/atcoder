@@ -32,11 +32,25 @@ def main():
         timeline.append((q[0] * 2 + 1, q))
     timeline.sort()
 
-    # newX = [1, 0, 0]
-    # newY = [0, 1, 0]
     answer = {}
     trans = np.eye(3, dtype=np.int)
 
+    OP1 = np.array([
+        [0, -1, 0],
+        [1, 0, 0],
+        [0, 0, 1]])
+    OP2 = np.array([
+        [0, 1, 0],
+        [-1, 0, 0],
+        [0, 0, 1]])
+    OP3 = np.array([
+        [-1, 0, 0],
+        [0, 1, 0],
+        [0, 0, 1]])
+    OP4 = np.array([
+        [1, 0, 0],
+        [0, -1, 0],
+        [0, 0, 1]])
     for t, x in timeline:
         if t % 2:
             # query
@@ -44,56 +58,23 @@ def main():
             i = q[1] - 1
             x, y = XY[i]
             newXY = np.array([x, y, 1]).dot(trans)
-            # answer[q] = (
-            #     newX[0] * x + newX[1] * y,
-            #     newY[0] * x + newY[1] * y,
-            # )
             answer[q] = (newXY[0], newXY[1])
 
             # debug(q, answer[q], msg=":q, answer[q]")
         else:
             # ops
             if x[0] == 1:
-                trans = trans.dot(np.array([
-                    [0, -1, 0],
-                    [1, 0, 0],
-                    [0, 0, 1]]))
-
-                # def f(p):
-                #     (x, y, z) = p
-                #     return (-y, x)
+                trans = trans.dot(OP1)
             elif x[0] == 2:
-                trans = trans.dot(np.array([
-                    [0, 1, 0],
-                    [-1, 0, 0],
-                    [0, 0, 1]]))
-
-                # def f(p):
-                #     (x, y) = p
-                #     return (y, -x)
+                trans = trans.dot(OP2)
             elif x[0] == 3:
                 P = x[1]
-                trans = trans.dot(
-                    np.array([
-                        [-1, 0, 2*P],
-                        [0, 1, 0],
-                        [0, 0, 1]]).T)
-
-                # def f(p):
-                #     (x, y) = p
-                #     return (P * 2 - x, y)
-
+                OP3[2, 0] = 2 * P
+                trans = trans.dot(OP3)
             elif x[0] == 4:
                 P = x[1]
-                trans = trans.dot(
-                    np.array([
-                        [1, 0, 0],
-                        [0, -1, 2*P],
-                        [0, 0, 1]]).T)
-
-                # def f(p):
-                #     (x, y) = p
-                #     return (x, P * 2 - y)
+                OP4[2, 1] = 2 * P
+                trans = trans.dot(OP4)
 
     for q in QS:
         x, y = answer[q]
