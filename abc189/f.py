@@ -31,6 +31,29 @@ def solveWA(N, M, K, AS):
     return table[0] / (1 - tableF[0])
 
 
+def solve(N, M, K, AS):
+    setA = set(AS)
+    table = [0] * (N + M + 1)
+    tableF = [0] * (N + M + 1)
+
+    for i in range(N - 1, -1, -1):
+        if i in setA:
+            table[i] = 0
+            tableF[i] = 1
+        else:
+            v = 0
+            f = 0
+            for j in range(1, M + 1):
+                v += table[i + j]
+                f += tableF[i + j]
+            table[i] = v / M + 1
+            tableF[i] = f / M
+
+    if tableF[0] == 1:
+        return -1
+    return table[0] / (1 - tableF[0])
+
+
 def main():
     # parse input
     N, M, K = map(int, input().split())
