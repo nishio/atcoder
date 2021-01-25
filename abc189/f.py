@@ -33,6 +33,15 @@ def solveWA(N, M, K, AS):
 
 def solve(N, M, K, AS):
     setA = set(AS)
+    count = 0
+    for i in range(N):
+        if i in setA:
+            count += 1
+            if count == M:
+                return -1  # unreachable
+        else:
+            count = 0
+
     table = [0] * (N + M + 1)
     tableF = [0] * (N + M + 1)
     sumTable = 0
