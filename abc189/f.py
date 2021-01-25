@@ -35,19 +35,20 @@ def solve(N, M, K, AS):
     setA = set(AS)
     table = [0] * (N + M + 1)
     tableF = [0] * (N + M + 1)
-
+    sumTable = 0
+    sumTableF = 0
     for i in range(N - 1, -1, -1):
         if i in setA:
             table[i] = 0
             tableF[i] = 1
         else:
-            v = 0
-            f = 0
-            for j in range(1, M + 1):
-                v += table[i + j]
-                f += tableF[i + j]
+            v = sumTable
+            f = sumTableF
             table[i] = v / M + 1
             tableF[i] = f / M
+
+        sumTable += table[i] - table[i + M]
+        sumTableF += tableF[i] - tableF[i + M]
 
     if tableF[0] == 1:
         return -1
