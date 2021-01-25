@@ -17,40 +17,38 @@ def main():
     for _i in range(N):
         XY.append(tuple(map(int, input().split())))
     M = int(input())
-    OPS = []
-    for _i in range(M):
-        OPS.append(tuple(map(int, input().split())))
-    Q = int(input())
-    QS = []
-    for _q in range(Q):
-        QS.append(tuple(map(int, input().split())))
 
     timeline = []
     for i in range(M):
-        timeline.append(((i + 1) * 2, OPS[i]))
-    for q in QS:
+        timeline.append(((i + 1) * 2, tuple(map(int, input().split()))))
+
+    Q = int(input())
+    QS = []
+    for i in range(Q):
+        q = tuple(map(int, input().split()))
+        QS.append(q)
         timeline.append((q[0] * 2 + 1, q))
     timeline.sort()
 
     answer = {}
-    trans = np.eye(3, dtype=np.int)
+    trans = np.eye(3, dtype=np.int64)
 
     OP1 = np.array([
         [0, -1, 0],
         [1, 0, 0],
-        [0, 0, 1]])
+        [0, 0, 1]], dtype=np.int64)
     OP2 = np.array([
         [0, 1, 0],
         [-1, 0, 0],
-        [0, 0, 1]])
+        [0, 0, 1]], dtype=np.int64)
     OP3 = np.array([
         [-1, 0, 0],
         [0, 1, 0],
-        [0, 0, 1]])
+        [0, 0, 1]], dtype=np.int64)
     OP4 = np.array([
         [1, 0, 0],
         [0, -1, 0],
-        [0, 0, 1]])
+        [0, 0, 1]], dtype=np.int64)
     for t, x in timeline:
         if t % 2:
             # query
@@ -78,7 +76,7 @@ def main():
 
     for q in QS:
         x, y = answer[q]
-        print(x, y)
+        print(int(x), int(y))
 
 
 T1 = """
