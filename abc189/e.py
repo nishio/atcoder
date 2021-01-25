@@ -14,7 +14,9 @@ def gen_dot():
     for i in range(9):
         x, y = divmod(i, 3)
         print(
-            f"a[{x * 3}] * b[{y}] + a[{x * 3 + 1}] * b[{y + 3}]+ a[{x * 3 + 2}] * b[{y + 6}],")
+            f"a[{x * 3}] * b[{y}] + "
+            f"a[{x * 3 + 1}] * b[{y + 3}] + "
+            f"a[{x * 3 + 2}] * b[{y + 6}],")
 
 
 def dot(a, b):
