@@ -1,4 +1,3 @@
-import numpy as np
 # included from snippets/main.py
 
 
@@ -9,6 +8,27 @@ def debug(*x, msg=""):
 
 def solve(SOLVE_PARAMS):
     pass
+
+
+def gen_dot():
+    for i in range(9):
+        x, y = divmod(i, 3)
+        print(
+            f"a[{x * 3}] * b[{y}] + a[{x * 3 + 1}] * b[{y + 3}]+ a[{x * 3 + 2}] * b[{y + 6}],")
+
+
+def dot(a, b):
+    return [
+        a[0] * b[0] + a[1] * b[3] + a[2] * b[6],
+        a[0] * b[1] + a[1] * b[4] + a[2] * b[7],
+        a[0] * b[2] + a[1] * b[5] + a[2] * b[8],
+        a[3] * b[0] + a[4] * b[3] + a[5] * b[6],
+        a[3] * b[1] + a[4] * b[4] + a[5] * b[7],
+        a[3] * b[2] + a[4] * b[5] + a[5] * b[8],
+        a[6] * b[0] + a[7] * b[3] + a[8] * b[6],
+        a[6] * b[1] + a[7] * b[4] + a[8] * b[7],
+        a[6] * b[2] + a[7] * b[5] + a[8] * b[8]
+    ]
 
 
 def main():
@@ -31,52 +51,53 @@ def main():
     timeline.sort()
 
     answer = {}
-    trans = np.eye(3, dtype=np.int64)
+    trans = [1, 0, 0, 0, 1, 0, 0, 0, 1]
 
-    OP1 = np.array([
-        [0, -1, 0],
-        [1, 0, 0],
-        [0, 0, 1]], dtype=np.int64)
-    OP2 = np.array([
-        [0, 1, 0],
-        [-1, 0, 0],
-        [0, 0, 1]], dtype=np.int64)
-    OP3 = np.array([
-        [-1, 0, 0],
-        [0, 1, 0],
-        [0, 0, 1]], dtype=np.int64)
-    OP4 = np.array([
-        [1, 0, 0],
-        [0, -1, 0],
-        [0, 0, 1]], dtype=np.int64)
+    OP1 = [
+        0, -1, 0,
+        1, 0, 0,
+        0, 0, 1]
+    OP2 = [
+        0, 1, 0,
+        -1, 0, 0,
+        0, 0, 1]
+    OP3 = [
+        -1, 0, 0,
+        0, 1, 0,
+        0, 0, 1]
+    OP4 = [
+        1, 0, 0,
+        0, -1, 0,
+        0, 0, 1]
+
     for t, x in timeline:
         if t % 2:
             # query
             q = x
             i = q[1] - 1
             x, y = XY[i]
-            newXY = np.array([x, y, 1]).dot(trans)
+            newXY = dot([x, y, 1, 0, 0, 0, 0, 0, 0], trans)
             answer[q] = (newXY[0], newXY[1])
 
             # debug(q, answer[q], msg=":q, answer[q]")
         else:
             # ops
             if x[0] == 1:
-                trans = trans.dot(OP1)
+                trans = dot(trans, OP1)
             elif x[0] == 2:
-                trans = trans.dot(OP2)
+                trans = dot(trans, OP2)
             elif x[0] == 3:
                 P = x[1]
-                OP3[2, 0] = 2 * P
-                trans = trans.dot(OP3)
+                OP3[6] = 2 * P
+                trans = dot(trans, OP3)
             elif x[0] == 4:
                 P = x[1]
-                OP4[2, 1] = 2 * P
-                trans = trans.dot(OP4)
+                OP4[7] = 2 * P
+                trans = dot(trans, OP4)
 
     for q in QS:
         x, y = answer[q]
-        print(int(x), int(y))
+        print(x, y)
 
 
 T1 = """

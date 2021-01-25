@@ -20,7 +20,6 @@ def main():
                 maxA = AS[j]
             width += 1
             v = maxA * width
-            # debug(i, j, maxA, width, maxA * width, msg=":i, j, maxA, width")
             if v > ret:
                 ret = v
     print(ret)
