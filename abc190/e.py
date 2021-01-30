@@ -142,9 +142,7 @@ def main():
         # debug(d, msg=":d")
         dist.append([d[CS[i]] for i in range(K)])
 
-    ret = INF
-    for i in range(K):
-        ret = min(ret, tsp_not_return(K, dist, [0] * K))
+    ret = tsp_not_return(K, dist, [0] * K)
     print(ret + 1)
 
 
@@ -196,6 +194,20 @@ TEST_T3 = """
 >>> as_input(T3)
 >>> main()
 11
+"""
+
+T4 = """
+3 3
+3 2
+2 1
+1 3
+3
+1 2 3
+"""
+TEST_T4 = """
+>>> as_input(T4)
+>>> main()
+3
 """
 
 
