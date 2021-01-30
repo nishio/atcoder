@@ -39,9 +39,7 @@ def tsp_not_return(num_vertex, distances, from_start):
             mask = 1 << v
             if subset == mask:
                 # previous vertex is start
-                memo[subset][v] = min(
-                    memo[subset][v],
-                    from_start[v])
+                memo[subset][v] = 0
             elif subset & mask:  # new subset includes v
                 for u in range(num_vertex):
                     memo[subset][v] = min(
@@ -128,20 +126,18 @@ def main():
 
     K = int(input())
     CS = list(int(x) - 1 for x in input().split())
-    C2I = {}
-    for i in range(K):
-        C2I[CS[i]] = i
 
     INF = 9223372036854775807
     dist = []
     for c in CS:
         d = one_to_all(c, N, edges, INF)
-        if INF in d:
+        # debug(d, msg=":d")
+        dd = [d[CS[i]] for i in range(K)]
+        if INF in dd:
             print(-1)
             return
-        # debug(d, msg=":d")
-        dist.append([d[CS[i]] for i in range(K)])
-
+        dist.append(dd)
+    # debug(dist, msg=":dist")
     ret = tsp_not_return(K, dist, [0] * K)
     print(ret + 1)
 
@@ -208,6 +204,20 @@ TEST_T4 = """
 >>> as_input(T4)
 >>> main()
 3
+"""
+
+T5 = """
+4 3
+1 4
+2 4
+3 4
+4
+1 2 3 4
+"""
+TEST_T5 = """
+>>> as_input(T5)
+>>> main()
+5
 """
 
 
