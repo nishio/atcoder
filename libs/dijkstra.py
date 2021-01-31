@@ -52,6 +52,25 @@ def one_to_all(
                 heappush(queue, (distances[to], to))
     return distances
 
+
+def one_to_all_bfs(start, num_vertexes, edges, INF=9223372036854775807):
+    """
+    when all cost is 1, BFS is faster (ABC170E)
+    """
+    distances = [INF] * num_vertexes
+    distances[start] = 0
+    to_visit = [start]
+    while to_visit:
+        next_visit = []
+        for frm in to_visit:
+            for to in edges[frm]:
+                new_cost = distances[frm] + 1
+                if new_cost < distances[to]:
+                    distances[to] = new_cost
+                    next_visit.append(to)
+        to_visit = next_visit
+    return distances
+
 # --- end of library ---
 
 
