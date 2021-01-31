@@ -1,13 +1,13 @@
 # included from libs/tsp.py
+from heapq import heappush, heappop
+
 """
 TSP: Travelling salesman problem / bit DP
 """
 
 
-from heapq import heappush, heappop
-
-
 def tsp_return(num_vertex, distances):
+    assert num_vertex < 20
     # ABC180E
     INF = 9223372036854775807
     SUBSETS = 2 ** num_vertex
@@ -25,11 +25,14 @@ def tsp_return(num_vertex, distances):
     return memo[-1][0]
 
 
-def tsp_not_return(num_vertex, distances, from_start):
+def tsp_not_return(num_vertex, distances, from_start=None):
     """
-    from_start: distance from a virtual start vertex
+    from_start: distance from a virtual start vertex (PAST3M)
     """
-    # PAST3M
+    assert num_vertex < 20
+    if from_start == None:
+        from_start = [0] * num_vertex
+
     INF = 9223372036854775807
     SUBSETS = 2 ** num_vertex
     memo = [[INF] * num_vertex for _i in range(SUBSETS)]
@@ -39,7 +42,9 @@ def tsp_not_return(num_vertex, distances, from_start):
             mask = 1 << v
             if subset == mask:
                 # previous vertex is start
-                memo[subset][v] = 0
+                memo[subset][v] = min(
+                    memo[subset][v],
+                    from_start[v])
             elif subset & mask:  # new subset includes v
                 for u in range(num_vertex):
                     memo[subset][v] = min(
@@ -101,6 +106,25 @@ def one_to_all(
                 heappush(queue, (distances[to], to))
     return distances
 
+
+def one_to_all_bfs(start, num_vertexes, edges, INF=9223372036854775807):
+    """
+    when all cost is 1, BFS is faster (ABC170E)
+    """
+    distances = [INF] * num_vertexes
+    distances[start] = 0
+    to_visit = [start]
+    while to_visit:
+        next_visit = []
+        for frm in to_visit:
+            for to in edges[frm]:
+                new_cost = distances[frm] + 1
+                if new_cost < distances[to]:
+                    distances[to] = new_cost
+                    next_visit.append(to)
+        to_visit = next_visit
+    return distances
+
 # end of libs/dijkstra.py
 # included from snippets/main.py
 
@@ -115,14 +139,13 @@ def solve(SOLVE_PARAMS):
 
 
 def main():
-    # parse input
     N, M = map(int, input().split())
     from collections import defaultdict
-    edges = defaultdict(dict)
+    edges = defaultdict(list)
     for _i in range(M):
         frm, to = map(int, input().split())
-        edges[frm-1][to-1] = 1  # -1 for 1-origin vertexes
-        edges[to-1][frm-1] = 1  # if bidirectional
+        edges[frm - 1].append(to - 1)  # -1 for 1-origin vertexes
+        edges[to - 1].append(frm - 1)  # if bidirectional
 
     K = int(input())
     CS = list(int(x) - 1 for x in input().split())
@@ -130,15 +153,14 @@ def main():
     INF = 9223372036854775807
     dist = []
     for c in CS:
-        d = one_to_all(c, N, edges, INF)
-        # debug(d, msg=":d")
+        d = one_to_all_bfs(c, N, edges, INF)
         dd = [d[CS[i]] for i in range(K)]
         if INF in dd:
             print(-1)
             return
         dist.append(dd)
-    # debug(dist, msg=":dist")
-    ret = tsp_not_return(K, dist, [0] * K)
+
+    ret = tsp_not_return(K, dist)
     print(ret + 1)
 
 
