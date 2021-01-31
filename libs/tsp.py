@@ -4,6 +4,7 @@ TSP: Travelling salesman problem / bit DP
 
 
 def tsp_return(num_vertex, distances):
+    assert num_vertex < 20
     # ABC180E
     INF = 9223372036854775807
     SUBSETS = 2 ** num_vertex
@@ -21,8 +22,14 @@ def tsp_return(num_vertex, distances):
     return memo[-1][0]
 
 
-def tsp_not_return(num_vertex, distances, from_start):
-    # PAST3M
+def tsp_not_return(num_vertex, distances, from_start=None):
+    """
+    from_start: distance from a virtual start vertex (PAST3M)
+    """
+    assert num_vertex < 20
+    if from_start == None:
+        from_start = [0] * num_vertex
+
     INF = 9223372036854775807
     SUBSETS = 2 ** num_vertex
     memo = [[INF] * num_vertex for _i in range(SUBSETS)]
@@ -30,7 +37,7 @@ def tsp_not_return(num_vertex, distances, from_start):
     for subset in range(1, SUBSETS):
         for v in range(num_vertex):  # new vertex
             mask = 1 << v
-            if subset == 1 << v:
+            if subset == mask:
                 # previous vertex is start
                 memo[subset][v] = min(
                     memo[subset][v],
