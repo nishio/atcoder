@@ -21,19 +21,34 @@ def main():
     iR2 = iR * iR
 
     ret = 0
+
+    def isIn(x, y):
+        ret = (X - x) ** 2 + (Y - y) ** 2 <= R ** 2
+        # debug(x, y, X-x, Y-y, ret, msg=":x, y, ret")
+        return ret
+
     for y in range(floor(Y - R), ceil(Y + R) + 1):
         xcep = iR2 - (y * 10000 - iY) ** 2
         a = 100000000
-        b = 20000 * iX
+        b = -20000 * iX
         c = iX ** 2 - xcep
         e = b * b - 4 * a * c
         if e < 0:
             continue
         s = sqrt(e)
+        # debug(a, b, c, e, msg=":a,b,c,e")
         r1 = (-b + s) / (2 * a)
         r2 = (-b - s) / (2 * a)
         # debug(r1, r2, msg=":r1, r2")
         ret += floor(r1) - ceil(r2) + 1
+        if isIn(floor(r1) + 1, y):
+            ret += 1
+        if not isIn(floor(r1), y):
+            ret -= 1
+        if isIn(ceil(r2) - 1, y):
+            ret += 1
+        if not isIn(ceil(r2), y):
+            ret -= 1
 
     # for y in range(floor(Y - R), ceil(Y + R) + 1):
     #     xcep = R ** 2 - (y - Y) ** 2
@@ -73,6 +88,14 @@ TEST_T2 = """
 5
 """
 
+T22 = """
+0 0 1
+"""
+TEST_T22 = """
+>>> as_input(T22)
+>>> main()
+5
+"""
 T3 = """
 42782.4720 31949.0192 99999.99
 """
