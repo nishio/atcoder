@@ -1,4 +1,36 @@
+# included from libs/divisor.py
+"""
+get all divisors
+"""
+
+
+def get_divisors(n, includeN=True):
+    """
+    >>> get_divisors(28)
+    [1, 2, 4, 7, 14, 28]
+    >>> get_divisors(28, includeN=False)
+    [1, 2, 4, 7, 14]
+
+    Derived from https://qiita.com/LorseKudos/items/9eb560494862c8b4eb56
+    """
+    lower_divisors, upper_divisors = [], []
+    i = 1
+    while i * i <= n:
+        if n % i == 0:
+            lower_divisors.append(i)
+            if i != n // i:
+                upper_divisors.append(n//i)
+        i += 1
+    upper_divisors = upper_divisors[::-1]
+    if not includeN:
+        upper_divisors.pop()
+    return lower_divisors + upper_divisors
+
+# end of libs/divisor.py
+
 # included from snippets/main.py
+
+
 def debug(*x, msg=""):
     import sys
     print(msg, *x, file=sys.stderr)
@@ -10,23 +42,21 @@ def solve(SOLVE_PARAMS):
 
 def main():
     from math import gcd
+    from functools import reduce
     N = int(input())
     AS = list(map(int, input().split()))
     minA = min(AS)
-    ALL = set(AS)
-    NEW = set(AS)
-    while NEW:
-        next = set()
-        for x in ALL:
-            for y in NEW:
-                next.add(gcd(x, y))
-        ALL.update(NEW)
-        NEW = next - ALL
+    S = set(AS)
+    divisors = set()
+    for x in S:
+        divisors.update(get_divisors(x))
     ret = 1
-    for x in ALL:
-        if x < minA:
+    for d in sorted(divisors):
+        if d == minA:
+            break
+        targets = [x for x in S if x % d == 0]
+        if reduce(gcd, targets) == d:
             ret += 1
-
     print(ret)
 
 
