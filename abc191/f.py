@@ -42,20 +42,21 @@ def solve(SOLVE_PARAMS):
 
 def main():
     from math import gcd
-    from functools import reduce
+    from collections import defaultdict
     N = int(input())
     AS = list(map(int, input().split()))
     minA = min(AS)
     S = set(AS)
-    divisors = set()
+    gcds = defaultdict(int)
     for x in S:
-        divisors.update(get_divisors(x))
+        for d in get_divisors(x):
+            gcds[d] = gcd(gcds[d], x)
+
     ret = 1
-    for d in sorted(divisors):
+    for d in sorted(gcds):
         if d == minA:
             break
-        targets = [x for x in S if x % d == 0]
-        if reduce(gcd, targets) == d:
+        if gcds[d] == d:
             ret += 1
     print(ret)
 
