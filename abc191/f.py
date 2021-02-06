@@ -19,11 +19,9 @@ def main():
         next = set()
         for x in ALL:
             for y in NEW:
-                v = gcd(x, y)
-                if v not in ALL:
-                    next.add(v)
+                next.add(gcd(x, y))
         ALL.update(NEW)
-        NEW = next
+        NEW = next - ALL
     ret = 1
     for x in ALL:
         if x < minA:
