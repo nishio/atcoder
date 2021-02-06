@@ -21,20 +21,11 @@ def main():
     iR2 = iR * iR
 
     ret = 0
-    # for y in range(floor(Y - R), ceil(Y + R) + 1):
-    #     xcep = iR2 - (y * 10000 - iY) ** 2
-    #     a = 100000000
-    #     b = 20000 * iX
-    #     c = iX ** 2 - xcep
-    #     s = sqrt(b * b + 4 * a * c)
-    #     ret += floor((-b+s) / (2*a)) - ceil((-b-s) / (2*a)) + 1
     for y in range(floor(Y - R), ceil(Y + R) + 1):
-        xcep = R ** 2 - (y - Y) ** 2
-        a = 1
-        b = 2 * X
-        # c = iX ** 2 - xcep
-        c = X ** 2 - xcep
-        # debug(a, b, c, msg=":a, b, c")
+        xcep = iR2 - (y * 10000 - iY) ** 2
+        a = 100000000
+        b = 20000 * iX
+        c = iX ** 2 - xcep
         e = b * b - 4 * a * c
         if e < 0:
             continue
@@ -43,6 +34,22 @@ def main():
         r2 = (-b - s) / (2 * a)
         # debug(r1, r2, msg=":r1, r2")
         ret += floor(r1) - ceil(r2) + 1
+
+    # for y in range(floor(Y - R), ceil(Y + R) + 1):
+    #     xcep = R ** 2 - (y - Y) ** 2
+    #     a = 1
+    #     b = 2 * X
+    #     # c = iX ** 2 - xcep
+    #     c = X ** 2 - xcep
+    #     # debug(a, b, c, msg=":a, b, c")
+    #     e = b * b - 4 * a * c
+    #     if e < 0:
+    #         continue
+    #     s = sqrt(e)
+    #     r1 = (-b + s) / (2 * a)
+    #     r2 = (-b - s) / (2 * a)
+    #     # debug(r1, r2, msg=":r1, r2")
+    #     ret += floor(r1) - ceil(r2) + 1
 
     print(ret)
 
