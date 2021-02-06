@@ -13,14 +13,19 @@ def main():
     N = int(input())
     AS = list(map(int, input().split()))
     minA = min(AS)
-    S = set(AS)
-    while True:
-        S2 = set([gcd(x, y) for x in S for y in S])
-        if S == S2:
-            break
-        S = S2
+    ALL = set(AS)
+    NEW = set(AS)
+    while NEW:
+        next = set()
+        for x in ALL:
+            for y in NEW:
+                v = gcd(x, y)
+                if v not in ALL:
+                    next.add(v)
+        ALL.update(NEW)
+        NEW = next
     ret = 1
-    for x in S:
+    for x in ALL:
         if x < minA:
             ret += 1
 
