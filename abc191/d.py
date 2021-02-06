@@ -10,9 +10,10 @@ def solve(SOLVE_PARAMS):
 
 def main():
     from math import floor, ceil, sqrt
+    map(int, input().split())
     S = input().strip().decode('ascii')
     X, Y, R = S.split()
-    X = float(X)
+    X = round(float(X) * 10000)
     iX = int(X * 10000)
     Y = float(Y)
     iY = int(Y * 10000)
@@ -27,7 +28,7 @@ def main():
         # debug(x, y, X-x, Y-y, ret, msg=":x, y, ret")
         return ret
 
-    for y in range(floor(Y - R), ceil(Y + R) + 1):
+    for y in range(floor(Y - R) - 1, ceil(Y + R) + 1 + 1):
         xcep = iR2 - (y * 10000 - iY) ** 2
         a = 100000000
         b = -20000 * iX
@@ -41,14 +42,22 @@ def main():
         r2 = (-b - s) / (2 * a)
         # debug(r1, r2, msg=":r1, r2")
         ret += floor(r1) - ceil(r2) + 1
+        # if isIn(floor(r1) + 2, y):
+        #     ret += 1
         if isIn(floor(r1) + 1, y):
             ret += 1
         if not isIn(floor(r1), y):
             ret -= 1
+        # if not isIn(floor(r1) + 1, y):
+        #     ret -= 1
+        # if isIn(ceil(r2) - 2, y):
+        #     ret += 1
         if isIn(ceil(r2) - 1, y):
             ret += 1
         if not isIn(ceil(r2), y):
             ret -= 1
+        # if not isIn(ceil(r2) + 1, y):
+        #     ret -= 1
 
     # for y in range(floor(Y - R), ceil(Y + R) + 1):
     #     xcep = R ** 2 - (y - Y) ** 2
@@ -65,6 +74,27 @@ def main():
     #     r2 = (-b - s) / (2 * a)
     #     # debug(r1, r2, msg=":r1, r2")
     #     ret += floor(r1) - ceil(r2) + 1
+
+    print(ret)
+
+
+def main_simple():
+    from math import floor, ceil, sqrt
+    X, Y, R = map(float, input().split())
+
+    ret = 0
+    for y in range(floor(Y - R), ceil(Y + R) + 1):
+        xcep = R ** 2 - (y - Y) ** 2
+        a = 1
+        b = -2 * X
+        c = X ** 2 - xcep
+        e = b * b - 4 * a * c
+        if e < 0:
+            continue
+        s = sqrt(e)
+        r1 = (-b + s) / (2 * a)
+        r2 = (-b - s) / (2 * a)
+        ret += floor(r1) - ceil(r2) + 1
 
     print(ret)
 
@@ -99,7 +129,7 @@ TEST_T22 = """
 T3 = """
 42782.4720 31949.0192 99999.99
 """
-TEST_T3 = """
+_TEST_T3 = """
 >>> as_input(T3)
 >>> main()
 31415920098
