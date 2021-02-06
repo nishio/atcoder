@@ -126,29 +126,14 @@ def solve(SOLVE_PARAMS):
 def main():
     H, W = map(int, input().split())
     world = OneDimensionMap(H, W, 0)
+    from collections import defaultdict
+    cornerCount = defaultdict(int)
     for pos in world.allPosition():
         if world.mapdata[pos] == 35:
-            start = pos
-            break
-    corner = set()
-    visited = set()
-    DIR4 = world.dir4()
+            for d in [0, 1, W, 1 + W]:
+                cornerCount[pos + d] += 1
 
-    def visit(pos):
-        visited.add(pos)
-        x, y = divmod(pos, W)
-        for xy in [(x, y), (x + 1, y), (x, y + 1), (x + 1, y + 1)]:
-            if xy in corner:
-                corner.remove(xy)
-            else:
-                corner.add(xy)
-        for dir in DIR4:
-            newpos = pos + dir
-            if world.mapdata[newpos] == 35 and newpos not in visited:
-                visit(newpos)
-
-    visit(start)
-    print(len(corner))
+    print(sum(v % 2 for v in cornerCount.values()))
 
 
 # tests
