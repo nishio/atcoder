@@ -7,73 +7,67 @@ def debug(*x, msg=""):
 def solve(SOLVE_PARAMS):
     pass
 
+# included from libs/binary_search.py
+
+
+def binary_search_int(f, left=0, right=1000000):
+    while left < right - 1:
+        x = (left + right) // 2
+        y = f(x)
+        if y < 0:
+            left = x
+        else:
+            right = x
+    return right
+
+
+def binary_search_float(f, left=0.0, right=1000000.0, eps=10**-7):
+    while left < right - eps:
+        x = (left + right) / 2
+        y = f(x)
+        if y < 0:
+            left = x
+        else:
+            right = x
+    return right
+
+# end of libs/binary_search.py
+
 
 def main():
     from math import floor, ceil, sqrt
-    map(int, input().split())
-    S = input().strip().decode('ascii')
-    X, Y, R = S.split()
-    X = round(float(X) * 10000)
-    iX = int(X * 10000)
-    Y = float(Y)
-    iY = int(Y * 10000)
-    R = float(R)
-    iR = int(R * 10000)
-    iR2 = iR * iR
-
+    fX, fY, fR = map(float, input().split())
+    X, Y, R = [round(x * 10000) for x in [fX, fY, fR]]
     ret = 0
 
     def isIn(x, y):
-        ret = (X - x) ** 2 + (Y - y) ** 2 <= R ** 2
-        # debug(x, y, X-x, Y-y, ret, msg=":x, y, ret")
+        ret = (X - x * 10000) ** 2 + (Y - y * 10000) ** 2 <= R ** 2
         return ret
 
-    for y in range(floor(Y - R) - 1, ceil(Y + R) + 1 + 1):
-        xcep = iR2 - (y * 10000 - iY) ** 2
-        a = 100000000
-        b = -20000 * iX
-        c = iX ** 2 - xcep
-        e = b * b - 4 * a * c
-        if e < 0:
-            continue
-        s = sqrt(e)
-        # debug(a, b, c, e, msg=":a,b,c,e")
-        r1 = (-b + s) / (2 * a)
-        r2 = (-b - s) / (2 * a)
-        # debug(r1, r2, msg=":r1, r2")
-        ret += floor(r1) - ceil(r2) + 1
-        # if isIn(floor(r1) + 2, y):
-        #     ret += 1
-        if isIn(floor(r1) + 1, y):
-            ret += 1
-        if not isIn(floor(r1), y):
-            ret -= 1
-        # if not isIn(floor(r1) + 1, y):
-        #     ret -= 1
-        # if isIn(ceil(r2) - 2, y):
-        #     ret += 1
-        if isIn(ceil(r2) - 1, y):
-            ret += 1
-        if not isIn(ceil(r2), y):
-            ret -= 1
-        # if not isIn(ceil(r2) + 1, y):
-        #     ret -= 1
+    for y in range(floor(fY - fR), ceil(fY + fR) + 1):
+        # find start
+        left = floor(fX - fR - 1)
+        init_right = right = floor(fX)
+        if isIn(right, y):
+            while left < right - 1:
+                x = (left + right) // 2
+                if isIn(x, y):
+                    right = x
+                else:
+                    left = x
+            ret += init_right - left
 
-    # for y in range(floor(Y - R), ceil(Y + R) + 1):
-    #     xcep = R ** 2 - (y - Y) ** 2
-    #     a = 1
-    #     b = 2 * X
-    #     # c = iX ** 2 - xcep
-    #     c = X ** 2 - xcep
-    #     # debug(a, b, c, msg=":a, b, c")
-    #     e = b * b - 4 * a * c
-    #     if e < 0:
-    #         continue
-    #     s = sqrt(e)
-    #     r1 = (-b + s) / (2 * a)
-    #     r2 = (-b - s) / (2 * a)
-    #     # debug(r1, r2, msg=":r1, r2")
-    #     ret += floor(r1) - ceil(r2) + 1
+        # find end
+        init_left = left = init_right + 1
+        right = ceil(fX + fR + 1)
+        if isIn(left, y):
+            while left < right - 1:
+                x = (left + right) // 2
+                if isIn(x, y):
+                    left = x
+                else:
+                    right = x
+            ret += right - init_left
 
     print(ret)
 
