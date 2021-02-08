@@ -76,11 +76,13 @@ for _i in range(N):
 
 push("readedgecost", "read edges with cost", make_template("""
 from collections import defaultdict
-edges = defaultdict(dict)
+INF = 9223372036854775807
+edges = defaultdict(lambda: defaultdict(lambda: INF))
 for _i in range(NUM_EDGES):
     frm, to, cost = map(int, input().split())
     edges[frm-1][to-1] = cost  # -1 for 1-origin vertexes
     edges[to-1][frm-1] = cost  # if bidirectional
+    # edges[frm-1][to-1] = min(edges[frm-1][to-1], cost)  # for multiple edges 
 """, "NUM_EDGES -1"))
 
 push("readedges", "read costless edges", make_template("""
