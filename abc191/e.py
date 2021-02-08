@@ -86,7 +86,6 @@ def solve(SOLVE_PARAMS):
 
 
 def main():
-
     N, M = map(int, input().split())
     from collections import defaultdict
     INF = 9223372036854775807
