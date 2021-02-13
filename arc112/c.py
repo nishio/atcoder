@@ -4,13 +4,13 @@ def debug(*x, msg=""):
     print(msg, *x, file=sys.stderr)
 
 
-def solve(SOLVE_PARAMS):
-    pass
-
-
 def main():
     N = int(input())
     PS = [0] + [int(x) - 1 for x in input().split()]
+    print(solve(N, PS))
+
+
+def solve(N, PS):
     depth = [0] * N
     from collections import defaultdict
     children = defaultdict(list)
@@ -23,37 +23,35 @@ def main():
 
     cost = {}
     sign = {}
-    total = {}
     for i in reversed(range(N)):
         if len(children[i]) == 0:
             cost[i] = 1
             sign[i] = -1
-            total[i] = 1
         elif len(children[i]) == 1:
             cost[i] = cost[children[i][0]] + 1
             sign[i] = sign[children[i][0]] * -1
-            total[i] = total[children[i][0]] + 1
         else:
             # choise
-            total[i] = sum(total[x] for x in children[i]) + 1
             cs = [(cost[x], sign[x]) for x in children[i]]
             rc = 0
             rs = 1
+            for c, s in sorted(cs):
+                if s == 1 and c < 0:
+                    rc += rs * c
             for c, s in sorted(cs):
                 if s == -1:
                     rc += rs * c
                     rs *= -1
             for c, s in sorted(cs):
-                if s == 1:
+                if s == 1 and c >= 0:
                     rc += rs * c
             cost[i] = rc + 1
             sign[i] = rs
 
     # debug(cost, sign, msg=":cost, sign")
-    print((N + cost[0]) // 2)
+    return (N + cost[0]) // 2
 
 
-    # print(solve(SOLVE_PARAMS))
 # tests
 T1 = """
 10
@@ -82,6 +80,35 @@ TEST_T3 = """
 >>> main()
 5
 """
+
+T4 = """
+4
+1 2 1
+"""
+TEST_T4 = """
+>>> as_input(T4)
+>>> main()
+2
+"""
+
+T5 = """
+5
+1 2 1 4
+"""
+TEST_T5 = """
+>>> as_input(T5)
+>>> main()
+5
+"""
+
+
+def random_test():
+    N = 5
+    from random import seed, randint
+    for s in range(10):
+        seed(s)
+        PS = [randint(0, i) for i in range(N - 1)]
+        print(solve(N, PS))
 
 
 def _test():
