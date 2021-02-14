@@ -11,15 +11,10 @@ def main():
 
 
 def solve(N, PS):
-    depth = [0] * N
     from collections import defaultdict
     children = defaultdict(list)
     for i in range(1, N):
-        # debug(i, PS[i], depth[PS[i]], msg=":i, PS[i], depth[PS[i]]")
-        depth[i] = depth[PS[i]] + 1
         children[PS[i]].append(i)
-    # debug(depth, msg=":depth")
-    # debug(children, msg=":children")
 
     cost = {}
     sign = {}
@@ -33,9 +28,10 @@ def solve(N, PS):
         else:
             # choise
             cs = [(cost[x], sign[x]) for x in children[i]]
+            # debug(i, cs, msg=":i,cs")
             rc = 0
             rs = 1
-            for c, s in sorted(cs):
+            for c, s in sorted(cs):  # (1)
                 if s == 1 and c < 0:
                     rc += rs * c
             for c, s in sorted(cs):
@@ -46,10 +42,62 @@ def solve(N, PS):
                 if s == 1 and c >= 0:
                     rc += rs * c
             cost[i] = rc + 1
-            sign[i] = rs
+            sign[i] = -rs  # (2)
 
     # debug(cost, sign, msg=":cost, sign")
     return (N + cost[0]) // 2
+
+
+def juppy(n, PS):
+    # derived from https://atcoder.jp/contests/arc112/submissions/20155646
+    # p = [-1] + list(map(int, input().split()))
+    p = [x + 1 for x in PS]
+    p[0] = -1
+
+    chi = [[] for i in range(n)]
+    for i in range(1, n):
+        p[i] -= 1
+        chi[p[i]].append(i)
+
+    order = []
+    v_tank = [0]
+    while v_tank:
+        now = v_tank.pop()
+        order.append(now)
+        for nxt in chi[now]:
+            v_tank.append(nxt)
+
+    score = [0]*n
+    for now in order[::-1]:
+        if len(chi[now]) == 0:
+            score[now] = 1
+        else:
+            s_tmp = 1
+            even_sum = 0
+            odd = []
+            for c in chi[now]:
+                if abs(score[c]) % 2 == 1:
+                    odd.append(score[c])
+                else:
+                    if score[c] < 0:
+                        s_tmp += score[c]
+                    else:
+                        even_sum += score[c]
+            odd.sort()
+            #print(now, odd)
+            for i in range(len(odd)):
+                if i % 2 == 0:
+                    s_tmp += odd[i]
+                else:
+                    s_tmp -= odd[i]
+            if len(odd) % 2 == 0:
+                s_tmp += even_sum
+            else:
+                s_tmp -= even_sum
+            score[now] = s_tmp
+
+    # print(score)
+    return ((score[0] + n)//2)
 
 
 # tests
@@ -101,14 +149,31 @@ TEST_T5 = """
 5
 """
 
+T6 = """
+6
+1 2 1 4 4
+"""
+TEST_T6 = """
+>>> as_input(T6)
+>>> main()
+3
+"""
+
 
 def random_test():
-    N = 5
+    N = 6
     from random import seed, randint
-    for s in range(10):
+    for s in range(100):
         seed(s)
-        PS = [randint(0, i) for i in range(N - 1)]
-        print(solve(N, PS))
+        PS = [0] + [randint(0, i) for i in range(N - 1)]
+        s = solve(N, PS)
+        o = juppy(N, PS)
+        if s != o:
+            debug(s, o, msg=":s, o")
+            print(*[x + 1 for x in PS[1:]])
+
+
+# random_test()
 
 
 def _test():
