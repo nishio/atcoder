@@ -40,34 +40,47 @@ def solve_WA2(B, C):
     return ret
 
 
-def solve(B, C):
-    # B-C/2 .. B
-    s1 = B - C // 2
-    e1 = B
-
-    if C >= 1:
-        # -B-(C-1)/2 .. -B
-        s2 = -B - (C - 1) // 2
-        # -B .. -B + (C-1)/2
-        e2 = -B + (C - 1) // 2
-    if C >= 2:
-        # B .. B + (C-2)//2
-        e1 = B + (C - 2) // 2
-
-    if C < 1:
-        return e1 - s1 + 1
-
-    # debug(s1, e1, s2, e2, msg=":s1,e1,s2,e2")
-    ret = e1 - s1 + 1 + e2 - s2 + 1
-    if s1 <= e2 and s2 <= e1:
-        # overlap
-        ret -= e2 - s1 + 1
-        if s1 < s2:
-            ret += s2 - s1
-        if e1 < e2:
-            ret += e2 - e1
-
+def numPointsInSpans(spans):
+    """
+    >>> numPointsInSpans([(1, 3)])
+    3
+    >>> numPointsInSpans([(1, 3), (5, 7)])
+    6
+    >>> numPointsInSpans([(1, 3), (3, 5)])
+    5
+    >>> numPointsInSpans([(1, 3), (2, 5)])
+    5
+    """
+    timeline = []
+    for start, end in spans:
+        assert start <= end
+        timeline.append((start, 0, 1))
+        timeline.append((end, 1, -1))
+    prevStart = None
+    value = 0
+    ret = 0
+    for position, _, diff in sorted(timeline):
+        prevValue = value
+        value += diff
+        if prevValue == 0 and value > 0:
+            prevStart = position
+        elif prevValue > 0 and value == 0:
+            ret += position - prevStart + 1
     return ret
+
+
+def solve(B, C):
+    if C == 0:
+        return 1
+
+    spans = [(B - C // 2, B)]
+    if C >= 1:
+        spans.append((-B-(C-1)//2, -B))
+        spans.append((-B, -B + (C - 1) // 2))
+    if C >= 2:
+        spans.append((B, B + (C - 2) // 2))
+
+    return numPointsInSpans(spans)
 
 
 def blute(B, C):

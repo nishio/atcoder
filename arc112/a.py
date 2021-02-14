@@ -8,15 +8,19 @@ def solve(SOLVE_PARAMS):
     pass
 
 
+def getTriangleNumber(n, when_negative=None):
+    if n < 0:
+        if when_negative is None:
+            raise AssertionError("arg should not be negative")
+        return when_negative
+    return n * (n + 1) // 2
+
+
 def main():
     T = int(input())
     for _i in range(T):
         L, R = map(int, input().split())
-        N = R - 2 * L + 1
-        if N < 0:
-            print(0)
-        else:
-            print(N * (N + 1) // 2)
+        print(getTriangleNumber(R - 2 * L + 1, 0))
 
 
 # tests
