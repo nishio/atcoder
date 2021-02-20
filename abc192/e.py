@@ -26,8 +26,6 @@ def one_to_one(
         for to, T, K in edges[frm]:
             # distance depents on currentTime
             currentTime = distances[frm]
-            # debug(frm, to, currentTime, currentTime %
-            #       K, T, msg=":frm, to, currentTime, currentTime % K, T")
             dist = (-currentTime % K) + T
             new_cost = currentTime + dist
             if distances[to] > new_cost:
