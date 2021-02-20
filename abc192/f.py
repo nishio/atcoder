@@ -13,25 +13,27 @@ def solve(X, AS):
     table = defaultdict(lambda: -1)
     sumAS = sum(AS)
     for k in range(1, 101):
-        table[(0, k, 0)] = 0
+        table[k] = 0
 
     for a in AS:
         newTable = {}
         for key in list(table):
-            num, k, mod = key
+            mod, nk = divmod(key, 10000)
+            num, k = divmod(nk, 100)
             v = table[key] + a
             num += 1
             if num > k:
                 continue
             mod = v % k
 
-            key = (num, k, mod)
+            key = mod * 10000 + num * 100 + k
             newTable[key] = max(table[key], v)
         table.update(newTable)
 
     ret = INF
     for key in table:
-        num, k, mod = key
+        mod, nk = divmod(key, 10000)
+        num, k = divmod(nk, 100)
         if num == k:
             v = table[key]
             assert mod == v % k
@@ -40,10 +42,6 @@ def solve(X, AS):
                 s = (X - v) // k
                 # debug(s, key, table[key], msg=":")
                 ret = min(ret, s)
-            v = sumAS - table[key]
-            # if (X - v) % (100 - k) == 0:
-            #     s = (X - v) // (100 - k)
-            #     ret = min(ret, s)
 
     return ret
 
