@@ -22,6 +22,8 @@ def solve(X, AS):
     sumAS = sum(AS)
     ret = INF
     for k in range(N, 0, -1):
+        if (X - sumAS) // k > ret:
+            break
         SIZE = (k + 1) ** 2
         table = [-1] * SIZE
         table[to_key(0, 0)] = 0
