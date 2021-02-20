@@ -7,13 +7,7 @@ def debug(*x, msg=""):
     print(msg, *x, file=sys.stderr)
 
 
-def solve(SOLVE_PARAMS):
-    pass
-
-
-def main():
-    N, X = map(int, input().split())
-    AS = list(map(int, input().split()))
+def solve(X, AS):
     from collections import defaultdict
     INF = 9223372036854775807
     table = defaultdict(lambda: -1)
@@ -51,7 +45,14 @@ def main():
                 s = (X - v) // (100 - k)
                 ret = min(ret, s)
 
-    print(ret)
+    return ret
+
+
+def main():
+    N, X = map(int, input().split())
+    AS = list(map(int, input().split()))
+    print(solve(X, AS))
+
 
 
 # tests
