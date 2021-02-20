@@ -12,44 +12,43 @@ def solve(X, AS):
     INF = 9223372036854775807
     N = len(AS)
 
-    def to_key(mod, num, k):
-        return num * (N + 1) * (N + 1) + k * (N + 1) + mod
+    def to_key(mod, num):
+        return num * (k + 1) + mod
 
     def from_key(key):
-        num, km = divmod(key, (N + 1) * (N + 1))
-        k, mod = divmod(km, N + 1)
-        return (mod, num, k)
+        num, mod = divmod(key, k + 1)
+        return (mod, num)
 
-    SIZE = (N + 1) ** 3
-    table = [-1] * SIZE
     sumAS = sum(AS)
-    for k in range(1, N + 1):
-        table[to_key(0, 0, k)] = 0
+    ret = INF
+    for k in range(N, 0, -1):
+        SIZE = (k + 1) ** 2
+        table = [-1] * SIZE
+        table[to_key(0, 0)] = 0
 
-    for a in AS:
-        for key in reversed(range(SIZE)):
+        for a in AS:
+            for key in reversed(range(SIZE)):
+                if table[key] == -1:
+                    continue
+                mod, num = from_key(key)
+                v = table[key] + a
+                num += 1
+                if num > k:
+                    continue
+                mod = v % k
+                key = to_key(mod, num)
+                table[key] = max(table[key], v)
+
+        for key in range(SIZE):
             if table[key] == -1:
                 continue
-            mod, num, k = from_key(key)
-            v = table[key] + a
-            num += 1
-            if num > k:
-                continue
-            mod = v % k
-            key = to_key(mod, num, k)
-            table[key] = max(table[key], v)
-
-    ret = INF
-    for key in range(SIZE):
-        if table[key] == -1:
-            continue
-        mod, num, k = from_key(key)
-        if num == k and num > 0:
-            v = table[key]
-            if mod == X % k:
-                assert (X - v) % k == 0, f"v: {v}"
-                s = (X - v) // k
-                ret = min(ret, s)
+            mod, num = from_key(key)
+            if num == k and num > 0:
+                v = table[key]
+                if mod == X % k:
+                    assert (X - v) % k == 0
+                    s = (X - v) // k
+                    ret = min(ret, s)
 
     return ret
 
