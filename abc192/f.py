@@ -10,37 +10,45 @@ def debug(*x, msg=""):
 def solve(X, AS):
     from collections import defaultdict
     INF = 9223372036854775807
-    table = defaultdict(lambda: -1)
+    N = len(AS)
+
+    def to_key(mod, num, k):
+        return num * (N + 1) * (N + 1) + k * (N + 1) + mod
+
+    def from_key(key):
+        num, km = divmod(key, (N + 1) * (N + 1))
+        k, mod = divmod(km, N + 1)
+        return (mod, num, k)
+
+    SIZE = (N + 1) ** 3
+    table = [-1] * SIZE
     sumAS = sum(AS)
-    for k in range(1, 101):
-        table[k] = 0
+    for k in range(1, N + 1):
+        table[to_key(0, 0, k)] = 0
 
     for a in AS:
-        newTable = {}
-        for key in list(table):
-            mod, nk = divmod(key, 10000)
-            num, k = divmod(nk, 100)
+        for key in reversed(range(SIZE)):
+            if table[key] == -1:
+                continue
+            mod, num, k = from_key(key)
             v = table[key] + a
             num += 1
             if num > k:
                 continue
             mod = v % k
-
-            key = mod * 10000 + num * 100 + k
-            newTable[key] = max(table[key], v)
-        table.update(newTable)
+            key = to_key(mod, num, k)
+            table[key] = max(table[key], v)
 
     ret = INF
-    for key in table:
-        mod, nk = divmod(key, 10000)
-        num, k = divmod(nk, 100)
-        if num == k:
+    for key in range(SIZE):
+        if table[key] == -1:
+            continue
+        mod, num, k = from_key(key)
+        if num == k and num > 0:
             v = table[key]
-            assert mod == v % k
             if mod == X % k:
-                assert (X - v) % k == 0
+                assert (X - v) % k == 0, f"v: {v}"
                 s = (X - v) // k
-                # debug(s, key, table[key], msg=":")
                 ret = min(ret, s)
 
     return ret
