@@ -39,8 +39,11 @@ def main():
     for key in table:
         num, k, mod = key
         if num == k:
+            v = table[key]
+            assert mod == v % k
             if mod == X % k:
-                s = (X - table[key]) // k
+                assert (X - v) % k == 0
+                s = (X - v) // k
                 # debug(s, key, table[key], msg=":")
                 ret = min(ret, s)
             v = sumAS - table[key]

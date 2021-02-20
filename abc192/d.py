@@ -27,13 +27,13 @@ def solve(X, M):
     if M < v:
         return 0
 
-    left = d + 1  # (3)
+    left = d + 1
     start = left
-    right = M + 1  # (4)
+    right = M + 1  # (1)
 
     while left < right - 1:
         x = (left + right) // 2
-        if lessEqual(sX, x, M):  # (2)
+        if lessEqual(sX, x, M):
             left = x
         else:
             right = x
