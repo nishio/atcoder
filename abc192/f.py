@@ -54,6 +54,41 @@ def main():
     print(solve(X, AS))
 
 
+def solve_hahho(a, x):
+    # from https://atcoder.jp/contests/abc192/submissions/20344598
+    def max2(x, y): return x if x > y else y
+    def min2(x, y): return x if x < y else y
+    n = len(a)
+    res = 2**60
+    for k in range(1, n+1):
+        dp = [[-2**60]*k for _ in range(k+1)]  # [chosen][reminder]
+        dp[0][0] = 0
+        for i_max, v in enumerate(a):
+            s = v % k
+            for i in reversed(range(1, min2(i_max+1, k)+1)):
+                for j in range(k):
+                    dp[i][j] = max2(dp[i][j], dp[i-1][(j-s) % k]+v)
+        if dp[-1][x % k] >= 0:
+            res = min2(res, (x-dp[-1][x % k])//k)
+    return res
+
+
+def random_test():
+    from random import seed, randint
+    N = 3
+    for s in range(10000):
+        seed(s)
+        # X = randint(10**9, 10**18)
+        # AS = [randint(1, 10**7) for i in range(N)]
+        X = randint(100, 1000)
+        AS = [randint(1, 10) for i in range(N)]
+        me = solve(X, AS)
+        op = solve_hahho(AS, X)
+        if me != op:
+            print(X, AS, me, op)
+
+
+# random_test()
 
 # tests
 T1 = """
