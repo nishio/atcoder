@@ -12,7 +12,7 @@ def solve(X, AS):
     INF = 9223372036854775807
     table = defaultdict(lambda: -1)
     sumAS = sum(AS)
-    for k in range(1, 51):
+    for k in range(1, 101):
         table[(0, k, 0)] = 0
 
     for a in AS:
@@ -41,9 +41,9 @@ def solve(X, AS):
                 # debug(s, key, table[key], msg=":")
                 ret = min(ret, s)
             v = sumAS - table[key]
-            if (X - v) % (100 - k) == 0:
-                s = (X - v) // (100 - k)
-                ret = min(ret, s)
+            # if (X - v) % (100 - k) == 0:
+            #     s = (X - v) // (100 - k)
+            #     ret = min(ret, s)
 
     return ret
 
