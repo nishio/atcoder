@@ -16,7 +16,7 @@ def lessEqual(s, base, limit):
 
 def solve(X, M):
     sX = str(X)
-    if sX == 1:
+    if len(sX) == 1:
         if X <= M:
             return 1
         else:
@@ -29,7 +29,7 @@ def solve(X, M):
 
     left = d + 1  # (3)
     start = left
-    right = M  # (4)
+    right = M + 1  # (4)
 
     while left < right - 1:
         x = (left + right) // 2
@@ -74,6 +74,33 @@ TEST_T3 = """
 >>> as_input(T3)
 >>> main()
 1
+"""
+T4 = """
+2
+1
+"""
+TEST_T4 = """
+>>> as_input(T4)
+>>> main()
+0
+"""
+T5 = """
+1
+2
+"""
+TEST_T5 = """
+>>> as_input(T5)
+>>> main()
+1
+"""
+T6 = """
+10
+1000
+"""
+TEST_T6 = """
+>>> as_input(T6)
+>>> main()
+999
 """
 
 
