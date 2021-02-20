@@ -17,11 +17,12 @@ def main():
     from collections import defaultdict
     INF = 9223372036854775807
     table = defaultdict(lambda: -1)
-    for k in range(1, 101):
+    sumAS = sum(AS)
+    for k in range(1, 51):
         table[(0, k, 0)] = 0
 
     for a in AS:
-        debug(table, msg=":table")
+        newTable = {}
         for key in list(table):
             num, k, mod = key
             v = table[key] + a
@@ -31,7 +32,8 @@ def main():
             mod = v % k
 
             key = (num, k, mod)
-            table[key] = max(table[key], v)
+            newTable[key] = max(table[key], v)
+        table.update(newTable)
 
     ret = INF
     for key in table:
@@ -39,7 +41,11 @@ def main():
         if num == k:
             if mod == X % k:
                 s = (X - table[key]) // k
-                debug(s, key, table[key], msg=":")
+                # debug(s, key, table[key], msg=":")
+                ret = min(ret, s)
+            v = sumAS - table[key]
+            if (X - v) % (100 - k) == 0:
+                s = (X - v) // (100 - k)
                 ret = min(ret, s)
 
     print(ret)
@@ -89,7 +95,16 @@ T6 = """
 TEST_T6 = """
 >>> as_input(T6)
 >>> main()
-result
+5
+"""
+T7 = """
+3 13
+1 2 3
+"""
+TEST_T7 = """
+>>> as_input(T7)
+>>> main()
+4
 """
 
 
