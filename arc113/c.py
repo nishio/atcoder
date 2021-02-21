@@ -1,4 +1,6 @@
 # included from snippets/main.py
+
+
 def debug(*x, msg=""):
     import sys
     print(msg, *x, file=sys.stderr)
@@ -15,16 +17,21 @@ def main():
     ret = 0
     prev = None
     for i in reversed(range(len(S) - 2)):
+        # debug(count, msg=":count")
         if S[i] != prev and S[i] == S[i + 1] != S[i + 2]:
             d = (len(S) - 2) - i
+            # debug(d, msg=":d")
             d -= count[S[i]] - 1  # except S[i + 1]
             ret += d
             # debug(d, ret, msg=":ret")
             count = defaultdict(int)
-            count[S[i]] = len(S) - i
+            p = len(S) - i
+            # debug(p, msg=":p")
+            count[S[i]] = p
             prev = S[i]
         else:
             count[S[i]] += 1
+            prev = None
 
     print(ret)
 
@@ -53,6 +60,14 @@ TEST_T3 = """
 >>> as_input(T3)
 >>> main()
 16
+"""
+T4 = """
+aabaabb
+"""
+TEST_T4 = """
+>>> as_input(T4)
+>>> main()
+3
 """
 
 
