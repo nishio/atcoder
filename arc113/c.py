@@ -21,7 +21,7 @@ def main():
             ret += d
             # debug(d, ret, msg=":ret")
             count = defaultdict(int)
-            count[S[i]] = d + 2
+            count[S[i]] = len(S) - i
             prev = S[i]
         else:
             count[S[i]] += 1
