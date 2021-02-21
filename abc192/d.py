@@ -40,6 +40,12 @@ def solve(X, M):
     return right - start
 
 
+def anotherWay(X, M):
+    from math import log, exp
+    sX = str(X)
+    return exp(log(M / int(sX[0])) / (len(sX) - 1)) - solve(X, M)
+
+
 def main():
     X = int(input())
     M = int(input())
