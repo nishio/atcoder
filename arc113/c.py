@@ -16,11 +16,14 @@ def main():
     count = defaultdict(int)
     ret = 0
     prev = None
+    count[S[-1]] += 1
+    count[S[-2]] += 1
     for i in reversed(range(len(S) - 2)):
         # debug(count, msg=":count")
         if S[i] != prev and S[i] == S[i + 1] != S[i + 2]:
             d = (len(S) - 2) - i
             # debug(d, msg=":d")
+            # debug(count[S[i]] - 1, msg=":count[S[i]] - 1")
             d -= count[S[i]] - 1  # except S[i + 1]
             ret += d
             # debug(d, ret, msg=":ret")
@@ -68,6 +71,30 @@ TEST_T4 = """
 >>> as_input(T4)
 >>> main()
 3
+"""
+T5 = """
+aabaabaabb
+"""
+TEST_T5 = """
+>>> as_input(T5)
+>>> main()
+4
+"""
+T6 = """
+aabbaa
+"""
+TEST_T6 = """
+>>> as_input(T6)
+>>> main()
+6
+"""
+T7 = """
+aabab
+"""
+TEST_T7 = """
+>>> as_input(T7)
+>>> main()
+2
 """
 
 
