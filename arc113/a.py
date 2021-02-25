@@ -16,9 +16,6 @@ def main():
         for B in range(1, maxB + 1):
             maxC = maxB // B
             ret += maxC
-            # for C in range(1, maxC + 1):
-            #     # debug(A, B, C, msg=":A,B,C")
-            #     ret += 1
 
     print(ret)
 
