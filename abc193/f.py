@@ -2,6 +2,8 @@
 """
 read map from stdin into one-dimension list with sentinel
 """
+from collections import deque
+from collections import defaultdict
 HASH, DOT, LEFT, RIGHT, UP, DOWN = b"#.<>^v"
 
 
@@ -31,6 +33,20 @@ class OneDimensionMap:
         for y in range(self.ORIGINAL_HEIGHT):
             for x in range(self.ORIGINAL_WIDTH):
                 yield self.WIDTH * (y + S) + (x + S)
+
+    def allEdges(self):
+        S = self.SENTINEL
+        W = self.WIDTH
+        ret = 0
+        for y in range(self.ORIGINAL_HEIGHT):
+            for x in range(self.ORIGINAL_WIDTH - 1):
+                pos = W * (y + S) + (x + S)
+                yield (pos, pos + 1)
+
+        for y in range(self.ORIGINAL_HEIGHT - 1):
+            for x in range(self.ORIGINAL_WIDTH):
+                pos = W * (y + S) + (x + S)
+                yield (pos, pos + W)
 
     def dfs(self, start):
         # sample from PAST5H
@@ -110,7 +126,88 @@ class OneDimensionMap:
         self.mapdata = newdata
         self.WIDTH, self.HEIGHT = H, W
 
+
 # end of libs/readMap.py
+# included from libs/dinic_maxflow.py
+"""
+Dinic: MaxFlow
+"""
+
+INF = 10 ** 10
+edges = defaultdict(dict)
+
+
+def add_edge(frm, to, capacity, bidirectional=False):
+    if bidirectional:
+        edges[frm][to] = capacity
+        edges[to][frm] = capacity
+    else:
+        edges[frm][to] = capacity
+        edges[to][frm] = 0
+
+
+def bfs(start, goal):
+    """
+    update: distance_from_start
+    return bool: can reach to goal
+    """
+    global distance_from_start
+    distance_from_start = [-1] * len(edges)
+    queue = deque()
+    distance_from_start[start] = 0
+    queue.append(start)
+    while queue and distance_from_start[goal] == -1:
+        frm = queue.popleft()
+        for to in edges[frm]:
+            if edges[frm][to] > 0 and distance_from_start[to] == -1:
+                distance_from_start[to] = distance_from_start[frm] + 1
+                queue.append(to)
+
+    return distance_from_start[goal] != -1
+
+
+def dfs(current, goal, flow):
+    """
+    make flow from `current` to `goal`
+    update: capacity of edges, iteration_count
+    return: flow (if impossible: 0)
+    """
+    if current == goal:
+        return flow
+    i = itertion_count[current]
+    while itertion_count[current] < len(edges[current]):
+        to = edges_index[current][i]
+        capacity = edges[current][to]
+        if capacity > 0 and distance_from_start[current] < distance_from_start[to]:
+            d = dfs(to, goal, min(flow, capacity))
+            if d > 0:
+                edges[current][to] -= d
+                edges[to][current] += d
+                return d
+        itertion_count[current] += 1
+        i += 1
+    return 0
+
+
+def max_flow(start, goal):
+    """
+    return: max flow from `start` to `goal`
+    """
+    global itertion_count, edges_index
+    flow = 0
+    edges_index = {
+        frm: list(edges[frm]) for frm in edges
+    }
+    while bfs(start, goal):
+        itertion_count = [0] * len(edges)
+        f = dfs(start, goal, INF)
+        while f > 0:
+            flow += f
+            f = dfs(start, goal, INF)
+    return flow
+
+# end of libs/dinic_maxflow.py
+
 # included from snippets/main.py
 
 
@@ -119,7 +216,7 @@ def debug(*x, msg=""):
     print(msg, *x, file=sys.stderr)
 
 
-def solve(N, world):
+def solve_WA(N, world):
     for x in range(N):
         for y in range(N):
             pos = x * N + y
@@ -130,24 +227,47 @@ def solve(N, world):
 
 
 def calcScore(world):
-    N = world.ORIGINAL_HEIGHT
     ret = 0
-    for x in range(N):
-        for y in range(N - 1):
-            if world.mapdata[x * N + y] != world.mapdata[x * N + y + 1]:
-                ret += 1
-    for x in range(N - 1):
-        for y in range(N):
-            if world.mapdata[x * N + y] != world.mapdata[x * N + y + N]:
-                ret += 1
-
-    # debug(world.mapdata, ret, msg=":world")
+    for u, v in world.allEdges():
+        if world.mapdata[u] != world.mapdata[v]:
+            ret += 1
     return ret
 
 
 CHAR_Q = 63
 CHAR_B = 66
 CHAR_W = 87
+
+
+def solve(N, world):
+    global edges
+    INF = 9223372036854775807
+    from collections import defaultdict
+    edges = defaultdict(dict)
+    for u, v in world.allEdges():
+        add_edge(u, v, 1, True)
+
+    start = N * N
+    goal = start + 1
+    for pos in world.allPosition():
+        x, y = divmod(pos, N)
+        if world.mapdata[pos] != CHAR_Q:
+            p1 = (world.mapdata[pos] == CHAR_B)
+            p2 = ((x + y) % 2 == 0)
+            if p1 ^ p2:
+                add_edge(start, pos, INF)
+                # add_edge(pos, goal, 0)
+            else:
+                # add_edge(start, pos, 0)
+                add_edge(pos, goal, INF)
+        else:
+            add_edge(start, pos, 0)
+            add_edge(pos, goal, 0)
+
+    # debug(edges, msg=":edges")
+    f = max_flow(start, goal)
+    # debug(f, (2 * N * (N - 1)), N, msg=":f, ")
+    return (2 * N * (N - 1)) - f
 
 
 def greedy(world, x, y):
@@ -221,6 +341,16 @@ TEST_T3 = """
 >>> as_input(T3)
 >>> main()
 40
+"""
+T4 = """
+2
+BB
+B?
+"""
+TEST_T4 = """
+>>> as_input(T4)
+>>> main()
+2
 """
 
 
