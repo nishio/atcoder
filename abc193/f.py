@@ -243,7 +243,7 @@ CHAR_W = 87
 def solve(N, world):
     if N == 1:
         return 0
-
+    INF = 9223372036854775807
     d = Dinic(N * N + 2)
     for u, v in world.allEdges():
         d.add_edge(u, v, 1, True)
@@ -256,9 +256,9 @@ def solve(N, world):
             p1 = (world.mapdata[pos] == CHAR_B)
             p2 = ((x + y) % 2 == 0)
             if p1 ^ p2:
-                d.add_edge(start, pos, 100)
+                d.add_edge(start, pos, INF)
             else:
-                d.add_edge(pos, goal, 100)
+                d.add_edge(pos, goal, INF)
 
     f = d.max_flow(start, goal)
     return (2 * N * (N - 1)) - f
