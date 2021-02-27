@@ -134,7 +134,11 @@ Dinic: MaxFlow
 """
 
 INF = 10 ** 10
-edges = defaultdict(dict)
+
+
+def init_dinic():
+    global edges, distance_from_start
+    edges = defaultdict(dict)
 
 
 def add_edge(frm, to, capacity, bidirectional=False):
@@ -241,6 +245,8 @@ CHAR_W = 87
 
 def solve(N, world):
     global edges
+    if N == 1:
+        return 0
     INF = 9223372036854775807
     from collections import defaultdict
     edges = defaultdict(dict)
@@ -351,6 +357,15 @@ TEST_T4 = """
 >>> as_input(T4)
 >>> main()
 2
+"""
+T5 = """
+1
+W
+"""
+TEST_T5 = """
+>>> as_input(T5)
+>>> main()
+0
 """
 
 
