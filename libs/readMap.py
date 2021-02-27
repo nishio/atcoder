@@ -31,6 +31,20 @@ class OneDimensionMap:
             for x in range(self.ORIGINAL_WIDTH):
                 yield self.WIDTH * (y + S) + (x + S)
 
+    def allEdges(self):
+        assert self.ORIGINAL_HEIGHT > 1 and self.ORIGINAL_WIDTH > 1
+        S = self.SENTINEL
+        W = self.WIDTH
+        for y in range(self.ORIGINAL_HEIGHT):
+            for x in range(self.ORIGINAL_WIDTH - 1):
+                pos = W * (y + S) + (x + S)
+                yield (pos, pos + 1)
+
+        for y in range(self.ORIGINAL_HEIGHT - 1):
+            for x in range(self.ORIGINAL_WIDTH):
+                pos = W * (y + S) + (x + S)
+                yield (pos, pos + W)
+
     def dfs(self, start):
         # sample from PAST5H
         visited = [False] * (self.WIDTH * self.HEIGHT)
