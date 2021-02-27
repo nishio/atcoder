@@ -133,82 +133,79 @@ class OneDimensionMap:
 Dinic: MaxFlow
 """
 
-INF = 10 ** 10
 
+class Dinic:
+    def __init__(self, numVertex):
+        from collections import defaultdict
+        self.numVertex = numVertex
+        self.edges = defaultdict(dict)
 
-def init_dinic():
-    global edges, distance_from_start
-    edges = defaultdict(dict)
+    def add_edge(self, frm, to, capacity, bidirectional=False):
+        if bidirectional:
+            self.edges[frm][to] = capacity
+            self.edges[to][frm] = capacity
+        else:
+            self.edges[frm][to] = capacity
+            self.edges[to][frm] = 0
 
+    def bfs(self, start, goal):
+        """
+        update: distance_from_start
+        return bool: can reach to goal
+        """
+        global distance_from_start
+        distance_from_start = [-1] * self.numVertex
+        queue = deque()
+        distance_from_start[start] = 0
+        queue.append(start)
+        while queue and distance_from_start[goal] == -1:
+            frm = queue.popleft()
+            for to in self.edges[frm]:
+                if self.edges[frm][to] > 0 and distance_from_start[to] == -1:
+                    distance_from_start[to] = distance_from_start[frm] + 1
+                    queue.append(to)
 
-def add_edge(frm, to, capacity, bidirectional=False):
-    if bidirectional:
-        edges[frm][to] = capacity
-        edges[to][frm] = capacity
-    else:
-        edges[frm][to] = capacity
-        edges[to][frm] = 0
+        return distance_from_start[goal] != -1
 
+    def dfs(self, current, goal, flow):
+        """
+        make flow from `current` to `goal`
+        update: capacity of edges, iteration_count
+        return: flow (if impossible: 0)
+        """
+        if current == goal:
+            return flow
+        i = itertion_count[current]
+        while itertion_count[current] < len(self.edges[current]):
+            to = edges_index[current][i]
+            capacity = self.edges[current][to]
+            if capacity > 0 and distance_from_start[current] < distance_from_start[to]:
+                d = self.dfs(to, goal, min(flow, capacity))
+                if d > 0:
+                    self.edges[current][to] -= d
+                    self.edges[to][current] += d
+                    return d
+            itertion_count[current] += 1
+            i += 1
+        return 0
 
-def bfs(start, goal):
-    """
-    update: distance_from_start
-    return bool: can reach to goal
-    """
-    global distance_from_start
-    distance_from_start = [-1] * len(edges)
-    queue = deque()
-    distance_from_start[start] = 0
-    queue.append(start)
-    while queue and distance_from_start[goal] == -1:
-        frm = queue.popleft()
-        for to in edges[frm]:
-            if edges[frm][to] > 0 and distance_from_start[to] == -1:
-                distance_from_start[to] = distance_from_start[frm] + 1
-                queue.append(to)
-
-    return distance_from_start[goal] != -1
-
-
-def dfs(current, goal, flow):
-    """
-    make flow from `current` to `goal`
-    update: capacity of edges, iteration_count
-    return: flow (if impossible: 0)
-    """
-    if current == goal:
+    def max_flow(self, start, goal):
+        """
+        return: max flow from `start` to `goal`
+        """
+        global itertion_count, edges_index
+        INF = 9223372036854775807
+        flow = 0
+        edges_index = {
+            frm: list(self.edges[frm]) for frm in self.edges
+        }
+        while self.bfs(start, goal):
+            itertion_count = [0] * self.numVertex
+            f = self.dfs(start, goal, INF)
+            while f > 0:
+                flow += f
+                f = self.dfs(start, goal, INF)
         return flow
-    i = itertion_count[current]
-    while itertion_count[current] < len(edges[current]):
-        to = edges_index[current][i]
-        capacity = edges[current][to]
-        if capacity > 0 and distance_from_start[current] < distance_from_start[to]:
-            d = dfs(to, goal, min(flow, capacity))
-            if d > 0:
-                edges[current][to] -= d
-                edges[to][current] += d
-                return d
-        itertion_count[current] += 1
-        i += 1
-    return 0
-
-
-def max_flow(start, goal):
-    """
-    return: max flow from `start` to `goal`
-    """
-    global itertion_count, edges_index
-    flow = 0
-    edges_index = {
-        frm: list(edges[frm]) for frm in edges
-    }
-    while bfs(start, goal):
-        itertion_count = [0] * len(edges)
-        f = dfs(start, goal, INF)
-        while f > 0:
-            flow += f
-            f = dfs(start, goal, INF)
-    return flow
 
 # end of libs/dinic_maxflow.py
 
@@ -244,14 +241,12 @@ CHAR_W = 87
 
 
 def solve(N, world):
-    global edges
     if N == 1:
         return 0
-    INF = 9223372036854775807
-    from collections import defaultdict
-    edges = defaultdict(dict)
+
+    d = Dinic(N * N + 2)
     for u, v in world.allEdges():
-        add_edge(u, v, 1, True)
+        d.add_edge(u, v, 1, True)
 
     start = N * N
     goal = start + 1
@@ -261,18 +256,11 @@ def solve(N, world):
             p1 = (world.mapdata[pos] == CHAR_B)
             p2 = ((x + y) % 2 == 0)
             if p1 ^ p2:
-                add_edge(start, pos, INF)
-                # add_edge(pos, goal, 0)
+                d.add_edge(start, pos, 100)
             else:
-                # add_edge(start, pos, 0)
-                add_edge(pos, goal, INF)
-        else:
-            add_edge(start, pos, 0)
-            add_edge(pos, goal, 0)
+                d.add_edge(pos, goal, 100)
 
-    # debug(edges, msg=":edges")
-    f = max_flow(start, goal)
-    # debug(f, (2 * N * (N - 1)), N, msg=":f, ")
+    f = d.max_flow(start, goal)
     return (2 * N * (N - 1)) - f
 
 
@@ -367,6 +355,50 @@ TEST_T5 = """
 >>> main()
 0
 """
+T6 = """
+100
+""" + (("?" * 100 + "\n") * 100)
+TEST_T6 = """
+>>> as_input(T6)
+>>> main()
+19800
+"""
+T7 = """
+100
+""" + (("W" * 100 + "\n") * 100)
+TEST_T7 = """
+>>> as_input(T7)
+>>> main()
+0
+"""
+T8 = """
+2
+BW
+WB
+"""
+TEST_T8 = """
+>>> as_input(T8)
+>>> main()
+4
+"""
+
+
+def random_test():
+    from random import seed, choice, randint
+    for i in range(10000):
+        seed(i)
+        N = randint(1, 100)
+        s = f"{N}\n"
+        s += "".join(
+            "".join(choice("BW?") for _i in range(N)) + "\n"
+            for _j in range(N))
+        as_input(s)
+        try:
+            main()
+        except:
+            print(i)
+            print(s)
+            raise
 
 
 def _test():
