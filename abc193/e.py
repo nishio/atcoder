@@ -48,6 +48,8 @@ def crt(a, m, b, n):
 
     >>> crt(2, 3, 1, 5)
     11
+    >>> crt(1, 4, 3, 6)
+    9
     """
     x, y, g = extended_euclidean(m, n)
     if g == 1:
