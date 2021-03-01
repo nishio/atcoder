@@ -5,12 +5,11 @@ Dinic: MaxFlow
 from collections import defaultdict
 from collections import deque
 
-
 class Dinic:
     def __init__(self, numVertex):
         from collections import defaultdict
         self.numVertex = numVertex
-        self.edges = defaultdict(dict)
+        self.edges = defaultdict(lambda: defaultdict(int))
 
     def add_edge(self, frm, to, capacity, bidirectional=False):
         if bidirectional:
@@ -18,26 +17,34 @@ class Dinic:
             self.edges[to][frm] = capacity
         else:
             self.edges[frm][to] = capacity
-            self.edges[to][frm] = 0
+            self.edges[to][frm] += 0  # assure to exists
+
+    def debug_edges(self):
+        ret = "\n"
+        def to_s(d):
+            return ", ".join(f"{k}: {d[k]}" for k in d)
+        
+        for frm in self.edges:
+            ret += f"{frm}:\n\t{to_s(self.edges[frm])}\n"
+        return ret
 
     def bfs(self, start, goal):
         """
         update: distance_from_start
         return bool: can reach to goal
         """
-        global distance_from_start
-        distance_from_start = [-1] * self.numVertex
+        self.distance_from_start = [-1] * self.numVertex
         queue = deque()
-        distance_from_start[start] = 0
+        self.distance_from_start[start] = 0
         queue.append(start)
-        while queue and distance_from_start[goal] == -1:
+        while queue and self.distance_from_start[goal] == -1:
             frm = queue.popleft()
             for to in self.edges[frm]:
-                if self.edges[frm][to] > 0 and distance_from_start[to] == -1:
-                    distance_from_start[to] = distance_from_start[frm] + 1
+                if self.edges[frm][to] > 0 and self.distance_from_start[to] == -1:
+                    self.distance_from_start[to] = self.distance_from_start[frm] + 1
                     queue.append(to)
 
-        return distance_from_start[goal] != -1
+        return self.distance_from_start[goal] != -1
 
     def dfs(self, current, goal, flow):
         """
@@ -47,17 +54,17 @@ class Dinic:
         """
         if current == goal:
             return flow
-        i = itertion_count[current]
-        while itertion_count[current] < len(self.edges[current]):
-            to = edges_index[current][i]
+        i = self.itertion_count[current]
+        while self.itertion_count[current] < len(self.edges[current]):
+            to = self.edges_index[current][i]
             capacity = self.edges[current][to]
-            if capacity > 0 and distance_from_start[current] < distance_from_start[to]:
+            if capacity > 0 and self.distance_from_start[current] < self.distance_from_start[to]:
                 d = self.dfs(to, goal, min(flow, capacity))
                 if d > 0:
                     self.edges[current][to] -= d
                     self.edges[to][current] += d
                     return d
-            itertion_count[current] += 1
+            self.itertion_count[current] += 1
             i += 1
         return 0
 
@@ -65,23 +72,24 @@ class Dinic:
         """
         return: max flow from `start` to `goal`
         """
-        global itertion_count, edges_index
         INF = 9223372036854775807
         flow = 0
-        edges_index = {
+        self.edges_index = {
             frm: list(self.edges[frm]) for frm in self.edges
         }
         while self.bfs(start, goal):
-            itertion_count = [0] * self.numVertex
+            self.itertion_count = [0] * self.numVertex
             f = self.dfs(start, goal, INF)
             while f > 0:
                 flow += f
                 f = self.dfs(start, goal, INF)
         return flow
 
+
+
 # --- end of library ---
 # Verified: https://atcoder.jp/contests/abc193/submissions/20560918
-
+# Verified: arc074d(1 MLE)
 
 def main():
     # Verified: https://onlinejudge.u-aizu.ac.jp/courses/library/5/GRL/6/GRL_6_A
