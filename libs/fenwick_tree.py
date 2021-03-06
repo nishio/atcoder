@@ -6,8 +6,10 @@ Fenwick Tree / Binary Indexed Tree (BIT)
 def init(n, value=0):
     global N, bit
     N = n
-    bit = [value] * (N + 1)  # 1-origin
-
+    bit = [0] * (N + 1)  # 1-origin
+    if value != 0:
+        for i in range(1, N + 1):
+        bit_set(i, value)
 
 def bit_add(pos, val):  # point add / range sum
     assert pos > 0

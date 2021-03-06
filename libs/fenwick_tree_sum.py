@@ -30,8 +30,12 @@ class FenwickTree:
 
     def __init__(self, size, value=0):
         self.size = size
-        self.values = [value] * (size + 1)  # 1-origin
-        self.raw_values = [value] * size  # for debug
+        self.values = [0] * (size + 1)  # 1-origin
+        self.raw_values = [0] * size  # for debug
+
+        if value != 0:
+            for i in range(1, size + 1):
+                self.set(i, value)
 
     def add(self, pos, val):
         self.raw_values[pos] += val
