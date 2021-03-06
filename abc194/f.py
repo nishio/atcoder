@@ -5,7 +5,7 @@ def debug(*x, msg=""):
     print(msg, *x, file=sys.stderr)
 
 
-def solve(N, K):
+def solve_TLE(N, K):
     MOD = 1_000_000_007
     D = 2 ** 16
     less = [0] * D
@@ -30,9 +30,7 @@ def solve(N, K):
             new_less[d] %= MOD
         less = new_less
         equal = equal | (2 ** digit)
-        # x = [i for i in range(D) if less[i]]
-        # debug(x, msg=":debug")
-        # debug(equal, msg=":equal")
+
     ret = 0
     less[1] = 0  # it is 0
     less[equal] += 1
@@ -40,7 +38,6 @@ def solve(N, K):
         numBit = getNumBit(d)
         if numBit == K:
             ret += less[d]
-            # debug(d, less[d], msg=":d, less[d]")
     return ret % MOD
 
 def getNumBit(x):
