@@ -14,14 +14,15 @@ def solve(N, K):
         digit = int(digit, 16)
         new_less = [0] * D
         for new_digit in range(16):
+            bitmask = 2 ** new_digit
             for d in range(D):
                 if d == 1:  # zero only
-                    new_d = (2 ** new_digit)
+                    new_d = bitmask
                 else:
-                    new_d = d | (2 ** new_digit)
+                    new_d = d | bitmask
                 new_less[new_d] += less[d]
             if new_digit < digit:
-                new_d = equal | (2 ** new_digit)
+                new_d = equal | bitmask
                 new_less[new_d] += 1
         for d in range(D):
             new_less[d] %= MOD
