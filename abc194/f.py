@@ -13,17 +13,19 @@ def solve(N, K):
     for digit in N:
         digit = int(digit, 16)
         new_less = [0] * D
+        less[0] += less[1]
+        less[1] = 0
         for new_digit in range(16):
             bitmask = 2 ** new_digit
             for d in range(D):
-                if d == 1:  # zero only
-                    new_d = bitmask
-                else:
-                    new_d = d | bitmask
+                new_d = d | bitmask
                 new_less[new_d] += less[d]
+
+        for new_digit in range(16):
             if new_digit < digit:
-                new_d = equal | bitmask
+                new_d = equal | (2 ** new_digit)
                 new_less[new_d] += 1
+
         for d in range(D):
             new_less[d] %= MOD
         less = new_less
