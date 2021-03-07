@@ -40,6 +40,44 @@ def solve_TLE(N, K):
             ret += less[d]
     return ret % MOD
 
+def solve(N, K):
+    MOD = 1_000_000_007
+    D = 16 + 1
+    less = [0] * D
+    equal_used = [0] * 16
+    equal = 0
+    for digit in N:
+        digit = int(digit, 16)
+        new_less = [0] * D
+        for d in range(D):
+            new_less[d] += less[d] * d
+
+            if d == 0:
+                new_less[d] += less[d] * 1
+                new_less[d + 1] += less[d] * 15
+            elif d != 16:
+                new_less[d + 1] += less[d] * (16 - d)
+
+        for new_digit in range(16):
+            if new_digit < digit:
+                new_d = equal
+                if equal_used[new_digit] == 0:
+                    new_d += 1
+                if new_digit == 0 and equal == 0:
+                    new_d = 0
+                new_less[new_d] += 1
+
+        for d in range(D):
+            new_less[d] %= MOD
+        less = new_less
+        if equal_used[digit] == 0:
+            equal += 1
+            equal_used[digit] = 1
+    ret = less[K]
+    if equal == K:
+        ret += 1
+    return ret % MOD
+
 def getNumBit(x):
     numBit = 0
     for i in range(16):
