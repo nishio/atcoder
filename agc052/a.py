@@ -49,7 +49,8 @@ def solve(N, SS):
         j = (SS[i][0] - 48) + (SS[i][-1] - 48) * 2
         flag[j] = 0
 
-    for i in range(4):
+    debug(flag, msg=":flag")
+    for i in [0,3,1,2]:
         if flag[i]:
             if i == 0:
                 return "0" * N + "1" + "0" * N
@@ -96,7 +97,7 @@ def isSubStr(s, t):
 def blute(N, SS):
     import itertools
     for i in range(3):
-        SS[i] = SS[i] * 2
+        SS[i] = (SS[i] * 2).decode("ascii")
     for t in itertools.product("01", repeat=N * 2 + 1):
         if all(isSubStr(s, t) for s in SS):
             print("".join(t))
@@ -112,13 +113,16 @@ def foo():
     import itertools
     xs = [bytes(x) for x in set(itertools.permutations([48, 48, 49, 49], 4))]
     from random import seed, choice
-    for s in range(100):
+    N = 2
+    for s in range(30):
         seed(s)
         args = [choice(xs), choice(xs), choice(xs)]
-        answer = solve(2, args[:])
-        if not isOK(2, args[:], bytes(answer, "ascii")):
+        answer = solve(N, args[:])
+        if not isOK(N, args[:], bytes(answer, "ascii")):
             ss = [bytes(s).decode("ascii") for s in args]
             print(ss, answer)
+            # blute(N, args)
+            print()
 
 # tests
 T1 = """
