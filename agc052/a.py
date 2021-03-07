@@ -100,13 +100,26 @@ def blute(N, SS):
     for t in itertools.product("01", repeat=N * 2 + 1):
         if all(isSubStr(s, t) for s in SS):
             print("".join(t))
+# blute(2, ["0101", "0011", "1100"])
 
 def isOK(N, SS, answer):
+    SS = SS[:]
     for i in range(3):
         SS[i] = SS[i] * 2
     return all(isSubStr(s, answer) for s in SS)
 
-# blute(2, ["0101", "0011", "1100"])
+def foo():
+    import itertools
+    xs = [bytes(x) for x in set(itertools.permutations([48, 48, 49, 49], 4))]
+    from random import seed, choice
+    for s in range(100):
+        seed(s)
+        args = [choice(xs), choice(xs), choice(xs)]
+        answer = solve(2, args[:])
+        if not isOK(2, args[:], bytes(answer, "ascii")):
+            ss = [bytes(s).decode("ascii") for s in args]
+            print(ss, answer)
+
 # tests
 T1 = """
 2
