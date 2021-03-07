@@ -4,7 +4,7 @@ def debug(*x, msg=""):
     print(msg, *x, file=sys.stderr)
 
 
-def solve(N, SS):
+def solve_WA_TLE(N, SS):
     INF = 9223372036854775807
     for i in range(3):
         SS[i] = SS[i] * 2
@@ -43,6 +43,23 @@ def solve(N, SS):
 
     return bytes(ret).decode("ascii")
 
+def solve(N, SS):
+    flag = [1] * 4
+    for i in range(3):
+        j = (SS[i][0] - 48) + (SS[i][-1] - 48) * 2
+        flag[j] = 0
+
+    for i in range(4):
+        if flag[i]:
+            if i == 0:
+                return "0" * N + "1" + "0" * N
+            if i == 1:
+                return "0" * N + "1" + "1" * N
+            if i == 2:
+                return "1" * N + "1" + "0" * N
+            if i == 3:
+                return "1" * N + "0" + "1" * N
+
 def main():
     T = int(input())
     for _i in range(T):
@@ -50,8 +67,18 @@ def main():
         S1 = input().strip()
         S2 = input().strip()
         S3 = input().strip()
-        debug(_i, msg=":_i")
-        print(solve(N, [S1, S2, S3]))
+        # debug(_i, msg=":_i")
+        print(solve(N, [S1, S2, S3][:]))
+
+def maintest():
+    T = int(input())
+    for _i in range(T):
+        N = int(input())
+        S1 = input().strip()
+        S2 = input().strip()
+        S3 = input().strip()
+        answer = solve(N, [S1, S2, S3][:])
+        print(isOK(N, [S1, S2, S3], bytes(answer, "ascii")))
 
 def isSubStr(s, t):
     i = 0
@@ -66,6 +93,20 @@ def isSubStr(s, t):
             i += 1
     return False
 
+def blute(N, SS):
+    import itertools
+    for i in range(3):
+        SS[i] = SS[i] * 2
+    for t in itertools.product("01", repeat=N * 2 + 1):
+        if all(isSubStr(s, t) for s in SS):
+            print("".join(t))
+
+def isOK(N, SS, answer):
+    for i in range(3):
+        SS[i] = SS[i] * 2
+    return all(isSubStr(s, answer) for s in SS)
+
+# blute(2, ["0101", "0011", "1100"])
 # tests
 T1 = """
 2
@@ -80,9 +121,9 @@ T1 = """
 """
 TEST_T1 = """
 >>> as_input(T1)
->>> main()
-010
-11011
+>>> maintest()
+True
+True
 """
 
 def _test():
