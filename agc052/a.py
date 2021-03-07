@@ -18,11 +18,15 @@ def solve(N, SS):
                 if SS[i][pos] == 48:
                     next0[i] = pos
                     break
+            else:
+                next0[i] = INF
 
             for pos in range(cursor[i] + 1, 4 * N):
                 if SS[i][pos] == 49:
                     next1[i] = pos
                     break
+            else:
+                next1[i] = INF
     update()
 
     ret = []
@@ -48,6 +52,19 @@ def main():
         S3 = input().strip()
         debug(_i, msg=":_i")
         print(solve(N, [S1, S2, S3]))
+
+def isSubStr(s, t):
+    i = 0
+    j = 0
+    while i < len(s):
+        if s[i] == t[j]:
+            i += 1
+            j += 1
+            if j == len(t):
+                return True
+        else:
+            i += 1
+    return False
 
 # tests
 T1 = """
