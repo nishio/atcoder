@@ -4,15 +4,69 @@ def debug(*x, msg=""):
     print(msg, *x, file=sys.stderr)
 
 
-def solve(SOLVE_PARAMS):
-    pass
+def solve(N, SS):
+    INF = 9223372036854775807
+    for i in range(3):
+        SS[i] = SS[i] * 2
+    next0 = [0, 0, 0]
+    next1 = [0, 0, 0]
 
+    cursor = [-1, -1, -1]
+    def update():
+        for i in range(3):
+            for pos in range(cursor[i] + 1, 4 * N):
+                if SS[i][pos] == 48:
+                    next0[i] = pos
+                    break
+
+            for pos in range(cursor[i] + 1, 4 * N):
+                if SS[i][pos] == 49:
+                    next1[i] = pos
+                    break
+    update()
+
+    ret = []
+    for pos in range(2 * N + 1):
+        p0 = max(next0)
+        p1 = max(next1)
+        if p0 < p1:
+            ret.append(48)
+            cursor = next0[:]
+        else:
+            ret.append(49)
+            cursor = next1[:]
+        update()
+
+    return bytes(ret).decode("ascii")
 
 def main():
-    print(solve(SOLVE_PARAMS))
+    T = int(input())
+    for _i in range(T):
+        N = int(input())
+        S1 = input().strip()
+        S2 = input().strip()
+        S3 = input().strip()
+        debug(_i, msg=":_i")
+        print(solve(N, [S1, S2, S3]))
 
 # tests
-
+T1 = """
+2
+1
+01
+01
+10
+2
+0101
+0011
+1100
+"""
+TEST_T1 = """
+>>> as_input(T1)
+>>> main()
+010
+11011
+"""
 
 def _test():
     import doctest
