@@ -49,8 +49,16 @@ def solve(N, SS):
         j = (SS[i][0] - 48) + (SS[i][-1] - 48) * 2
         flag[j] = 0
 
-    debug(flag, msg=":flag")
-    for i in [0,3,1,2]:
+    if flag == [0, 1, 0, 0]:
+        return "0" * N + "1" * N + "0"
+
+    if flag == [0, 1, 1, 0]:
+        return "0" * N + "1" * N + "0"
+
+    if flag == [0, 0, 1, 0]:
+        return "1" * N +  "0" * N + "1"
+
+    for i in [0, 3, 1, 2]:
         if flag[i]:
             if i == 0:
                 return "0" * N + "1" + "0" * N
@@ -109,19 +117,19 @@ def isOK(N, SS, answer):
         SS[i] = SS[i] * 2
     return all(isSubStr(s, answer) for s in SS)
 
-def foo():
+def randomtest():
     import itertools
     xs = [bytes(x) for x in set(itertools.permutations([48, 48, 49, 49], 4))]
     from random import seed, choice
     N = 2
-    for s in range(30):
+    for s in range(1000):
         seed(s)
         args = [choice(xs), choice(xs), choice(xs)]
         answer = solve(N, args[:])
         if not isOK(N, args[:], bytes(answer, "ascii")):
             ss = [bytes(s).decode("ascii") for s in args]
-            print(ss, answer)
-            # blute(N, args)
+            print(ss, flag, answer)
+            blute(N, args)
             print()
 
 # tests
