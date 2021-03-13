@@ -9,10 +9,76 @@ def solve(SOLVE_PARAMS):
 
 
 def main():
-    print(solve(SOLVE_PARAMS))
+    N = int(input())
+    SS = input().strip().decode('ascii')
+    XS = input().strip().decode('ascii')
+
+    goal = [0] * 7
+    goal[0] = 1  # if 1 Taka win
+
+    for i in reversed(range(N)):
+        s = int(SS[i])
+        prev_goal = []
+        if XS[i] == "A":
+            for prev in range(7):
+                if goal[(prev * 10 + s) % 7] == 0 or goal[(prev * 10) % 7] == 0:
+                    prev_goal.append(0)
+                else:
+                    prev_goal.append(1)
+        else:  # "T" 
+            for prev in range(7):
+                if goal[(prev * 10 + s) % 7] == 1 or goal[(prev * 10) % 7] == 1:
+                    prev_goal.append(1)
+                else:
+                    prev_goal.append(0)
+        goal = prev_goal
+
+    if goal[0] == 1:
+        print("Takahashi")
+    else:
+        print("Aoki")
 
 # tests
-
+T1 = """
+2
+35
+AT
+"""
+TEST_T1 = """
+>>> as_input(T1)
+>>> main()
+Takahashi
+"""
+T2 = """
+5
+12345
+AAAAT
+"""
+TEST_T2 = """
+>>> as_input(T2)
+>>> main()
+Aoki
+"""
+T3 = """
+5
+67890
+TTTTA
+"""
+TEST_T3 = """
+>>> as_input(T3)
+>>> main()
+Takahashi
+"""
+T4 = """
+5
+12345
+ATATA
+"""
+TEST_T4 = """
+>>> as_input(T4)
+>>> main()
+Aoki
+"""
 
 def _test():
     import doctest
