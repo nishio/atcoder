@@ -30,13 +30,14 @@ def main():
             maxv = 0
             maxi = -1
             for i in range(N):
+                if WS[i] > size:
+                    continue
                 if values[i] > maxv:
                     maxv = values[i]
                     maxi = i
             values[maxi] = 0
             ret += maxv
         print(ret)
-
 
 # tests
 T1 = """
@@ -55,6 +56,23 @@ TEST_T1 = """
 20
 0
 9
+"""
+T2 = """
+3 4 3
+2 10
+3 10
+4 10
+1 2 3 4
+4 4
+3 4
+2 4
+"""
+TEST_T2 = """
+>>> as_input(T2)
+>>> main()
+20
+10
+0
 """
 
 def _test():
