@@ -9,10 +9,53 @@ def solve(SOLVE_PARAMS):
 
 
 def main():
-    print(solve(SOLVE_PARAMS))
+    N,M,Q = map(int, input().split())
+    WS = []
+    VS = []
+    for _n in range(N):
+        W,V = map(int, input().split())
+        WS.append(W)
+        VS.append(V)
+    XS = list(map(int, input().split()))
+    WS.append(0) # sentinel
+    VS.append(0)
+
+    for _q in range(Q):
+        L,R = map(int, input().split())
+        box = XS[:L - 1] + XS[R:]
+        box.sort()
+        values = VS[:]
+        ret = 0
+        for size in box:
+            maxv = 0
+            maxi = -1
+            for i in range(N):
+                if values[i] > maxv:
+                    maxv = values[i]
+                    maxi = i
+            values[maxi] = 0
+            ret += maxv
+        print(ret)
+
 
 # tests
-
+T1 = """
+3 4 3
+1 9
+5 3
+7 8
+1 8 6 9
+4 4
+1 4
+1 3
+"""
+TEST_T1 = """
+>>> as_input(T1)
+>>> main()
+20
+0
+9
+"""
 
 def _test():
     import doctest
