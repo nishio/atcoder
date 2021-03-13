@@ -9,10 +9,32 @@ def solve(SOLVE_PARAMS):
 
 
 def main():
-    print(solve(SOLVE_PARAMS))
+    N = int(input())
+    d = 999
+    ret = 0
+    while N > d:
+        ret += N - d
+        d = d * 1000 + 999
+
+    print(ret)
 
 # tests
-
+T1 = """
+1010
+"""
+TEST_T1 = """
+>>> as_input(T1)
+>>> main()
+11
+"""
+T2 = """
+27182818284590
+"""
+TEST_T2 = """
+>>> as_input(T2)
+>>> main()
+107730272137364
+"""
 
 def _test():
     import doctest
