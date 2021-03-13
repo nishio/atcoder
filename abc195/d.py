@@ -4,24 +4,8 @@ def debug(*x, msg=""):
     print(msg, *x, file=sys.stderr)
 
 
-def solve(SOLVE_PARAMS):
-    pass
-
-
-def main():
-    N,M,Q = map(int, input().split())
-    WS = []
-    VS = []
-    for _n in range(N):
-        W,V = map(int, input().split())
-        WS.append(W)
-        VS.append(V)
-    XS = list(map(int, input().split()))
-    WS.append(0) # sentinel
-    VS.append(0)
-
-    for _q in range(Q):
-        L,R = map(int, input().split())
+def solve(N,WS,VS,XS,QS):
+    for L,R  in QS:
         box = XS[:L - 1] + XS[R:]
         box.sort()
         values = VS[:]
@@ -38,6 +22,42 @@ def main():
             values[maxi] = 0
             ret += maxv
         print(ret)
+
+def main():
+    N,M,Q = map(int, input().split())
+    WS = []
+    VS = []
+    for _n in range(N):
+        W,V = map(int, input().split())
+        WS.append(W)
+        VS.append(V)
+    XS = list(map(int, input().split()))
+    WS.append(0) # sentinel
+    VS.append(0)
+    QS = []
+    for _q in range(Q):
+        QS.append(tuple(map(int, input().split())))
+
+    solve(N,WS,VS,XS,QS)
+
+def fuzz():
+    from random import seed, randint
+    for s in range(10000):
+        seed(s)
+        debug(s, msg=":s")
+
+        N = randint(1, 50)
+        M = randint(1, 50)
+        Q = randint(1, 50)
+        WS = [randint(1, 1000000) for i in range(N)]
+        VS = [randint(1, 1000000) for i in range(N)]
+        XS = [randint(1, 1000000) for i in range(M)]
+        QS = []
+        for i in range(Q):
+            L = randint(1, M)
+            R = randint(L, M)
+            QS.append((L, R))
+        solve(N,WS,VS,XS,QS)
 
 # tests
 T1 = """
@@ -73,6 +93,53 @@ TEST_T2 = """
 20
 10
 0
+"""
+T3 = """
+1 2 1
+12 10
+10 10
+1 1
+"""
+TEST_T3 = """
+>>> as_input(T3)
+>>> main()
+0
+"""
+T4 = """
+3 3 1
+10 1
+10 1
+10 1
+3 3 10
+1 1
+"""
+TEST_T4 = """
+>>> as_input(T4)
+>>> main()
+1
+"""
+T5 = """
+2 1 1
+10 1
+10 1
+1
+1 1
+"""
+TEST_T5 = """
+>>> as_input(T5)
+>>> main()
+0
+"""
+T6 = """
+1 3 1
+1 100
+1 2 3
+1 1
+"""
+TEST_T6 = """
+>>> as_input(T6)
+>>> main()
+100
 """
 
 def _test():
