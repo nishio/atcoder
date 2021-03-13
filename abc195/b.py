@@ -9,9 +9,41 @@ def solve(SOLVE_PARAMS):
 
 
 def main():
-    print(solve(SOLVE_PARAMS))
+    import math
+    A, B, W = map(int, input().split())
+    W *= 1000
+    WB = math.ceil(W / B)
+    WA = math.floor(W / A)
+    if WA < WB:
+        print("UNSATISFIABLE")
+        return
+    print(WB, WA)
 
 # tests
+T1 = """
+100 200 2
+"""
+TEST_T1 = """
+>>> as_input(T1)
+>>> main()
+10 20
+"""
+T2 = """
+120 150 2
+"""
+TEST_T2 = """
+>>> as_input(T2)
+>>> main()
+14 16
+"""
+T3 = """
+300 333 1
+"""
+TEST_T3 = """
+>>> as_input(T3)
+>>> main()
+UNSATISFIABLE
+"""
 
 
 def _test():
