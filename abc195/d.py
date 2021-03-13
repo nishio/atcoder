@@ -4,8 +4,8 @@ def debug(*x, msg=""):
     print(msg, *x, file=sys.stderr)
 
 
-def solve(N,WS,VS,XS,QS):
-    for L,R  in QS:
+def solve(N, WS, VS, XS, QS):
+    for L, R in QS:
         box = XS[:L - 1] + XS[R:]
         box.sort()
         values = VS[:]
@@ -24,11 +24,11 @@ def solve(N,WS,VS,XS,QS):
         print(ret)
 
 def main():
-    N,M,Q = map(int, input().split())
+    N, M, Q = map(int, input().split())
     WS = []
     VS = []
     for _n in range(N):
-        W,V = map(int, input().split())
+        W, V = map(int, input().split())
         WS.append(W)
         VS.append(V)
     XS = list(map(int, input().split()))
@@ -38,7 +38,7 @@ def main():
     for _q in range(Q):
         QS.append(tuple(map(int, input().split())))
 
-    solve(N,WS,VS,XS,QS)
+    solve(N, WS, VS, XS, QS)
 
 def fuzz():
     from random import seed, randint
@@ -46,12 +46,12 @@ def fuzz():
         seed(s)
         debug(s, msg=":s")
 
-        N = randint(1, 50)
-        M = randint(1, 50)
-        Q = randint(1, 50)
-        WS = [randint(1, 1000000) for i in range(N)]
-        VS = [randint(1, 1000000) for i in range(N)]
-        XS = [randint(1, 1000000) for i in range(M)]
+        N = randint(1, 3)
+        M = randint(1, 3)
+        Q = randint(1, 3)
+        WS = [randint(1, 100) for i in range(N)]
+        VS = [randint(1, 100) for i in range(N)]
+        XS = [randint(1, 100) for i in range(M)]
         QS = []
         for i in range(Q):
             L = randint(1, M)
