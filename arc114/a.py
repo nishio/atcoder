@@ -98,7 +98,7 @@ def solve(SOLVE_PARAMS):
     pass
 
 
-def main():
+def main_WA():
     N = int(input())
     XS = list(map(int, input().split()))
     primes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47]
@@ -115,10 +115,31 @@ def main():
     for i in range(N):
         for j in range(M):
             if XS[i] % primes[j] == 0:
-                d.add_edge(i, N + j, INF)
+                d.add_edge(N + j, i, INF)
 
     f = d.max_flow(start, goal)
     print(round(exp(f)))
+
+def main():
+    N = int(input())
+    XS = list(map(int, input().split()))
+    primes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47]
+    ret = 1
+    while 1:
+        count = [sum(1 for x in XS if x % p == 0) for p in primes]
+        
+        m = max(count)
+        if m == 0:
+            break
+        j = count.index(m)
+        p = primes[j]
+        ret *= p
+        for i in range(N):
+            if XS[i] % p == 0:
+                XS[i] = 1
+    print(ret)
+
+
 
 
 
