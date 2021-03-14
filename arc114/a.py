@@ -1,3 +1,93 @@
+# included from libs/dinic_maxflow.py
+"""
+Dinic: MaxFlow
+"""
+
+from collections import defaultdict
+from collections import deque
+
+class Dinic:
+    def __init__(self, numVertex):
+        from collections import defaultdict
+        self.numVertex = numVertex
+        self.edges = defaultdict(lambda: defaultdict(int))
+
+    def add_edge(self, frm, to, capacity, bidirectional=False):
+        if bidirectional:
+            self.edges[frm][to] = capacity
+            self.edges[to][frm] = capacity
+        else:
+            self.edges[frm][to] = capacity
+            self.edges[to][frm] += 0  # assure to exists
+
+    def debug_edges(self):
+        ret = "\n"
+        def to_s(d):
+            return ", ".join(f"{k}: {d[k]}" for k in d)
+        
+        for frm in self.edges:
+            ret += f"{frm}:\n\t{to_s(self.edges[frm])}\n"
+        return ret
+
+    def bfs(self, start, goal):
+        """
+        update: distance_from_start
+        return bool: can reach to goal
+        """
+        self.distance_from_start = [-1] * self.numVertex
+        queue = deque()
+        self.distance_from_start[start] = 0
+        queue.append(start)
+        while queue and self.distance_from_start[goal] == -1:
+            frm = queue.popleft()
+            for to in self.edges[frm]:
+                if self.edges[frm][to] > 0 and self.distance_from_start[to] == -1:
+                    self.distance_from_start[to] = self.distance_from_start[frm] + 1
+                    queue.append(to)
+
+        return self.distance_from_start[goal] != -1
+
+    def dfs(self, current, goal, flow):
+        """
+        make flow from `current` to `goal`
+        update: capacity of edges, iteration_count
+        return: flow (if impossible: 0)
+        """
+        if current == goal:
+            return flow
+        i = self.itertion_count[current]
+        while self.itertion_count[current] < len(self.edges[current]):
+            to = self.edges_index[current][i]
+            capacity = self.edges[current][to]
+            if capacity > 0 and self.distance_from_start[current] < self.distance_from_start[to]:
+                d = self.dfs(to, goal, min(flow, capacity))
+                if d > 0:
+                    self.edges[current][to] -= d
+                    self.edges[to][current] += d
+                    return d
+            self.itertion_count[current] += 1
+            i += 1
+        return 0
+
+    def max_flow(self, start, goal):
+        """
+        return: max flow from `start` to `goal`
+        """
+        INF = 9223372036854775807
+        flow = 0
+        self.edges_index = {
+            frm: list(self.edges[frm]) for frm in self.edges
+        }
+        while self.bfs(start, goal):
+            self.itertion_count = [0] * self.numVertex
+            f = self.dfs(start, goal, INF)
+            while f > 0:
+                flow += f
+                f = self.dfs(start, goal, INF)
+        return flow
+
+# end of libs/dinic_maxflow.py
+
 # included from snippets/main.py
 def debug(*x, msg=""):
     import sys
@@ -9,10 +99,57 @@ def solve(SOLVE_PARAMS):
 
 
 def main():
-    print(solve(SOLVE_PARAMS))
+    N = int(input())
+    XS = list(map(int, input().split()))
+    primes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47]
+    M = len(primes)
+    d = Dinic(N + M + 2)
+    start = N + M
+    goal = N + M + 1
+    INF = 9223372036854775807
+    from math import log, exp
+    for i in range(N):
+        d.add_edge(start, i, INF)
+    for j in range(M):
+        d.add_edge(N + j, goal, log(primes[j]))
+    for i in range(N):
+        for j in range(M):
+            if XS[i] % primes[j] == 0:
+                d.add_edge(i, N + j, INF)
+
+    f = d.max_flow(start, goal)
+    print(round(exp(f)))
+
+
 
 # tests
-
+T1 = """
+2
+4 3
+"""
+TEST_T1 = """
+>>> as_input(T1)
+>>> main()
+6
+"""
+T2 = """
+1
+47
+"""
+TEST_T2 = """
+>>> as_input(T2)
+>>> main()
+47
+"""
+T3 = """
+7
+3 4 6 7 8 9 10
+"""
+TEST_T3 = """
+>>> as_input(T3)
+>>> main()
+42
+"""
 
 def _test():
     import doctest
