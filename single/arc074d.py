@@ -223,7 +223,7 @@ def debug(*x, msg=""):
     print(msg, *x, file=sys.stderr)
 
 
-def solve(H, W, world):
+def solve_MLE(H, W, world):
     INF = 9223372036854775807
     CHAR_S, CHAR_T, CHAR_O = b"STo"
     leaf = set()
@@ -276,6 +276,46 @@ def solve(H, W, world):
     # if ret == 101:
     #     debug(d.print_edges(), msg=":d.edges")
     return ret
+
+def solve(H, W, world):
+    CHAR_S, CHAR_T, CHAR_O = b"STo"
+    leaf = set()
+    for pos in world.allPosition():
+        if world.mapdata[pos] == CHAR_S:
+            start = pos
+        if world.mapdata[pos] == CHAR_T:
+            goal = pos
+        if world.mapdata[pos] == CHAR_O:
+            leaf.add(pos)
+
+    sy, sx = divmod(start, W)
+    gy, gx = divmod(goal, W)
+    if sy == gy or sx == gx:
+        return -1
+
+    INF = 10000
+    d = Dinic(H * W * 2 + H + W)
+    O_BG = H * W
+    O_Y = H * W * 2
+    O_X = H * W * 2 + H
+    for pos in leaf:
+        pos2 = pos + O_BG
+        d.add_edge(pos, pos2, 1)
+        y, x = divmod(pos, W)
+        d.add_edge(pos2, y + O_Y, INF)
+        d.add_edge(pos2, x + O_X, INF)
+        d.add_edge(y + O_Y, pos, INF)
+        d.add_edge(x + O_X, pos, INF)
+
+    d.add_edge(start, sy + O_Y, INF)
+    d.add_edge(start, sx + O_X, INF)
+    d.add_edge(gy + O_Y, goal, INF)
+    d.add_edge(gx + O_X, goal, INF)
+
+    ret = d.max_flow(start, goal)
+    return ret
+
+
 def main():
     H, W = map(int, input().split())
     world = OneDimensionMap(H, W)
