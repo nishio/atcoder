@@ -85,6 +85,22 @@ class Dinic:
                 f = self.dfs(start, goal, INF)
         return flow
 
+    def get_cut(self, start):
+        """
+        return 0/1: can reach from start
+        """
+        ret = [0] * self.numVertex
+        ret[start] = 1
+        queue = deque()
+        queue.append(start)
+        while queue:
+            frm = queue.popleft()
+            for to in self.edges[frm]:
+                if self.edges[frm][to] > 0 and ret[to] == 0:
+                    ret[to] = 1
+                    queue.append(to)
+        return ret
+
 
 
 # --- end of library ---
