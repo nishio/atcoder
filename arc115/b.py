@@ -7,26 +7,67 @@ def debug(*x, msg=""):
 def solve(SOLVE_PARAMS):
     pass
 
+def solve(N, CS):
+    sums = [sum(row) for row in CS]
+    m = min(sums)
+    if any((x - m) % N for x in sums):
+        return []
+
+    AS = [(x - m) // N for x in sums]
+    BS = [x - AS[0] for x in CS[0]]
+    if any(x < 0 for x in BS):
+        return []
+    NCS = [tuple(AS[i] + BS[j] for j in range(N)) for i in range(N)]
+    if NCS != CS:
+        return []
+    return (AS, BS)
 
 def main():
     N = int(input())
     CS = []
-    sums = []
     for _i in range(N):
         row = tuple(map(int, input().split()))
-        CS.append(row) 
-        sums.append(sum(row))
-
-    m = min(sums)
-    if any((x - m) % N for x in sums):
+        CS.append(row)
+    ret = solve(N, CS)
+    if not ret:
         print("No")
-        return
+    else:
+        AS, BS = ret
+        print("Yes")
+        print(*AS)
+        print(*BS)
+    
+def random_test():
+    from random import seed, randint
+    for s in range(1000):
+        seed(s)
+        N = 4
+        AS = [randint(1,10) for i in range(N)]
+        AS[0] = 0
+        BS = [randint(1,10) for i in range(N)]
+        CS = [[AS[i] + BS[j] for j in range(N)] for i in range(N)]
+        ret = solve(N, CS)
+        if (AS, BS) != ret:
+            debug(s, msg=":s")
+            debug(AS, BS, msg=":AS, BS")
+            debug(ret, msg=":ret")
 
-    AS = [(x - m) // N for x in sums]
-    BS = [x - AS[0] for x in CS[0]]
-    print("Yes")
-    print(*AS)
-    print(*BS)
+    for s in range(1000):
+        seed(s)
+        N = 2
+        CS = [[randint(1, 10) for j in range(N)] for i in range(N)]
+        ret = solve(N, CS)
+        if ret:
+            (AS, BS) = ret
+            NCS = [[AS[i] + BS[j] for j in range(N)] for i in range(N)]
+            if NCS != CS:
+                debug(s, msg=":s")
+                debug(CS, msg=":CS")
+                debug(NCS, msg=":NCS")
+                debug(ret, msg=":ret")
+
+
+# random_test()
 
 # tests
 T1 = """
