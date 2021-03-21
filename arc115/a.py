@@ -9,10 +9,42 @@ def solve(SOLVE_PARAMS):
 
 
 def main():
-    print(solve(SOLVE_PARAMS))
+    N, M = map(int, input().split())
+    s1 = 0
+    for i in range(N):
+        S = input().strip()
+        s = S.count(b"1")
+        if s % 2:
+            s1 += 1
+    print(s1 * (N - s1))
 
 # tests
-
+T1 = """
+3 2
+00
+01
+10
+"""
+TEST_T1 = """
+>>> as_input(T1)
+>>> main()
+2
+"""
+T2 = """
+7 5
+10101
+00001
+00110
+11110
+00100
+11111
+10000
+"""
+TEST_T2 = """
+>>> as_input(T2)
+>>> main()
+10
+"""
 
 def _test():
     import doctest
