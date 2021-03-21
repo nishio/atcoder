@@ -9,10 +9,50 @@ def solve(SOLVE_PARAMS):
 
 
 def main():
-    print(solve(SOLVE_PARAMS))
+    N = int(input())
+    CS = []
+    sums = []
+    for _i in range(N):
+        row = tuple(map(int, input().split()))
+        CS.append(row) 
+        sums.append(sum(row))
+
+    m = min(sums)
+    if any((x - m) % N for x in sums):
+        print("No")
+        return
+
+    AS = [(x - m) // N for x in sums]
+    BS = [x - AS[0] for x in CS[0]]
+    print("Yes")
+    print(*AS)
+    print(*BS)
 
 # tests
-
+T1 = """
+3
+4 3 5
+2 1 3
+3 2 4
+"""
+TEST_T1 = """
+>>> as_input(T1)
+>>> main()
+Yes
+2 0 1
+2 1 3
+"""
+T2 = """
+3
+4 3 5
+2 2 3
+3 2 4
+"""
+TEST_T2 = """
+>>> as_input(T2)
+>>> main()
+No
+"""
 
 def _test():
     import doctest
