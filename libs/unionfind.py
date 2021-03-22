@@ -4,10 +4,12 @@ Union-Find Tree / Disjoint Set Union (DSU)
 
 
 def init_unionfind(N):
-    global parent, rank, NUM_VERTEX
+    global parent, rank, NUM_VERTEX, num_edges, num_vertex
     NUM_VERTEX = N
     parent = [-1] * N
     rank = [0] * N
+    num_edges = [0] * N
+    num_vertex = [1] * N
 
 
 def find_root(x):
@@ -22,12 +24,17 @@ def find_root(x):
 def unite(x, y):
     x = find_root(x)
     y = find_root(y)
+    num_edges[x] += 1
     if x == y:
         return  # already united
     if rank[x] < rank[y]:
         parent[x] = y
+        num_edges[y] += num_edges[x]
+        num_vertex[y] += num_vertex[x]
     else:
         parent[y] = x
+        num_edges[x] += num_edges[y]
+        num_vertex[x] += num_vertex[y]
         if rank[x] == rank[y]:
             rank[x] += 1
 
@@ -38,6 +45,11 @@ def is_connected(x, y):
 
 def num_components():
     return sum(1 for x in range(NUM_VERTEX) if find_root(x) == x)
+
+def get_ve():
+    return [
+        (num_vertex[x], num_edges[x])
+        for x in range(NUM_VERTEX) if find_root(x) == x]
 
 # --- end of library ---
 
