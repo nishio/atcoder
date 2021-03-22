@@ -1,68 +1,9 @@
-# included from libs/convolution.py
-"""
-Convolution
-"""
-# derive from https://atcoder.jp/contests/practice2/submissions/16789717
-MOD = 998244353
-G = 3
-InvG = 332748118  # mod_inverse(3, 998244353)
-W = [pow(G, (MOD - 1) >> i, MOD) for i in range(24)]
-iW = [pow(InvG, (MOD - 1) >> i, MOD) for i in range(24)]
-
-
-def fft(k, f):
-    for l in range(k, 0, -1):
-        d = 1 << l - 1
-        U = [1]
-        for i in range(d):
-            U.append(U[-1] * W[l] % MOD)
-
-        for i in range(1 << k - l):
-            for j in range(d):
-                s = i * 2 * d + j
-                fs = f[s]
-                fsd = f[s + d]
-                f[s] = (fs + fsd) % MOD
-                f[s+d] = U[j] * (fs - fsd) % MOD
-
-
-def ifft(k, f):
-    for l in range(1, k + 1):
-        d = 1 << l - 1
-        for i in range(1 << k - l):
-            u = 1
-            for j in range(i * 2 * d, (i * 2 + 1) * d):
-                f[j + d] *= u
-                fj = f[j]
-                fjd = f[j+d]
-                f[j] = (fj + fjd) % MOD
-                f[j+d] = (fj - fjd) % MOD
-                u = u * iW[l] % MOD
-
-
-def convolve(a, b):
-    n0 = len(a) + len(b) - 1
-    k = (n0).bit_length()
-    n = 1 << k
-    a = a + [0] * (n - len(a))
-    b = b + [0] * (n - len(b))
-    fft(k, a)
-    fft(k, b)
-    for i in range(n):
-        a[i] = a[i] * b[i] % MOD
-    ifft(k, a)
-    invn = pow(n, MOD - 2, MOD)
-    for i in range(n0):
-        a[i] = a[i] * invn % MOD
-    del a[n0:]
-    return a
-
-# end of libs/convolution.py
 # included from libs/unionfind.py
 """
 Union-Find Tree / Disjoint Set Union (DSU)
 """
-from collections import defaultdict
+
+
 def init_unionfind(N):
     global parent, rank, NUM_VERTEX, num_edges, num_vertex
     NUM_VERTEX = N
@@ -106,10 +47,37 @@ def is_connected(x, y):
 def num_components():
     return sum(1 for x in range(NUM_VERTEX) if find_root(x) == x)
 
-# end of libs/unionfind.py
+def get_ve():
+    return [
+        (num_vertex[x], num_edges[x]) 
+        for x in range(NUM_VERTEX) if find_root(x) == x]
 
-def makeInverseTable(K, MOD):
+# end of libs/unionfind.py
+# included from libs/naive_convolution.py
+def convolution(xs, ys, MOD):
+    ret = [0] * (len(xs) + len(ys) - 1)
+    for i in range(len(xs)):
+        for j in range(len(ys)):
+            ret[i + j] += xs[i] * ys[j]
+            ret[i + j] %= MOD
+    return ret
+
+# end of libs/naive_convolution.py
+# included from libs/combination_table.py
+"""
+Combination Table
+Not fastest but PyPy compatible version
+"""
+
+MOD = 10 ** 9 + 7
+K = 10 ** 6
+
+
+def makeInverseTable(K=K, MOD=MOD):
     """calc i^-1 for i in [1, K] mod MOD. MOD should be prime
+    >>> invs = makeInverseTable(10)
+    >>> [i * invs[i] % MOD for i in range(1, 10)]
+    [1, 1, 1, 1, 1, 1, 1, 1, 1]
     """
     ret = [1] * (K + 1)
     for i in range(2, K + 1):
@@ -118,7 +86,7 @@ def makeInverseTable(K, MOD):
     return ret
 
 
-def makeFactorialTable(K, MOD):
+def makeFactorialTable(K=K, MOD=MOD):
     """calc i! for i in [0, K] mod MOD. MOD should be prime
     >>> fs = makeFactorialTable(10, 23)
     >>> fs
@@ -136,7 +104,7 @@ def makeFactorialTable(K, MOD):
     return ret
 
 
-def makeInvFactoTable(inv, K, MOD):
+def makeInvFactoTable(inv, K=K, MOD=MOD):
     """calc i!^-1 for i in [0, K] mod MOD. MOD should be prime
     You can not do inv[facto[i]], because facto[i] may greater than K.
     """
@@ -149,6 +117,56 @@ def makeInvFactoTable(inv, K, MOD):
     return ret
 
 
+def combination(n, k, facto, invf, MOD=MOD):
+    """combination C(n, k)
+    # >>> facto = makeFactorialTable()
+    # >>> inv = makeInverseTable()
+    # >>> invf = makeInvFactoTable(inv)
+    # >>> [combination(10000, i, facto, invf) for i in range(7)]
+    # [1, 10000, 49995000, 616668838, 709582588, 797500005, 2082363]
+    """
+    assert n >= 0
+    assert k >= 0
+    if k > n:
+        return 0
+    return facto[n] * invf[k] % MOD * invf[n - k] % MOD
+
+
+def comb_rep(n, k, facto, invf, MOD=MOD):
+    """combination with replacement Cr(n, k)
+    # >>> facto = makeFactorialTable()
+    # >>> inv = makeInverseTable()
+    # >>> invf = makeInvFactoTable(inv)
+    # >>> [comb_rep(3, i, facto, invf) for i in range(7)]
+    # [1, 3, 6, 10, 15, 21, 28]
+    """
+    return facto[n + k - 1] * invf[k] % MOD * invf[n - 1] % MOD
+
+
+class CombinationTable:
+    def __init__(self, maxValue, modulo):
+        self.maxValue = maxValue
+        self.modulo = modulo
+        self.facto = makeFactorialTable(maxValue, modulo)
+        self.inv = makeInverseTable(maxValue, modulo)
+        self.invf = makeInvFactoTable(self.inv, maxValue, modulo)
+
+    def comb(self, n, k):
+        return combination(n, k, self.facto, self.invf, self.modulo)
+
+# end of libs/combination_table.py
+# included from libs/pow_table.py
+class PowTable:
+    def __init__(self, n, max_value, mod):
+        xs = [1]
+        for i in range(max_value):
+            xs.append(xs[-1] * n % mod)
+        self.table = xs
+
+    def pow(self, k):
+        return self.table[k]
+
+# end of libs/pow_table.py
 # included from snippets/main.py
 def debug(*x, msg=""):
     import sys
@@ -159,33 +177,27 @@ def solve(N,M,edges,edgelist):
     init_unionfind(N)
     for x, y in edgelist:
         unite(x, y)
-    comps = []
-    for x in range(N):
-        if find_root(x) == x:
-            comps.append((num_edges[x],num_vertex[x]))
 
     MOD = 998_244_353
-    inv = makeInverseTable(N, MOD)
-    facto = makeFactorialTable(N, MOD)
-    invf = makeInvFactoTable(inv, N, MOD)
+    comb = CombinationTable(N + 10, MOD).comb
+    pow = PowTable(2, M, MOD).pow
 
     ret = None
-    for e, v in comps:
+    for v, e in get_ve():
         xs = [0] * (v + 1)
-        xs[0] = 1
-        for i in range(1, (v // 2) + 1):
-            n = v
-            x = facto[v] * invf[v - 2 * i] * invf[i * 2] % MOD
-            xs[i * 2] = x
+        m = 1
         if e > v - 1:
-            m = pow(2, e - (v - 1), MOD)
-            xs = [x * m % MOD for x in xs]
+            m = pow(e - (v - 1))
+        xs[0] = m
+        for i in range(1, (v // 2) + 1):
+            xs[i * 2] = comb(v, 2 * i) * m
+
+        xs = [x % MOD for x in xs]
         if ret is None:
             ret = xs
         else:
-            ret = convolve(ret, xs)
+            ret = convolution(ret, xs, MOD)
     return ret            
-    # return blute(N,M,edges,edgelist)
 
 def blute(N,M,edges,edgelist):
     ret = [0] * (N + 1)
