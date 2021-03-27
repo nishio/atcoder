@@ -12,7 +12,6 @@ def main_WA():
     N = int(input())
     AS = list(map(int, input().split()))
     SS = [f"{x:030b}" for x in AS]
-
     start = 1
     end = N - 1
     for i in range(30):
@@ -39,6 +38,9 @@ def main_WA():
 def main():
     N = int(input())
     AS = list(map(int, input().split()))
+    if N == 1:
+        print(AS[0])
+        return
 
     ret = INF = 9223372036854775807
     for i in range(1, N):
@@ -81,7 +83,15 @@ TEST_T3 = """
 >>> main()
 0
 """
-
+T4 = """
+1
+1
+"""
+TEST_T4 = """
+>>> as_input(T4)
+>>> main()
+1
+"""
 def _test():
     import doctest
     doctest.testmod()
