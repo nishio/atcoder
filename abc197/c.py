@@ -8,7 +8,7 @@ def solve(SOLVE_PARAMS):
     pass
 
 
-def main():
+def main_WA():
     N = int(input())
     AS = list(map(int, input().split()))
     SS = [f"{x:030b}" for x in AS]
@@ -35,6 +35,23 @@ def main():
         y |= a
     print(x ^ y)    
     
+
+def main():
+    N = int(input())
+    AS = list(map(int, input().split()))
+
+    ret = INF = 9223372036854775807
+    for i in range(1, N):
+        # debug(AS[:i], AS[i:], msg=":AS[:i], AS[i:]")
+        x = 0
+        for a in AS[:i]:
+            x |= a
+        y = 0
+        for a in AS[i:]:
+            y |= a
+        # debug(i, x ^ y, msg=":i, x ^ y")
+        ret = min(ret, x ^ y)
+    print(ret)
 
 # tests
 T1 = """
