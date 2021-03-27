@@ -35,7 +35,7 @@ def main_WA():
     print(x ^ y)    
     
 
-def main():
+def main_WA11():
     N = int(input())
     AS = list(map(int, input().split()))
     if N == 1:
@@ -53,6 +53,26 @@ def main():
             y |= a
         # debug(i, x ^ y, msg=":i, x ^ y")
         ret = min(ret, x ^ y)
+    print(ret)
+
+def main():
+    N = int(input())
+    AS = list(map(int, input().split()))
+    if N == 1:
+        print(AS[0])
+        return
+
+    ret = INF = 9223372036854775807
+    for s in range(2 ** N):
+        xor_ed = 0
+        or_ed = 0
+        for i in range(N):
+            or_ed |= AS[i]
+            if s & (1 << i):
+                xor_ed ^= or_ed
+                or_ed = 0
+        xor_ed ^= or_ed
+        ret = min(ret, xor_ed)
     print(ret)
 
 # tests
