@@ -21,10 +21,10 @@ def main():
 
     from heapq import heappush, heappop
     queue = [(0, (1, N))]
-    visited = {(1, N)}
+    visited = set()
     while queue:
         cost, pair = heappop(queue)
-        debug(cost, pair, msg=":cost, pair")
+        # debug(cost, pair, msg=":cost, pair")
         if pair in visited:
             continue
         visited.add(pair)
