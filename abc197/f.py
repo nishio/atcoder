@@ -32,12 +32,15 @@ def main():
         if frm == to:
             print(cost * 2)
             return
-        
-        for c in edges[frm]:
+
+        for c in edges[to]:
             for x in edges[to][c]:
                 if x == frm:
                     print(cost * 2 + 1)
                     return
+
+        for c in edges[frm]:
+            for x in edges[to][c]:
                 for y in edges[frm][c]:
                     heappush(queue, (cost + 1, (y, x)))
 
@@ -85,7 +88,24 @@ TEST_T3 = """
 >>> main()
 -1
 """
-
+T4 = """
+2 1
+1 2 a
+"""
+TEST_T4 = """
+>>> as_input(T4)
+>>> main()
+1
+"""
+T5 = """
+2 1
+2 1 a
+"""
+TEST_T5 = """
+>>> as_input(T5)
+>>> main()
+1
+"""
 def _test():
     import doctest
     doctest.testmod()
