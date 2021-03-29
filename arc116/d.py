@@ -105,7 +105,6 @@ def solve(N, M):
 
     cache = {}    
     def foo(x, start=11):
-        # debug(x, start, msg=":x, start")
         if (x, start) in cache:
             return cache[(x, start)]
         if start == 0:
@@ -119,9 +118,7 @@ def solve(N, M):
         p = 2 ** start
         if p <= x:
             ret = 0
-            # debug(x, p, msg=":x, p")
             for i in range(x // p + 1):
-                # debug(i, x - i * p, comb(N, 2 * i), msg=":i, x - i * p, ")
                 ret = (ret + foo(x - i * p, start - 1) * comb(N, 2 * i)) % MOD
         else:
             ret = foo(x, start - 1)
