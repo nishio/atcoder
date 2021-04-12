@@ -22,6 +22,17 @@ def main():
     m = -min(XS) + 1
     XS = [x + m for x in XS]
 
+    for i in range(N):
+        if S[i] == ">" and (i == N - 1 or S[i + 1] == "<"):
+            x = XS[i + 1]
+            diff = 1
+            now = min(
+                AS[i + 1] // XS[i + 1],
+                (AS[i] - AS[i + 1]) // diff - 1,
+                (AS[i] - AS[i + 1]) // diff - 1,
+                AS[i + 1] // XS[i + 1],
+            )
+
     ret = []
     while True:
         bs = [AS[i] - XS[i] for i in range(N + 1)]
@@ -83,6 +94,54 @@ TEST_T3 = """
 4 3 2 1
 4 3 2 1
 64 63 62 61
+"""
+
+T4 = """
+3
+<><
+3 9 6 10
+"""
+TEST_T4 = """
+>>> as_input(T4)
+>>> main()
+result
+"""
+
+T5 = """
+1
+<
+2 4
+"""
+TEST_T5 = """
+>>> as_input(T5)
+>>> main()
+2
+1 2
+1 2
+"""
+
+T6 = """
+1
+<
+2 5
+"""
+TEST_T6 = """
+>>> as_input(T6)
+>>> main()
+2
+1 2
+1 3
+"""
+
+T7 = """
+3
+<<>
+3 6 9 4
+"""
+TEST_T7 = """
+>>> as_input(T7)
+>>> main()
+result
 """
 
 
